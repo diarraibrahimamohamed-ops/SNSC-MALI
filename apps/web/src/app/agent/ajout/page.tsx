@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/useAuth';
+import { BabyIcon } from 'lucide-react';
 
 // ─── Helpers styles ────────────────────────────────────────────────────────────
 const S = {
@@ -137,7 +138,7 @@ export default function AjoutPage() {
 
           {/* Section Identité */}
           <div style={S.card}>
-            <div style={S.sectionTitle}><span>🪪</span> Identité de l'enfant</div>
+            <div style={S.sectionTitle}><span><BabyIcon/></span> Identité de l'enfant</div>
             <div style={S.row2}>
               <div>
                 <label style={S.label}>Nom *</label>
@@ -155,7 +156,7 @@ export default function AjoutPage() {
               </div>
               <div>
                 <label style={S.label}>Identifiant sanitaire</label>
-                <input style={S.input} value={identifiantSanitaire} onChange={e => setIdentifiantSanitaire(e.target.value)} placeholder="Auto-généré si vide" />
+                <input style={S.input} value={identifiantSanitaire} onChange={e => setIdentifiantSanitaire(e.target.value)} placeholder="Auto-généré si vide" className='hidden' />
               </div>
             </div>
 
@@ -220,7 +221,7 @@ export default function AjoutPage() {
               boxShadow: '0 4px 16px rgba(59,130,246,0.4)',
               letterSpacing: '0.3px',
             }}>
-            {loading ? 'Enregistrement...' : '✅ Créer le dossier enfant'}
+            {loading ? 'Enregistrement...' : 'Enregistre le Dossier'}
           </button>
         </div>
       </form>

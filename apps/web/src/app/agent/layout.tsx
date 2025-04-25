@@ -119,10 +119,18 @@ export default function AgentLayout({
           </nav>
 
           <div className="border-t border-white/20 p-6">
+          {/* 
+           J'ai utiliser un lien Link ici pour qu'on puisse accéder au profil de l'agent connecté
+          */}
+          <Link 
+              href={"/agent/profil"}
+              >
             <div className="flex items-center gap-3">
+              
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
                 {initials.toUpperCase()}
               </div>
+              
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">
                   {user?.nom_complet || user?.matricule || 'Agent'}
@@ -132,6 +140,8 @@ export default function AgentLayout({
                 </div>
               </div>
             </div>
+              </Link>
+              {/* Ici prend fin la modification */}
             <button
               onClick={handleLogout}
               className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm font-semibold text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20"

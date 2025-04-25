@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/features/auth/useAuth';
+import {  } from "../../../../public/boxicons-master/css/boxicons.min.css";
+import { Baby } from 'lucide-react';
 
 interface Enfant {
   id: string;
@@ -63,17 +65,14 @@ export default function EnfantsPage() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Base de données Enfants 👶</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight"> Enfants  <i className='bx bxs-baby-carriage'></i> </h1>
           <p className="text-slate-500 font-medium mt-1">Gérez le suivi vaccinal de tous les enfants enregistrés.</p>
-        </div>
-        <Link href="/agent/ajout" className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
-          <span className="text-xl">+</span> Nouvelle Fiche Enfant
-        </Link>
+        </div>       
       </div>
 
       <div className="bg-white/60 backdrop-blur-xl p-4 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
-          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+          <span className="absolute left-5 top-1/2 -translate-y-1/2 text-xl"><i className='bx bx-search-alt-2'></i></span>
           <input 
             type="text" 
             placeholder="Rechercher par nom, prénom ou ID sanitaire..."
@@ -82,6 +81,9 @@ export default function EnfantsPage() {
             className="w-full pl-14 pr-4 py-4 bg-white/80 border border-slate-100 rounded-2xl text-sm font-medium outline-none focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-inner"
           />
         </div>
+         <Link href="/agent/ajout" className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
+          <span className="text-xl"> <i className="bx bxs-plus-square"></i></span> Nouvelle Enfant
+        </Link>
       </div>
 
       <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-white/50 shadow-xl shadow-slate-200/40 overflow-hidden relative">
