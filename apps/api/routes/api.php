@@ -1,0 +1,93 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register API routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "api" middleware group. Make something great!
+|
+*/
+
+// Test route simple
+Route::get('/test', function () {
+    return response()->json(['ok' => true, 'message' => 'API is working!']);
+});
+
+// Public routes for testing
+Route::get('/agents/public', function () {
+    return response()->json(['message' => 'Agents list (public)', 'data' => []]);
+});
+
+Route::get('/enfants/public', function () {
+    return response()->json(['message' => 'Children list (public)', 'data' => []]);
+});
+
+Route::get('/user', function (Request $request) {
+    return response()->json(['message' => 'User info (no auth required)']);
+});
+
+// Health check endpoint
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'ok',
+        'message' => 'Vaccin-Track API is running',
+        'timestamp' => now()->toISOString(),
+        'version' => '1.0.0'
+    ]);
+});
+
+// Authentication routes (no auth required for testing)
+Route::prefix('auth')->group(function () {
+    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+    Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
+    Route::post('/register', [App\Http\Controllers\Api\AuthController::class, 'register']);
+    Route::get('/me', [App\Http\Controllers\Api\AuthController::class, 'me']);
+});
+
+// Dashboard statistics (no auth required)
+Route::get('/dashboard/stats', [App\Http\Controllers\Api\DashboardController::class, 'stats']);
+
+// Enfants routes (no auth required)
+Route::apiResource('enfants', App\Http\Controllers\Api\EnfantController::class);
+Route::get('/enfants/{enfant}/vaccinations', [App\Http\Controllers\Api\EnfantController::class, 'vaccinations']);
+Route::get('/enfants/{enfant}/rendez-vous', [App\Http\Controllers\Api\EnfantController::class, 'rendezVous']);
+
+// Tuteurs routes (no auth required)
+Route::apiResource('tuteurs', App\Http\Controllers\Api\TuteurController::class);
+
+// Centres de santé routes (no auth required)
+Route::apiResource('centres-sante', App\Http\Controllers\Api\CentreSanteController::class);
+
+// Vaccins routes (no auth required)
+Route::apiResource('vaccins', App\Http\Controllers\Api\VaccinController::class);
+
+// Actes vaccinaux routes (no auth required)
+Route::apiResource('actes-vaccinaux', App\Http\Controllers\Api\ActeVaccinalController::class);
+
+// Rendez-vous routes (no auth required)
+Route::apiResource('rendez-vous', App\Http\Controllers\Api\RendezVousController::class);
+Route::post('/rendez-vous/{rendezVous}/confirmer', [App\Http\Controllers\Api\RendezVousController::class, 'confirmer']);
+Route::post('/rendez-vous/{rendezVous}/annuler', [App\Http\Controllers\Api\RendezVousController::class, 'annuler']);
+
+// Relances SMS routes (no auth required)
+Route::apiResource('relances-sms', App\Http\Controllers\Api\NotificationSmsController::class);
+Route::post('/relances-sms/declencher', [App\Http\Controllers\Api\NotificationSmsController::class, 'declencher']);
+
+// Scores de risque routes (no auth required)
+Route::apiResource('scores-risque', App\Http\Controllers\Api\ScoreRisqueController::class);
+Route::post('/scores-risque/evaluer', [App\Http\Controllers\Api\ScoreRisqueController::class, 'evaluer']);
+
+// Agents routes (no auth required)
+Route::apiResource('agents', App\Http\Controllers\Api\AgentController::class);
+
+// Journal d'audit routes (no auth required)
+Route::apiResource('journal-audit', App\Http\Controllers\Api\JournalAuditController::class);
+
+// File synchronization routes (no auth required)
+Route::apiResource('file-sync', App\Http\Controllers\Api\FileSynchronisationController::class);

@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: ../docker/postgres
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_DB: vaccin_track_test
+      POSTGRES_USER: vaccin_user
+      POSTGRES_PASSWORD: vaccin_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    networks:
+      - vaccin-track-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    networks:
+      - vaccin-track-network
+
+  api:
+    build:
+      context: ../../apps/api
+      dockerfile: ../../infra/docker/api/Dockerfile
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: vaccin_track_test
+      DB_USERNAME: vaccin_user
+      DB_PASSWORD: vaccin_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      APP_ENV: testing
+      APP_DEBUG: true
+    ports:
+      - "8001:9000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../apps/api:/var/www/html
+    networks:
+      - vaccin-track-network
+
+  web:
+    build:
+      context: ../../apps/web
+      dockerfile: ../../infra/docker/web/Dockerfile
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8001/api
+      NODE_ENV: test
+    ports:
+      - "3001:3000"
+    depends_on:
+      - api
+    volumes:
+      - ../../apps/web:/app
+      - /app/node_modules
+    networks:
+      - vaccin-track-network
+
+  ia:
+    build:
+      context: ../../apps/ia
+      dockerfile: ../../infra/docker/ia/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://vaccin_user:vaccin_password@postgres:5432/vaccin_track_test
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: testing
+    ports:
+      - "8002:8000"
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ../../apps/ia:/app
+    networks:
+      - vaccin-track-network
+
+  test-runner:
+    build:
+      context: ../../apps/api
+      dockerfile: ../../infra/docker/api/Dockerfile
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: vaccin_track_test
+      DB_USERNAME: vaccin_user
+      DB_PASSWORD: vaccin_password
+      APP_ENV: testing
+    depends_on:
+      - postgres
+      - redis
+      - api
+    volumes:
+      - ../../apps/api:/var/www/html
+    networks:
+      - vaccin-track-network
+    command: php artisan test --parallel
+
+volumes:
+  postgres_test_data:
+
+networks:
+  vaccin-track-network:
+    driver: bridge

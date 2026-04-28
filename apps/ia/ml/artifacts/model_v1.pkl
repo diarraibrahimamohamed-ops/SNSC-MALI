@@ -1,0 +1,3 @@
+# Ce fichier est un placeholder pour le modèle entraîné
+# Le modèle réel sera sauvegardé ici après l'entraînement
+# Format: pickle contenant le modèle, les métadonnées et les informations de performance

@@ -1,0 +1,7 @@
+name: CI IA
+on: [push, pull_request]
+jobs:
+  ia:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4

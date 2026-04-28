@@ -1,0 +1,22 @@
+Vaccin-Track: URGENT - Votre enfant est en DANGER de retard vaccinal
+
+🚨 {tuteur_nom}, ALERTE CRITIQUE pour {enfant_nom} ({age_mois} mois) 🚨
+
+Rendez-vous OBLIGATOIRE: {date_rendez_vous} à {heure_rendez_vous}
+Lieu: {centre_sante_nom} ({adresse_centre})
+Tél URGENT: {telephone_centre}
+
+VACCINS MANQUANTS:
+{vaccins_manquants}
+
+⚠️  RISQUE ÉLEVÉ: Votre enfant est PROTÉGÉ SEULEMENT à {pourcentage_protection}%!
+Maladies dangereuses possibles: {maladies_risques}
+
+RETARD: {jours_retard} jours - IMMÉDIAT requis
+
+📞 APPELEZ MAINTENANT: {telephone_centre}
+📍 VENEZ À L'HEURE: Sans vaccination = risque mortel
+
+La santé de votre enfant est en jeu. AGISSEZ MAINTENANT!
+
+Vaccin-Track - Chaque vie compte

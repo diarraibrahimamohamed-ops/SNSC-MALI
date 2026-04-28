@@ -1,0 +1,16 @@
+Vaccin-Track: RAPPEL IMPORTANT - Vaccination en retard
+
+{tuteur_nom}, {enfant_nom} ({age_mois} mois) a un rendez-vous VITAL le {date_rendez_vous} à {heure_rendez_vous} au {centre_sante_nom}.
+
+Vaccin requis: {vaccin_nom}
+Centre: {adresse_centre}
+Tél: {telephone_centre}
+
+⚠️  CE VACCIN EST ESSENTIEL pour protéger votre enfant contre des maladies graves.
+
+Retard possible: {jours_retard} jours
+Niveau de risque: MOYEN
+
+Merci de venir à l'heure. Carton de santé obligatoire.
+
+Vaccin-Track

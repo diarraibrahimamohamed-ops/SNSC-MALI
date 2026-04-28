@@ -1,0 +1,282 @@
+[
+  {
+    "id": 1,
+    "uuid": "550e8400-e29b-41d4-a716-446655440401",
+    "enfant_id": 1,
+    "enfant_nom": "Aminata Ndiaye",
+    "score": 0.75,
+    "niveau": "élevé",
+    "facteurs": {
+      "retard_vaccinal": true,
+      "distance_élevée": true,
+      "nombre_vaccinations_faible": true,
+      "intervalle_long": false,
+      "historique_irrégulier": true
+    },
+    "features": {
+      "age_mois": 10,
+      "nombre_vaccinations": 2,
+      "jours_derniere_vaccination": 285,
+      "vaccinations_par_mois": 0.2,
+      "distance_centre_km": 12.5,
+      "nombre_tuteurs": 2,
+      "score_couverture_age": 0.25,
+      "score_regularite": 0.15
+    },
+    "date_evaluation": "2024-01-20T08:00:00Z",
+    "created_at": "2024-01-20T08:00:00Z",
+    "updated_at": "2024-01-20T08:00:00Z"
+  },
+  {
+    "id": 2,
+    "uuid": "550e8400-e29b-41d4-a716-446655440402",
+    "enfant_id": 2,
+    "enfant_nom": "Ibrahim Sall",
+    "score": 0.15,
+    "niveau": "faible",
+    "facteurs": {
+      "retard_vaccinal": false,
+      "distance_élevée": false,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": false,
+      "historique_irrégulier": false
+    },
+    "features": {
+      "age_mois": 17,
+      "nombre_vaccinations": 4,
+      "jours_derniere_vaccination": 92,
+      "vaccinations_par_mois": 0.24,
+      "distance_centre_km": 3.2,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0.85,
+      "score_regularite": 0.92
+    },
+    "date_evaluation": "2024-01-19T14:30:00Z",
+    "created_at": "2024-01-19T14:30:00Z",
+    "updated_at": "2024-01-19T14:30:00Z"
+  },
+  {
+    "id": 3,
+    "uuid": "550e8400-e29b-41d4-a716-446655440403",
+    "enfant_id": 3,
+    "enfant_nom": "Mariam Diop",
+    "score": 0.65,
+    "niveau": "moyen",
+    "facteurs": {
+      "retard_vaccinal": true,
+      "distance_élevée": false,
+      "nombre_vaccinations_faible": true,
+      "intervalle_long": false,
+      "historique_irrégulier": false
+    },
+    "features": {
+      "age_mois": 14,
+      "nombre_vaccinations": 1,
+      "jours_derniere_vaccination": 56,
+      "vaccinations_par_mois": 0.07,
+      "distance_centre_km": 5.8,
+      "nombre_tuteurs": 2,
+      "score_couverture_age": 0.18,
+      "score_regularite": 0.45
+    },
+    "date_evaluation": "2024-01-18T10:15:00Z",
+    "created_at": "2024-01-18T10:15:00Z",
+    "updated_at": "2024-01-18T10:15:00Z"
+  },
+  {
+    "id": 4,
+    "uuid": "550e8400-e29b-41d4-a716-446655440404",
+    "enfant_id": 4,
+    "enfant_nom": "Baba Fall",
+    "score": 0.10,
+    "niveau": "faible",
+    "facteurs": {
+      "retard_vaccinal": false,
+      "distance_élevée": false,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": false,
+      "historique_irrégulier": false
+    },
+    "features": {
+      "age_mois": 32,
+      "nombre_vaccinations": 8,
+      "jours_derniere_vaccination": 39,
+      "vaccinations_par_mois": 0.25,
+      "distance_centre_km": 2.1,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0.95,
+      "score_regularite": 0.88
+    },
+    "date_evaluation": "2024-01-17T16:45:00Z",
+    "created_at": "2024-01-17T16:45:00Z",
+    "updated_at": "2024-01-17T16:45:00Z"
+  },
+  {
+    "id": 5,
+    "uuid": "550e8400-e29b-41d4-a716-446655440405",
+    "enfant_id": 5,
+    "enfant_nom": "Adama Ba",
+    "score": 0.85,
+    "niveau": "élevé",
+    "facteurs": {
+      "retard_vaccinal": true,
+      "distance_élevée": true,
+      "nombre_vaccinations_faible": true,
+      "intervalle_long": true,
+      "historique_irrégulier": true
+    },
+    "features": {
+      "age_mois": 12,
+      "nombre_vaccinations": 0,
+      "jours_derniere_vaccination": null,
+      "vaccinations_par_mois": 0,
+      "distance_centre_km": 15.3,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0,
+      "score_regularite": 0
+    },
+    "date_evaluation": "2024-01-16T09:30:00Z",
+    "created_at": "2024-01-16T09:30:00Z",
+    "updated_at": "2024-01-16T09:30:00Z"
+  },
+  {
+    "id": 6,
+    "uuid": "550e8400-e29b-41d4-a716-446655440406",
+    "enfant_id": 6,
+    "enfant_nom": "Oumar Seck",
+    "score": 0.45,
+    "niveau": "moyen",
+    "facteurs": {
+      "retard_vaccinal": false,
+      "distance_élevée": true,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": true,
+      "historique_irrégulier": true
+    },
+    "features": {
+      "age_mois": 24,
+      "nombre_vaccinations": 5,
+      "jours_derniere_vaccination": 180,
+      "vaccinations_par_mois": 0.21,
+      "distance_centre_km": 11.7,
+      "nombre_tuteurs": 2,
+      "score_couverture_age": 0.62,
+      "score_regularite": 0.35
+    },
+    "date_evaluation": "2024-01-15T13:20:00Z",
+    "created_at": "2024-01-15T13:20:00Z",
+    "updated_at": "2024-01-15T13:20:00Z"
+  },
+  {
+    "id": 7,
+    "uuid": "550e8400-e29b-41d4-a716-446655440407",
+    "enfant_id": 7,
+    "enfant_nom": "Fatoumata Touré",
+    "score": 0.25,
+    "niveau": "faible",
+    "facteurs": {
+      "retard_vaccinal": false,
+      "distance_élevée": false,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": false,
+      "historique_irrégulier": false
+    },
+    "features": {
+      "age_mois": 8,
+      "nombre_vaccinations": 3,
+      "jours_derniere_vaccination": 21,
+      "vaccinations_par_mois": 0.38,
+      "distance_centre_km": 4.5,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0.78,
+      "score_regularite": 0.82
+    },
+    "date_evaluation": "2024-01-14T11:10:00Z",
+    "created_at": "2024-01-14T11:10:00Z",
+    "updated_at": "2024-01-14T11:10:00Z"
+  },
+  {
+    "id": 8,
+    "uuid": "550e8400-e29b-41d4-a716-446655440408",
+    "enfant_id": 8,
+    "enfant_nom": "Mamadou Ly",
+    "score": 0.55,
+    "niveau": "moyen",
+    "facteurs": {
+      "retard_vaccinal": true,
+      "distance_élevée": false,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": true,
+      "historique_irrégulier": true
+    },
+    "features": {
+      "age_mois": 20,
+      "nombre_vaccinations": 4,
+      "jours_derniere_vaccination": 150,
+      "vaccinations_par_mois": 0.20,
+      "distance_centre_km": 6.2,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0.55,
+      "score_regularite": 0.28
+    },
+    "date_evaluation": "2024-01-13T15:40:00Z",
+    "created_at": "2024-01-13T15:40:00Z",
+    "updated_at": "2024-01-13T15:40:00Z"
+  },
+  {
+    "id": 9,
+    "uuid": "550e8400-e29b-41d4-a716-446655440409",
+    "enfant_id": 9,
+    "enfant_nom": "Aïssa Diatta",
+    "score": 0.35,
+    "niveau": "faible",
+    "facteurs": {
+      "retard_vaccinal": false,
+      "distance_élevée": true,
+      "nombre_vaccinations_faible": false,
+      "intervalle_long": false,
+      "historique_irrégulier": false
+    },
+    "features": {
+      "age_mois": 6,
+      "nombre_vaccinations": 2,
+      "jours_derniere_vaccination": 14,
+      "vaccinations_par_mois": 0.33,
+      "distance_centre_km": 9.8,
+      "nombre_tuteurs": 2,
+      "score_couverture_age": 0.70,
+      "score_regularite": 0.75
+    },
+    "date_evaluation": "2024-01-12T08:25:00Z",
+    "created_at": "2024-01-12T08:25:00Z",
+    "updated_at": "2024-01-12T08:25:00Z"
+  },
+  {
+    "id": 10,
+    "uuid": "550e8400-e29b-41d4-a716-446655440410",
+    "enfant_id": 10,
+    "enfant_nom": "Cheikh Ndao",
+    "score": 0.70,
+    "niveau": "élevé",
+    "facteurs": {
+      "retard_vaccinal": true,
+      "distance_élevée": true,
+      "nombre_vaccinations_faible": true,
+      "intervalle_long": false,
+      "historique_irrégulier": true
+    },
+    "features": {
+      "age_mois": 15,
+      "nombre_vaccinations": 2,
+      "jours_derniere_vaccination": 120,
+      "vaccinations_par_mois": 0.13,
+      "distance_centre_km": 13.4,
+      "nombre_tuteurs": 1,
+      "score_couverture_age": 0.30,
+      "score_regularite": 0.40
+    },
+    "date_evaluation": "2024-01-11T12:50:00Z",
+    "created_at": "2024-01-11T12:50:00Z",
+    "updated_at": "2024-01-11T12:50:00Z"
+  }
+]

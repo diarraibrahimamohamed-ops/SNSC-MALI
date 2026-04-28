@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS additionnel pour Vaccin-Track */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.sidebar {
+  background: linear-gradient(180deg, #10b981 0%, #14b8a6 100%);
+}
