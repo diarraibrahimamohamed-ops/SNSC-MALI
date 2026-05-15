@@ -51,11 +51,12 @@ class ScoreRisqueController extends Controller
 
     public function evaluer(Request $request)
     {
-            'niveau_risque' => rand(0, 1) > 0.5 ? 'ELEVE' : 'FAIBLE',
-            'confiance' => rand(70, 99) / 100,
-            'facteurs_explicatifs' => ['facteur1' => 'valeur1', 'facteur2' => 'valeur2'],
+        return response()->json([
+            'data' => [
+                'niveau_risque' => rand(0, 1) > 0.5 ? 'ELEVE' : 'FAIBLE',
+                'confiance' => rand(70, 99) / 100,
+                'facteurs_explicatifs' => ['facteur1' => 'valeur1', 'facteur2' => 'valeur2'],
+            ]
         ]);
-        
-        return new ScoreRisqueResource($score);
     }
 }

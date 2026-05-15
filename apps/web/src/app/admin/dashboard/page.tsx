@@ -2,565 +2,144 @@
 
 import { useState, useEffect } from 'react';
 
-interface DashboardStats {
-  total_enfants: number;
-  vaccinations_aujourd_hui: number;
-  rendez_vous_aujourd_hui: number;
-  relances_envoyees: number;
-  enfants_a_risque: number;
-  couverture_vaccinale: number;
-}
-
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simuler chargement des données
-    setTimeout(() => {
-      setStats({
-        total_enfants: 1247,
-        vaccinations_aujourd_hui: 89,
-        rendez_vous_aujourd_hui: 156,
-        relances_envoyees: 234,
-        enfants_a_risque: 12,
-        couverture_vaccinale: 87
-      });
-      setLoading(false);
-    }, 1000);
+    const fetchDashboardData = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+        // Fetch Stats
+        const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const statsData = await statsRes.json();
+
+        setStats(statsData.data);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du dashboard...</p>
-        </div>
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent shadow-xl"></div>
       </div>
     );
   }
 
   return (
-    <>
-      <style>{`
-        /* Enhanced Dashboard Styles */
-        .dashboard-header {
-          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-          border-radius: 16px;
-          padding: 2rem;
-          margin-bottom: 2rem;
-          border: 1px solid #bbf7d0;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-        
-        .dashboard-header h1 {
-          font-size: 2.5rem;
-          font-weight: 800;
-          background: linear-gradient(135deg, #059669, #047857);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          margin: 0 0 0.5rem 0;
-          text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .dashboard-header p {
-          font-size: 1.125rem;
-          color: #374151;
-          margin: 0 0 1rem 0;
-          font-weight: 500;
-        }
-        
-        .dashboard-date {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.5rem 1rem;
-          background: white;
-          border-radius: 8px;
-          font-size: 0.875rem;
-          color: #6b7280;
-          border: 1px solid #d1d5db;
-        }
-        
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1.5rem;
-          margin-bottom: 2.5rem;
-        }
-        
-        .stat-card {
-          background: white;
-          border-radius: 16px;
-          padding: 1.75rem;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.08);
-          border: 1px solid #e5e7eb;
-          display: flex;
-          align-items: center;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .stat-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 4px;
-          background: linear-gradient(90deg, var(--color-start), var(--color-end));
-        }
-        
-        .stat-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 12px 24px rgba(0,0,0,0.12);
-          border-color: #d1d5db;
-        }
-        
-        .stat-icon {
-          width: 72px;
-          height: 72px;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 32px;
-          margin-right: 1.5rem;
-          flex-shrink: 0;
-          position: relative;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .stat-icon.blue {
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-          --color-start: #3b82f6;
-          --color-end: #1d4ed8;
-        }
-        
-        .stat-icon.green {
-          background: linear-gradient(135deg, #10b981, #059669);
-          --color-start: #10b981;
-          --color-end: #059669;
-        }
-        
-        .stat-icon.amber {
-          background: linear-gradient(135deg, #f59e0b, #d97706);
-          --color-start: #f59e0b;
-          --color-end: #d97706;
-        }
-        
-        .stat-icon.purple {
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-          --color-start: #8b5cf6;
-          --color-end: #7c3aed;
-        }
-        
-        .stat-icon.red {
-          background: linear-gradient(135deg, #ef4444, #dc2626);
-          --color-start: #ef4444;
-          --color-end: #dc2626;
-        }
-        
-        .stat-icon.teal {
-          background: linear-gradient(135deg, #14b8a6, #0d9488);
-          --color-start: #14b8a6;
-          --color-end: #0d9488;
-        }
-        
-        .stat-info h3 {
-          font-size: 2.5rem;
-          font-weight: 800;
-          margin: 0 0 0.25rem 0;
-          color: #111827;
-          line-height: 1;
-        }
-        
-        .stat-info h6 {
-          font-size: 1rem;
-          font-weight: 600;
-          margin: 0 0 0.25rem 0;
-          color: #374151;
-        }
-        
-        .stat-info p {
-          font-size: 0.875rem;
-          margin: 0;
-          color: #6b7280;
-        }
-        
-        .charts-section {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 2rem;
-          margin-bottom: 2.5rem;
-        }
-        
-        .chart-card {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.08);
-          border: 1px solid #e5e7eb;
-        }
-        
-        .chart-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 2rem;
-        }
-        
-        .chart-title {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #111827;
-          margin: 0;
-        }
-        
-        .chart-badge {
-          font-size: 0.75rem;
-          padding: 0.5rem 1rem;
-          background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-          color: #374151;
-          border-radius: 9999px;
-          font-weight: 600;
-          border: 1px solid #d1d5db;
-        }
-        
-        .chart-content {
-          height: 200px;
-          border-radius: 12px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          border: 2px dashed #d1d5db;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .chart-content.red {
-          background: linear-gradient(135deg, #fef2f2, #fee2e2);
-          border-color: #fecaca;
-        }
-        
-        .chart-content.green {
-          background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-          border-color: #bbf7d0;
-        }
-        
-        .chart-icon {
-          font-size: 4rem;
-          margin-bottom: 1.5rem;
-          opacity: 0.8;
-        }
-        
-        .chart-title-text {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: #374151;
-          margin-bottom: 0.5rem;
-        }
-        
-        .chart-subtitle {
-          font-size: 0.875rem;
-          color: #6b7280;
-          margin-bottom: 1.5rem;
-        }
-        
-        .chart-stat {
-          font-size: 1.5rem;
-          font-weight: 700;
-          color: #111827;
-          background: white;
-          padding: 0.75rem 1.5rem;
-          border-radius: 8px;
-          border: 1px solid #d1d5db;
-        }
-        
-        .bottom-section {
-          display: grid;
-          grid-template-columns: 2fr 1fr;
-          gap: 2rem;
-        }
-        
-        .actions-card, .alerts-card {
-          background: white;
-          border-radius: 16px;
-          padding: 2rem;
-          box-shadow: 0 8px 16px rgba(0,0,0,0.08);
-          border: 1px solid #e5e7eb;
-        }
-        
-        .section-title {
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #111827;
-          margin: 0 0 1.5rem 0;
-        }
-        
-        .actions-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1rem;
-        }
-        
-        .action-btn {
-          padding: 1rem;
-          border: none;
-          border-radius: 12px;
-          font-size: 0.875rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 0.5rem;
-          text-align: center;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        .action-btn.blue {
-          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-          color: white;
-        }
-        
-        .action-btn.green {
-          background: linear-gradient(135deg, #10b981, #059669);
-          color: white;
-        }
-        
-        .action-btn.purple {
-          background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-          color: white;
-        }
-        
-        .action-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-        }
-        
-        .action-btn span {
-          font-size: 1.5rem;
-        }
-        
-        .alerts-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        
-        .alert-item {
-          padding: 1rem;
-          border-radius: 12px;
-          border: 1px solid;
-          display: flex;
-          align-items: flex-start;
-          gap: 1rem;
-          transition: all 0.3s ease;
-        }
-        
-        .alert-item:hover {
-          transform: translateX(4px);
-        }
-        
-        .alert-item.red {
-          background: linear-gradient(135deg, #fef2f2, #fee2e2);
-          border-color: #fecaca;
-          color: #991b1b;
-        }
-        
-        .alert-item.amber {
-          background: linear-gradient(135deg, #fef3c7, #fde68a);
-          border-color: #fde68a;
-          color: #92400e;
-        }
-        
-        .alert-icon {
-          font-size: 1.5rem;
-          flex-shrink: 0;
-        }
-        
-        .alert-content h6 {
-          font-size: 1rem;
-          font-weight: 600;
-          margin: 0 0 0.25rem 0;
-        }
-        
-        .alert-content p {
-          font-size: 0.875rem;
-          margin: 0;
-          opacity: 0.8;
-        }
-        
-        @media (max-width: 1024px) {
-          .charts-section {
-            grid-template-columns: 1fr;
-          }
-          
-          .bottom-section {
-            grid-template-columns: 1fr;
-          }
-        }
-        
-        @media (max-width: 768px) {
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .actions-grid {
-            grid-template-columns: 1fr;
-          }
-          
-          .dashboard-header h1 {
-            font-size: 2rem;
-          }
-        }
-      `}</style>
-      
-      <div>
-        {/* Header amélioré */}
-        <div className="dashboard-header">
-          <h1>Tableau de bord Administrateur</h1>
-          <p>Vue d'ensemble du système de vaccination</p>
-          <div className="dashboard-date">
-            📅 {new Date().toLocaleDateString('fr-ML', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
+    <div className="space-y-8 animate-fade-in p-6 relative">
+      {/* Background decoration for Premium Feel */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/10 blur-[120px]"></div>
+        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[100px]"></div>
+      </div>
+
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Tableau de Bord National 🌍</h1>
+          <p className="text-slate-500 font-medium mt-1">Supervision globale du programme de vaccination.</p>
         </div>
+      </div>
 
-        {/* Statistiques principales améliorées */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon blue">👶</div>
-            <div className="stat-info">
-              <h3>{stats?.total_enfants || 0}</h3>
-              <h6>Total Enfants</h6>
-              <p>Enregistrés dans le système</p>
-            </div>
-          </div>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Enfants" value={stats?.total_enfants || "0"} icon="👶" color="from-blue-500 to-indigo-600" />
+        <StatCard title="Taux Couverture" value={`${stats?.couverture_vaccinale || 0}%`} icon="📈" color="from-emerald-400 to-teal-500" />
+        <StatCard title="Enfants à Risque" value={stats?.enfants_a_risque || "0"} icon="⚠️" color="from-amber-400 to-orange-500" />
+        <StatCard title="Vaccinations du Jour" value={stats?.vaccinations_aujourd_hui || "0"} icon="💉" color="from-purple-500 to-pink-600" />
+      </div>
 
-          <div className="stat-card">
-            <div className="stat-icon green">💉</div>
-            <div className="stat-info">
-              <h3>{stats?.vaccinations_aujourd_hui || 0}</h3>
-              <h6>Vaccinations Aujourd'hui</h6>
-              <p>Séances complétées</p>
-            </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        {/* Main Chart Area */}
+        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-3">
+              <span className="p-2 bg-emerald-100 rounded-xl text-emerald-600">📊</span>
+              Évolution de la Couverture
+            </h3>
           </div>
-
-          <div className="stat-card">
-            <div className="stat-icon amber">📅</div>
-            <div className="stat-info">
-              <h3>{stats?.rendez_vous_aujourd_hui || 0}</h3>
-              <h6>Rendez-vous Aujourd'hui</h6>
-              <p>Planifiés</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon purple">📧</div>
-            <div className="stat-info">
-              <h3>{stats?.relances_envoyees || 0}</h3>
-              <h6>Relances Envoyées</h6>
-              <p>SMS envoyés aujourd'hui</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon red">⚠️</div>
-            <div className="stat-info">
-              <h3>{stats?.enfants_a_risque || 0}</h3>
-              <h6>Enfants à Risque</h6>
-              <p>Nécessitent une attention</p>
-            </div>
-          </div>
-
-          <div className="stat-card">
-            <div className="stat-icon teal">📊</div>
-            <div className="stat-info">
-              <h3>{stats?.couverture_vaccinale || 0}%</h3>
-              <h6>Couverture Vaccinale</h6>
-              <p>Taux national</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Graphiques et Analyses améliorés */}
-        <div className="charts-section">
-          <div className="chart-card">
-            <div className="chart-header">
-              <h4 className="chart-title">Distribution des Risques</h4>
-              <span className="chart-badge">Analyse IA</span>
-            </div>
-            <div className="chart-content red">
-              <div className="chart-icon">⚠️</div>
-              <div className="chart-title-text">Graphique des risques</div>
-              <div className="chart-subtitle">Analyse prédictive en cours</div>
-              <div className="chart-stat">🔴 {stats?.enfants_a_risque || 0} enfants à risque élevé</div>
-            </div>
-          </div>
-          
-          <div className="chart-card">
-            <div className="chart-header">
-              <h4 className="chart-title">Couverture Vaccinale</h4>
-              <span className="chart-badge">National</span>
-            </div>
-            <div className="chart-content green">
-              <div className="chart-icon">✅</div>
-              <div className="chart-title-text">Taux de couverture</div>
-              <div className="chart-subtitle">Objectif OMS: 95%</div>
-              <div className="chart-stat">{stats?.couverture_vaccinale || 0}%</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Actions Rapides et Alertes améliorés */}
-        <div className="bottom-section">
-          <div className="actions-card">
-            <h4 className="section-title">Actions Rapides</h4>
-            <div className="actions-grid">
-              <button className="action-btn blue">
-                <span>➕</span>
-                Nouvel Enfant
-              </button>
-              
-              <button className="action-btn green">
-                <span>📅</span>
-                Planifier RDV
-              </button>
-              
-              <button className="action-btn purple">
-                <span>📧</span>
-                Envoyer SMS
-              </button>
-            </div>
-          </div>
-
-          <div className="alerts-card">
-            <h4 className="section-title">Alertes Critiques</h4>
-            <div className="alerts-list">
-              <div className="alert-item red">
-                <span className="alert-icon">⚠️</span>
-                <div className="alert-content">
-                  <h6>Stock vaccins faible</h6>
-                  <p>BCG - 15 doses restantes</p>
+          <div className="h-[300px] flex items-end justify-between gap-4">
+            {/* Simulation of a dynamic chart */}
+            {[45, 52, 48, 61, 55, 67, 72, 68, 75, 82, 78, Math.max(10, Math.min(100, stats?.couverture_vaccinale || 84))].map((h, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                <div 
+                  className="w-full bg-gradient-to-t from-emerald-100 to-emerald-200 rounded-t-xl group-hover:from-emerald-400 group-hover:to-emerald-500 transition-all duration-500 relative shadow-sm group-hover:shadow-md" 
+                  style={{ height: `${h}%` }}
+                >
+                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
+                    {h}% Couverture
+                  </div>
                 </div>
+                <span className="text-[10px] font-bold text-slate-400">M{i+1}</span>
               </div>
-              
-              <div className="alert-item amber">
-                <span className="alert-icon">⏰</span>
-                <div className="alert-content">
-                  <h6>RDV manqués</h6>
-                  <p>12 aujourd'hui</p>
-                </div>
-              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar Cards */}
+        <div className="space-y-8">
+          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50">
+            <h3 className="font-bold text-xl text-slate-800 mb-6 flex items-center gap-3">
+              <span className="p-2 bg-red-100 rounded-xl text-red-600">🚨</span>
+              Alertes Système
+            </h3>
+            <div className="space-y-5">
+              {stats?.enfants_a_risque > 0 ? (
+                <AlertItem type="critical" message={`${stats?.enfants_a_risque} enfants nécessitent une attention urgente`} time="Maintenant" />
+              ) : (
+                <AlertItem type="info" message="Aucune alerte critique signalée" time="À l'instant" />
+              )}
+              {stats?.relances_envoyees > 0 && (
+                <AlertItem type="warning" message={`${stats?.relances_envoyees} relances SMS ont été envoyées aujourd'hui`} time="Aujourd'hui" />
+              )}
+              <AlertItem type="info" message="Synchronisation de la base de données réussie" time="Il y a 1h" />
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
+  );
+}
+
+function StatCard({ title, value, icon, color }: { title: string, value: string | number, icon: string, color: string }) {
+  return (
+    <div className="group bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-white shadow-lg shadow-slate-200/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center text-2xl shadow-lg transform group-hover:scale-110 transition-transform`}>
+          <span className="drop-shadow-md">{icon}</span>
+        </div>
+      </div>
+      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
+      <h4 className="text-3xl font-black text-slate-900">{value}</h4>
+    </div>
+  );
+}
+
+function AlertItem({ type, message, time }: { type: 'critical' | 'warning' | 'info', message: string, time: string }) {
+  const styles = {
+    critical: 'from-red-400 to-red-500 shadow-red-200',
+    warning: 'from-amber-400 to-orange-500 shadow-amber-200',
+    info: 'from-blue-400 to-indigo-500 shadow-blue-200'
+  };
+
+  return (
+    <div className="flex gap-4 group p-3 bg-white/50 rounded-2xl hover:bg-white transition-colors border border-transparent hover:border-slate-100 shadow-sm">
+      <div className={`w-2 h-12 bg-gradient-to-b ${styles[type]} rounded-full flex-shrink-0 shadow-lg`}></div>
+      <div className="flex flex-col justify-center">
+        <p className="text-sm font-bold text-slate-800 leading-tight group-hover:text-slate-900">{message}</p>
+        <p className="text-xs text-slate-400 mt-1.5 font-medium">{time}</p>
+      </div>
+    </div>
   );
 }
