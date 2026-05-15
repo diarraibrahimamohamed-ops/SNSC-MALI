@@ -25,15 +25,12 @@ class TuteurFactory extends Factory
     public function definition(): array
     {
         return [
-            'uuid' => $this->faker->uuid(),
-            'nom' => $this->faker->lastName(),
-            'prenom' => $this->faker->firstName(),
+            'id' => (string) $this->faker->uuid(),
+            'nom_complet' => $this->faker->name(),
             'telephone' => $this->faker->phoneNumber(),
-            'email' => $this->faker->unique()->safeEmail(),
             'adresse' => $this->faker->address(),
-            'relation' => $this->faker->randomElement(['Père', 'Mère', 'Tuteur', 'Tutrice']),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'consentement_donne' => true,
+            'cree_le' => now(),
         ];
     }
 }

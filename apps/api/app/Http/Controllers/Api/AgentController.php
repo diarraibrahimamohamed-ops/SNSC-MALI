@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use Illuminate\Http\Request;
 
 class AgentController extends Controller
@@ -12,7 +13,8 @@ class AgentController extends Controller
      */
     public function index()
     {
-        return response()->json(['message' => 'Agents list', 'data' => []]);
+        $agents = Agent::with('centreSante')->get();
+        return response()->json(['data' => $agents]);
     }
 
     /**
@@ -20,7 +22,8 @@ class AgentController extends Controller
      */
     public function store(Request $request)
     {
-        return response()->json(['message' => 'Agent created']);
+        $agent = Agent::create($request->all());
+        return response()->json(['data' => $agent], 201);
     }
 
     /**
@@ -28,7 +31,8 @@ class AgentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $agent = Agent::with('centreSante')->findOrFail($id);
+        return response()->json(['data' => $agent]);
     }
 
     /**
@@ -36,7 +40,9 @@ class AgentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $agent = Agent::findOrFail($id);
+        $agent->update($request->all());
+        return response()->json(['data' => $agent]);
     }
 
     /**
@@ -44,6 +50,8 @@ class AgentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $agent = Agent::findOrFail($id);
+        $agent->delete();
+        return response()->json(['message' => 'Agent supprimé avec succès']);
     }
 }

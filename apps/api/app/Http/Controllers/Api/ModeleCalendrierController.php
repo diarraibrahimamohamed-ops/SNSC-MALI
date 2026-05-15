@@ -3,47 +3,40 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\ModeleCalendrier;
 use Illuminate\Http\Request;
 
 class ModeleCalendrierController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $modeles = ModeleCalendrier::with('vaccin')->get();
+        return response()->json(['data' => $modeles]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        $modele = ModeleCalendrier::create($request->all());
+        return response()->json(['data' => $modele], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $modele = ModeleCalendrier::with('vaccin')->findOrFail($id);
+        return response()->json(['data' => $modele]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $modele = ModeleCalendrier::findOrFail($id);
+        $modele->update($request->all());
+        return response()->json(['data' => $modele]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $modele = ModeleCalendrier::findOrFail($id);
+        $modele->delete();
+        return response()->json(['message' => 'Modèle de calendrier supprimé avec succès']);
     }
 }

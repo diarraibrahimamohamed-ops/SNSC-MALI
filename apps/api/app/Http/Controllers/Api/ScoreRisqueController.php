@@ -3,37 +3,59 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ScoreRisqueResource;
+use App\Models\Enfant;
+use App\Models\ScoreRisque;
 use Illuminate\Http\Request;
 
 class ScoreRisqueController extends Controller
 {
+    protected $vaccinationService;
+
+    public function __construct(\App\Services\VaccinationService $vaccinationService)
+    {
+        $this->vaccinationService = $vaccinationService;
+    }
+
     public function index()
     {
-        return response()->json(['message' => 'Risk scores list']);
+        $scores = ScoreRisque::with(['enfant', 'rendezVous'])->get();
+        return ScoreRisqueResource::collection($scores);
     }
 
     public function store(Request $request)
     {
-        return response()->json(['message' => 'Risk score created']);
+        $score = ScoreRisque::create($request->all());
+        return new ScoreRisqueResource($score);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
-        return response()->json(['message' => 'Risk score details']);
+        $score = ScoreRisque::with(['enfant', 'rendezVous'])->findOrFail($id);
+        return new ScoreRisqueResource($score);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        return response()->json(['message' => 'Risk score updated']);
+        $score = ScoreRisque::findOrFail($id);
+        $score->update($request->all());
+        return new ScoreRisqueResource($score);
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        return response()->json(['message' => 'Risk score deleted']);
+        $score = ScoreRisque::findOrFail($id);
+        $score->delete();
+        return response()->json(['message' => 'Score de risque supprimé avec succès']);
     }
 
     public function evaluer(Request $request)
     {
-        return response()->json(['message' => 'Risk evaluation completed']);
+            'niveau_risque' => rand(0, 1) > 0.5 ? 'ELEVE' : 'FAIBLE',
+            'confiance' => rand(70, 99) / 100,
+            'facteurs_explicatifs' => ['facteur1' => 'valeur1', 'facteur2' => 'valeur2'],
+        ]);
+        
+        return new ScoreRisqueResource($score);
     }
 }

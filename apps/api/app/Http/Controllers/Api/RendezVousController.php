@@ -3,47 +3,56 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreRendezVousRequest;
+use App\Http\Resources\RendezVousResource;
+use App\Models\RendezVous;
 use Illuminate\Http\Request;
 
 class RendezVousController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $rendezVous = RendezVous::with(['enfant', 'doseCalendrierEnfant'])->get();
+        return RendezVousResource::collection($rendezVous);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(StoreRendezVousRequest $request)
     {
-        //
+        $rendezVous = RendezVous::create($request->validated());
+        return new RendezVousResource($rendezVous);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        //
+        $rendezVous = RendezVous::with(['enfant', 'doseCalendrierEnfant', 'reprogrammeDepuis'])->findOrFail($id);
+        return new RendezVousResource($rendezVous);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $rendezVous = RendezVous::findOrFail($id);
+        $rendezVous->update($request->all());
+        return new RendezVousResource($rendezVous);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        $rendezVous = RendezVous::findOrFail($id);
+        $rendezVous->delete();
+        return response()->json(['message' => 'Rendez-vous supprimé avec succès']);
+    }
+
+    public function confirmer(string $id)
+    {
+        $rendezVous = RendezVous::findOrFail($id);
+        $rendezVous->update(['statut' => 'CONFIRME']);
+        return new RendezVousResource($rendezVous);
+    }
+
+    public function annuler(string $id)
+    {
+        $rendezVous = RendezVous::findOrFail($id);
+        $rendezVous->update(['statut' => 'ANNULE']);
+        return new RendezVousResource($rendezVous);
     }
 }

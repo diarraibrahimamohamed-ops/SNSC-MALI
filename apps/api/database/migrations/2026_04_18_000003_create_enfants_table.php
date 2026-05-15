@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('identifiant_sanitaire')->unique();
             $table->uuid('tuteur_principal_id')->nullable();
             $table->uuid('centre_sante_id');
+            $table->string('nom');
             $table->string('prenom');
             $table->integer('age_mois')->nullable();
             $table->date('date_naissance');

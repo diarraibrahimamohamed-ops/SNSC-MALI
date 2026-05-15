@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\CentreSante;
 use App\Models\Agent;
@@ -23,20 +22,14 @@ class EnregistrerEnfantTest extends TestCase
     public function test_peut_enregistrer_un_enfant(): void
     {
         $enfantData = [
+            'identifiant_sanitaire' => 'SAN-' . rand(1000, 9999),
             'nom' => 'Doe',
             'prenom' => 'John',
-            'date_naissance' => '2022-01-01',
+            'date_naissance' => '2023-01-01',
             'sexe' => 'M',
-            'lieu_naissance' => 'Paris',
+            'age_mois' => 12,
             'centre_sante_id' => $this->centre->id,
-            'tuteurs' => [
-                [
-                    'nom' => 'Doe',
-                    'prenom' => 'Jane',
-                    'telephone' => '0123456789',
-                    'relation' => 'Mère'
-                ]
-            ]
+            'statut_vaccinal_global' => 'INCONNU'
         ];
 
         $response = $this->actingAs($this->agent, 'api')
@@ -44,12 +37,14 @@ class EnregistrerEnfantTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'id',
-                'uuid',
-                'nom',
-                'prenom',
-                'tuteurs' => [
-                    '*' => ['id', 'nom', 'prenom', 'telephone', 'relation']
+                'data' => [
+                    'id',
+                    'identifiant_sanitaire',
+                    'nom',
+                    'prenom',
+                    'sexe',
+                    'date_naissance',
+                    'statut_vaccinal_global'
                 ]
             ]);
     }
@@ -57,10 +52,12 @@ class EnregistrerEnfantTest extends TestCase
     public function test_ne_peut_pas_enregistrer_enfant_sans_auth(): void
     {
         $enfantData = [
+            'identifiant_sanitaire' => 'SAN-FAIL',
             'nom' => 'Doe',
-            'prenom' => 'John',
-            'date_naissance' => '2022-01-01',
+            'prenom' => 'Fail',
+            'date_naissance' => '2023-01-01',
             'sexe' => 'M',
+            'centre_sante_id' => $this->centre->id,
         ];
 
         $response = $this->postJson('/api/enfants', $enfantData);

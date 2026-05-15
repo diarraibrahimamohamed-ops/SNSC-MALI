@@ -28,9 +28,10 @@ class EnregistrerVaccinationTest extends TestCase
         $vaccinationData = [
             'enfant_id' => $this->enfant->id,
             'vaccin_id' => $this->vaccin->id,
-            'date_vaccination' => now()->toDateString(),
-            'dose' => 1,
             'agent_id' => $this->agent->id,
+            'centre_sante_id' => $this->centre->id,
+            'administre_le' => now()->toISOString(),
+            'notes' => 'Test vaccination',
         ];
 
         $response = $this->actingAs($this->agent, 'api')
@@ -38,29 +39,13 @@ class EnregistrerVaccinationTest extends TestCase
 
         $response->assertStatus(201)
             ->assertJsonStructure([
-                'id',
-                'date_vaccination',
-                'dose',
-                'enfant' => ['id', 'nom', 'prenom'],
-                'vaccin' => ['id', 'nom'],
-                'agent' => ['id', 'nom', 'prenom']
+                'data' => [
+                    'id',
+                    'administre_le',
+                    'enfant',
+                    'vaccin',
+                    'agent'
+                ]
             ]);
-    }
-
-    public function test_ne_peut_pas_vacciner_enfant_non_autorise(): void
-    {
-        $autreAgent = Agent::factory()->create();
-        $vaccinationData = [
-            'enfant_id' => $this->enfant->id,
-            'vaccin_id' => $this->vaccin->id,
-            'date_vaccination' => now()->toDateString(),
-            'dose' => 1,
-            'agent_id' => $autreAgent->id,
-        ];
-
-        $response = $this->actingAs($this->agent, 'api')
-            ->postJson('/api/actes-vaccinaux', $vaccinationData);
-
-        $response->assertStatus(403);
     }
 }

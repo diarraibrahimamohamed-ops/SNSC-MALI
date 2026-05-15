@@ -27,15 +27,17 @@ class RelanceSmsTest extends TestCase
             ->getJson('/api/relances-sms');
 
         $response->assertStatus(200)
-            ->assertJsonCount(5)
+            ->assertJsonCount(5, 'data')
             ->assertJsonStructure([
-                '*' => [
-                    'id',
-                    'telephone',
-                    'message',
-                    'statut',
-                    'date_envoi',
-                    'enfant' => ['id', 'nom', 'prenom']
+                'data' => [
+                    '*' => [
+                        'id',
+                        'telephone',
+                        'message',
+                        'statut',
+                        'date_envoi',
+                        'enfant' => ['id', 'nom', 'prenom']
+                    ]
                 ]
             ]);
     }

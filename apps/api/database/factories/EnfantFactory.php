@@ -4,36 +4,28 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Enfant;
+use App\Models\CentreSante;
+use App\Models\Tuteur;
+use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Enfant>
- */
 class EnfantFactory extends Factory
 {
-    /**
-     * The name of the factory's corresponding model.
-     *
-     * @var string
-     */
     protected $model = Enfant::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'uuid' => $this->faker->uuid(),
+            'id' => (string) Str::uuid(),
+            'identifiant_sanitaire' => 'SAN-' . $this->faker->unique()->randomNumber(5),
+            'tuteur_principal_id' => Tuteur::factory(),
+            'centre_sante_id' => CentreSante::factory(),
             'nom' => $this->faker->lastName(),
             'prenom' => $this->faker->firstName(),
-            'date_naissance' => $this->faker->dateTimeBetween('-5 years', 'now'),
+            'age_mois' => $this->faker->numberBetween(0, 24),
+            'date_naissance' => $this->faker->date(),
             'sexe' => $this->faker->randomElement(['M', 'F']),
-            'lieu_naissance' => $this->faker->city(),
-            'centre_sante_id' => \App\Models\CentreSante::factory(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'statut_vaccinal_global' => 'INCONNU',
+            'cree_le' => now(),
         ];
     }
 }

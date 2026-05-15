@@ -13,22 +13,23 @@ class AuthTest extends TestCase
     public function test_peut_se_connecter(): void
     {
         $agent = Agent::factory()->create([
-            'password' => bcrypt('password123')
+            'password' => 'password123'
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => $agent->email,
+            'matricule' => $agent->matricule,
             'password' => 'password123'
         ]);
 
         $response->assertStatus(200)
             ->assertJsonStructure([
-                'token',
-                'user' => [
+                'access_token',
+                'token_type',
+                'expires_in',
+                'agent' => [
                     'id',
-                    'email',
-                    'nom',
-                    'prenom',
+                    'matricule',
+                    'nom_complet',
                     'role'
                 ]
             ]);
@@ -39,27 +40,27 @@ class AuthTest extends TestCase
         $agent = Agent::factory()->create();
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => $agent->email,
+            'matricule' => $agent->matricule,
             'password' => 'wrongpassword'
         ]);
 
         $response->assertStatus(401)
             ->assertJson([
-                'message' => 'Invalid credentials'
+                'message' => 'Identifiants invalides'
             ]);
     }
 
     public function test_peut_se_deconnecter(): void
     {
         $agent = Agent::factory()->create();
-        $token = $agent->createToken('test-token')->plainTextToken;
+        $token = auth('api')->login($agent);
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/auth/logout');
 
         $response->assertStatus(200)
             ->assertJson([
-                'message' => 'Logged out successfully'
+                'message' => 'Déconnexion réussie'
             ]);
     }
 }

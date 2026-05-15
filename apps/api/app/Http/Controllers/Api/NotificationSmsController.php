@@ -3,37 +3,65 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NotificationSmsResource;
+use App\Models\NotificationSms;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class NotificationSmsController extends Controller
 {
     public function index()
     {
-        return response()->json(['message' => 'SMS notifications list']);
+        $notifications = NotificationSms::with(['enfant', 'rendezVous'])->get();
+        return NotificationSmsResource::collection($notifications);
     }
 
     public function store(Request $request)
     {
-        return response()->json(['message' => 'SMS notification created']);
+        $notification = NotificationSms::create($request->all());
+        return new NotificationSmsResource($notification);
     }
 
-    public function show($id)
+    public function show(string $id)
     {
-        return response()->json(['message' => 'SMS notification details']);
+        $notification = NotificationSms::with(['enfant', 'rendezVous'])->findOrFail($id);
+        return new NotificationSmsResource($notification);
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        return response()->json(['message' => 'SMS notification updated']);
+        $notification = NotificationSms::findOrFail($id);
+        $notification->update($request->all());
+        return new NotificationSmsResource($notification);
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        return response()->json(['message' => 'SMS notification deleted']);
+        $notification = NotificationSms::findOrFail($id);
+        $notification->delete();
+        return response()->json(['message' => 'Notification SMS supprimée avec succès']);
     }
 
     public function declencher(Request $request)
     {
-        return response()->json(['message' => 'SMS relances déclenchées']);
+        // Simulation de l'envoi de SMS en masse pour les rendez-vous de demain
+        $demain = now()->addDay()->toDateString();
+        $rendezVous = \App\Models\RendezVous::whereDate('date_cible', $demain)
+            ->where('statut', 'PROGRAMME')
+            ->get();
+
+        foreach ($rendezVous as $rv) {
+            NotificationSms::create([
+                'id' => (string) Str::uuid(),
+                'enfant_id' => $rv->enfant_id,
+                'rendez_vous_id' => $rv->id,
+                'numero_telephone' => $rv->enfant->tuteurPrincipal->telephone ?? '00000000',
+                'contenu_message' => "Rappel : Rendez-vous vaccination pour votre enfant demain.",
+                'statut_livraison' => 'ENVOYE',
+                'envoye_le' => now(),
+            ]);
+        }
+
+        return response()->json(['message' => 'Relances déclenchées avec succès', 'count' => count($rendezVous)]);
     }
 }

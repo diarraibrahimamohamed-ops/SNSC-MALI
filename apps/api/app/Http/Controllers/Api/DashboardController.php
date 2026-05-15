@@ -14,23 +14,33 @@ class DashboardController extends Controller
     public function stats(Request $request)
     {
         try {
+            $totalEnfants = DB::table('enfants')->count();
+            $vaccinationsAujourdhui = DB::table('actes_vaccinaux')
+                ->whereDate('date_vaccination', now()->toDateString())
+                ->count();
+            $rendezVousAujourdhui = DB::table('rendez_vous')
+                ->whereDate('date_rendez_vous', now()->toDateString())
+                ->where('statut', 'planifié')
+                ->count();
+            $relancesEnvoyees = DB::table('notifications_sms')
+                ->whereDate('envoye_le', now()->toDateString())
+                ->where('statut', 'envoyé')
+                ->count();
+            $enfantsARisque = DB::table('scores_risque')
+                ->where('niveau', 'élevé')
+                ->count();
+                
+            // Calculer la couverture vaccinale (simplifié : % d'enfants ayant au moins un acte vaccinal)
+            $enfantsVaccines = DB::table('actes_vaccinaux')->distinct('enfant_id')->count();
+            $couvertureVaccinale = $totalEnfants > 0 ? round(($enfantsVaccines / $totalEnfants) * 100, 1) : 0;
+
             $stats = [
-                'total_enfants' => DB::table('enfants')->count(),
-                'vaccinations_aujourd_hui' => DB::table('actes_vaccinaux')
-                    ->whereDate('date_vaccination', now()->toDateString())
-                    ->count(),
-                'rendez_vous_aujourd_hui' => DB::table('rendez_vous')
-                    ->whereDate('date_rendez_vous', now()->toDateString())
-                    ->where('statut', 'planifié')
-                    ->count(),
-                'relances_envoyees' => DB::table('notifications_sms')
-                    ->whereDate('created_at', now()->toDateString())
-                    ->where('statut', 'envoyé')
-                    ->count(),
-                'enfants_a_risque' => DB::table('scores_risque')
-                    ->where('niveau', 'élevé')
-                    ->count(),
-                'couverture_vaccinale' => 85.5, // Placeholder - would be calculated based on actual data
+                'total_enfants' => $totalEnfants,
+                'vaccinations_aujourd_hui' => $vaccinationsAujourdhui,
+                'rendez_vous_aujourd_hui' => $rendezVousAujourdhui,
+                'relances_envoyees' => $relancesEnvoyees,
+                'enfants_a_risque' => $enfantsARisque,
+                'couverture_vaccinale' => $couvertureVaccinale,
             ];
 
             return response()->json([

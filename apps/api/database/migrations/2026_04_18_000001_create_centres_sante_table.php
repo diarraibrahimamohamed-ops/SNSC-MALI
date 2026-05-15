@@ -13,6 +13,8 @@ return new class extends Migration {
             $table->string('code_zone')->nullable();
             $table->string('adresse')->nullable();
             $table->integer('capacite')->nullable();
+            $table->string('region')->nullable();
+            $table->string('ville')->nullable();
             $table->timestamp('cree_le')->useCurrent();
         });
     }
