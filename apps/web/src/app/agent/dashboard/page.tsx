@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/useAuth';
 
+const card = (style: React.CSSProperties): React.CSSProperties => ({
+  background: '#fff',
+  borderRadius: '16px',
+  border: '1px solid #e2e8f0',
+  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+  ...style,
+});
+
 export default function AgentDashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState<any>(null);
@@ -14,182 +22,160 @@ export default function AgentDashboard() {
       try {
         const token = localStorage.getItem('auth_token');
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-
-        // Fetch Stats
-        const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const statsData = await statsRes.json();
-        
-        // Fetch Rendez-vous
-        const rdvRes = await fetch(`${API_URL}/rendez-vous`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const rdvData = await rdvRes.json();
-
-        setStats(statsData.data);
-        setRendezVous(rdvData.data?.slice(0, 5) || []);
-      } catch (error) {
-        console.error('Erreur lors du chargement des données', error);
-      } finally {
-        setLoading(false);
-      }
+        const [statsRes, rdvRes] = await Promise.all([
+          fetch(`${API_URL}/dashboard/stats`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }),
+          fetch(`${API_URL}/rendez-vous`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }),
+        ]);
+        if (statsRes.ok) { const d = await statsRes.json(); setStats(d.data); }
+        if (rdvRes.ok) { const d = await rdvRes.json(); setRendezVous(d.data?.slice(0, 6) || []); }
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
     };
-
     fetchDashboardData();
   }, []);
 
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const statCards = [
+    { label: 'Rendez-vous aujourd\'hui', value: stats?.rendez_vous_aujourd_hui ?? '—', color: '#3b82f6', bg: '#eff6ff', border: '#bfdbfe', icon: '📅' },
+    { label: 'Vaccinations réalisées', value: stats?.vaccinations_aujourd_hui ?? '—', color: '#10b981', bg: '#ecfdf5', border: '#a7f3d0', icon: '✅' },
+    { label: 'SMS envoyés', value: stats?.relances_envoyees ?? '—', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a', icon: '📱' },
+    { label: 'Enfants à risque', value: stats?.enfants_a_risque ?? '—', color: '#ef4444', bg: '#fef2f2', border: '#fecaca', icon: '⚠️' },
+  ];
+
   if (loading) {
     return (
-      <div className="flex h-[80vh] items-center justify-center">
-        <div className="h-16 w-16 animate-spin rounded-full border-4 border-blue-500 border-t-transparent shadow-xl"></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: '40px', height: '40px', border: '3px solid #e2e8f0', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }}></div>
+          <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>Synchronisation des données...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 animate-fade-in p-6 relative">
-      {/* Background decoration for Premium Feel */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 blur-[120px]"></div>
-        <div className="absolute top-[30%] -right-[10%] w-[40%] h-[40%] rounded-full bg-emerald-400/20 blur-[100px]"></div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+
+      {/* Page Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <p style={{ color: '#94a3b8', fontSize: '13px', fontWeight: 600, marginBottom: '4px', textTransform: 'capitalize' }}>{today}</p>
+        <h1 style={{ color: '#0f172a', fontSize: '28px', fontWeight: 800, letterSpacing: '-0.5px', margin: 0 }}>
+          Bonjour, {user?.nom_complet?.split(' ')[0] || 'Agent'} 👋
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '14px', marginTop: '4px' }}>Voici le résumé de votre activité sanitaire.</p>
       </div>
 
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Bonjour, {user?.nom_complet || 'Agent'} 👋</h1>
-          <p className="text-slate-500 font-medium mt-1">Voici le résumé de votre activité sanitaire pour aujourd'hui.</p>
-        </div>
-      </div>
-
-      {/* Action Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <ActionCard 
-          title="Rendez-vous" 
-          count={stats?.rendez_vous_aujourd_hui || "0"} 
-          icon="📅" 
-          color="from-blue-500 to-indigo-600" 
-          description="Enfants attendus aujourd'hui"
-        />
-        <ActionCard 
-          title="Relances SMS" 
-          count={stats?.relances_envoyees || "0"} 
-          icon="📱" 
-          color="from-amber-400 to-orange-500" 
-          description="Envoyées ce jour"
-        />
-        <ActionCard 
-          title="Vaccinations" 
-          count={stats?.vaccinations_aujourd_hui || "0"} 
-          icon="✅" 
-          color="from-emerald-400 to-teal-500" 
-          description="Réalisées aujourd'hui"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Upcoming Appointments Table */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50 relative overflow-hidden transition-all hover:shadow-2xl hover:shadow-blue-900/5">
-          <h3 className="font-bold text-xl text-slate-900 mb-6 flex items-center gap-3">
-            <span className="p-2 bg-blue-100 rounded-xl text-blue-600">🚀</span> 
-            Prochaines Vaccinations
-          </h3>
-          <div className="space-y-3">
-            {rendezVous && rendezVous.length > 0 ? (
-               rendezVous.map((rdv: any, idx: number) => (
-                  <PatientRow 
-                    key={rdv.id || idx}
-                    name={rdv.enfant?.nom ? `${rdv.enfant.prenom} ${rdv.enfant.nom}` : "Enfant non spécifié"} 
-                    vaccine={rdv.motif || "Vaccination standard"} 
-                    status={rdv.statut === 'en retard' ? 'urgent' : 'normal'} 
-                    time={new Date(rdv.date_rendez_vous).toLocaleDateString()} 
-                  />
-               ))
-            ) : (
-              <p className="text-sm text-slate-500 font-medium text-center py-6">Aucun rendez-vous planifié aujourd'hui.</p>
-            )}
+      {/* KPI Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '28px' }}>
+        {statCards.map(s => (
+          <div key={s.label} style={card({ padding: '20px' })}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#64748b' }}>{s.label}</span>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: s.bg, border: `1px solid ${s.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>{s.icon}</div>
+            </div>
+            <div style={{ fontSize: '32px', fontWeight: 900, color: s.color, letterSpacing: '-1px', lineHeight: 1 }}>{s.value}</div>
           </div>
-          <button className="w-full mt-6 py-3.5 bg-gradient-to-r from-slate-800 to-slate-900 text-white font-bold rounded-2xl hover:scale-[1.02] active:scale-95 transition-all shadow-lg text-sm">
-            Voir tout le planning
-          </button>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        
+        {/* Rendez-vous list */}
+        <div style={card({ padding: '24px' })}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: 0 }}>Prochains rendez-vous</h2>
+              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>Planning du jour</p>
+            </div>
+            <a href="/agent/calendrier" style={{ fontSize: '12px', fontWeight: 700, color: '#3b82f6', textDecoration: 'none' }}>Voir tout →</a>
+          </div>
+          
+          {rendezVous.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '40px', marginBottom: '12px' }}>📭</div>
+              <p style={{ fontSize: '14px', fontWeight: 600, margin: 0 }}>Aucun rendez-vous aujourd'hui</p>
+              <p style={{ fontSize: '12px', marginTop: '4px' }}>Votre planning est vide pour le moment.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {rendezVous.map((rdv: any, i: number) => {
+                const isUrgent = rdv.statut === 'en retard';
+                return (
+                  <div key={rdv.id || i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: isUrgent ? '#fef2f2' : '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
+                      {rdv.enfant?.prenom?.[0] || '?'}
+                    </div>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {rdv.enfant ? `${rdv.enfant.prenom} ${rdv.enfant.nom}` : 'Enfant non spécifié'}
+                      </p>
+                      <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', marginTop: '1px' }}>{rdv.motif || 'Vaccination standard'}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '3px' }}>{new Date(rdv.date_rendez_vous).toLocaleDateString('fr-FR')}</div>
+                      <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: isUrgent ? '#fef2f2' : '#eff6ff', color: isUrgent ? '#ef4444' : '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {isUrgent ? 'URGENT' : 'PRÉVU'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Risk Monitor & Stats */}
-        <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50">
-          <h3 className="font-bold text-xl text-slate-900 mb-6 flex items-center gap-3">
-            <span className="p-2 bg-purple-100 rounded-xl text-purple-600">🧠</span> 
-            Couverture & Alertes
-          </h3>
+        {/* Stats Panel */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           
-          {stats?.enfants_a_risque > 0 && (
-            <div className="p-5 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-100/50 mb-6 shadow-sm hover:shadow-md transition-all">
-              <div className="flex gap-3 items-center mb-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                </span>
-                <p className="text-red-800 font-bold text-sm">Alerte : {stats.enfants_a_risque} enfants à risque élevé</p>
+          {/* Coverage */}
+          <div style={card({ padding: '24px' })}>
+            <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a', margin: '0 0 16px' }}>Couverture vaccinale</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {[
+                { label: 'Total Enfants', value: stats?.total_enfants || 0, color: '#3b82f6' },
+                { label: 'Couverture', value: `${stats?.couverture_vaccinale || 0}%`, color: '#10b981' },
+              ].map(m => (
+                <div key={m.label} style={{ background: '#f8fafc', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{m.label}</p>
+                  <p style={{ margin: 0, fontSize: '28px', fontWeight: 900, color: m.color, letterSpacing: '-1px' }}>{m.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Alert */}
+          {(stats?.enfants_a_risque > 0) && (
+            <div style={{ padding: '16px 20px', background: '#fef2f2', borderRadius: '14px', border: '1px solid #fecaca', display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+              <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0 }}>🚨</div>
+              <div>
+                <p style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 700, color: '#b91c1c' }}>Alerte : {stats.enfants_a_risque} enfants à risque</p>
+                <p style={{ margin: 0, fontSize: '12px', color: '#ef4444', lineHeight: 1.5 }}>Ces enfants nécessitent une attention immédiate pour assurer leur suivi vaccinal.</p>
               </div>
-              <p className="text-red-600/80 text-xs font-medium">Une attention immédiate est requise pour assurer le suivi de ces enfants.</p>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200/50">
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Total Enfants</p>
-              <p className="text-3xl font-black text-slate-800">{stats?.total_enfants || 0}</p>
-            </div>
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200/50">
-              <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Couverture</p>
-              <p className="text-3xl font-black text-slate-800">{stats?.couverture_vaccinale || 0}%</p>
+          {/* Quick Actions */}
+          <div style={card({ padding: '20px' })}>
+            <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#64748b', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actions rapides</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {[
+                { href: '/agent/vaccination', label: '💉 Enregistrer une vaccination', primary: true },
+                { href: '/agent/enfants', label: '👶 Rechercher un dossier enfant', primary: false },
+              ].map(a => (
+                <a key={a.href} href={a.href} style={{
+                  display: 'block', padding: '12px 16px', borderRadius: '10px', textDecoration: 'none', fontSize: '13px', fontWeight: 700,
+                  background: a.primary ? '#eff6ff' : '#f8fafc',
+                  color: a.primary ? '#3b82f6' : '#475569',
+                  border: a.primary ? '1px solid #bfdbfe' : '1px solid #e2e8f0',
+                  transition: 'all 0.15s',
+                }}>
+                  {a.label}
+                </a>
+              ))}
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ActionCard({ title, count, icon, color, description }: { title: string, count: string, icon: string, color: string, description: string }) {
-  return (
-    <div className="group bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-white shadow-lg shadow-slate-200/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <div className="flex items-center gap-5 mb-4">
-        <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center text-2xl shadow-lg transform group-hover:rotate-6 transition-transform`}>
-          <span className="drop-shadow-md">{icon}</span>
-        </div>
-        <div>
-          <h4 className="text-3xl font-black text-slate-800">{count}</h4>
-          <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{title}</p>
-        </div>
-      </div>
-      <p className="text-sm text-slate-600 font-medium">{description}</p>
-    </div>
-  );
-}
-
-function PatientRow({ name, vaccine, status, time }: { name: string, vaccine: string, status: 'urgent' | 'normal' | 'retard', time: string }) {
-  const statusStyles = {
-    urgent: 'bg-red-50 text-red-600 border-red-100',
-    normal: 'bg-blue-50 text-blue-600 border-blue-100',
-    retard: 'bg-amber-50 text-amber-600 border-amber-100'
-  };
-
-  return (
-    <div className="flex items-center justify-between p-4 bg-white hover:bg-slate-50 rounded-2xl transition-all cursor-pointer border border-slate-100 shadow-sm hover:shadow">
-      <div className="flex items-center gap-4">
-        <div className="w-11 h-11 bg-gradient-to-tr from-slate-100 to-slate-200 rounded-full flex items-center justify-center font-bold text-slate-600 shadow-inner">
-          {name[0]}
-        </div>
-        <div>
-          <p className="font-bold text-slate-800 text-sm">{name}</p>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">{vaccine}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-bold text-slate-400">{time}</span>
-        <span className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-lg border ${statusStyles[status]}`}>
-          {status}
-        </span>
       </div>
     </div>
   );
