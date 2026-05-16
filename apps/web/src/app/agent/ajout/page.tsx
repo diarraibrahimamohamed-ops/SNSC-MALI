@@ -74,48 +74,78 @@ export default function AjoutPage() {
     setError(''); setSuccess(''); setLoading(true);
     const token = localStorage.getItem('auth_token');
     const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' };
 
     try {
-      // 1. Créer le tuteur d'abord
+      // 1. Générer l'ID du tuteur côté client (Tuteur n'a pas d'auto-increment)
       let tuteurId: string | null = null;
       if (nomTuteur && telephoneTuteur) {
+        const newTuteurId = crypto.randomUUID();
         const tuteurRes = await fetch(`${API}/tuteurs`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
-          body: JSON.stringify({ nom: nomTuteur, prenom: prenomTuteur, telephone: telephoneTuteur }),
+          headers,
+          body: JSON.stringify({
+            id: newTuteurId,
+            nom_complet: `${nomTuteur} ${prenomTuteur}`.trim(), // Le modèle utilise nom_complet
+            telephone: telephoneTuteur,
+            consentement_donne: true,
+            cree_le: new Date().toISOString(),
+          }),
         });
         if (tuteurRes.ok) {
           const tuteurData = await tuteurRes.json();
-          tuteurId = tuteurData.data?.id || tuteurData.id;
+          // Récupérer l'ID depuis la réponse ou utiliser celui qu'on a généré
+          tuteurId = tuteurData.data?.id || tuteurData.id || newTuteurId;
+        } else {
+          const err = await tuteurRes.json();
+          console.error('Erreur tuteur:', err);
+          // On continue quand même sans tuteur
         }
       }
 
-      // 2. Créer l'enfant
+      // 2. Créer l'enfant avec le bon payload
       const payload: any = {
-        nom, prenom, date_naissance: dateNaissance, sexe,
+        nom, prenom,
+        date_naissance: dateNaissance,
+        sexe,
         identifiant_sanitaire: identifiantSanitaire || `ENF-${Date.now()}`,
         centre_sante_id: centreId || user?.centre_sante_id,
+        statut_vaccinal_global: 'INCONNU',
       };
+
+      // 3. Lier le tuteur si créé avec succès
       if (tuteurId) {
         payload.tuteur_principal_id = tuteurId;
-        payload.tuteurs = [{ tuteur_id: tuteurId, type_relation: relationTuteur, est_principal: true }];
+        payload.tuteurs = [{
+          tuteur_id: tuteurId,
+          type_relation: relationTuteur,
+          est_principal: true,
+        }];
       }
 
       const res = await fetch(`${API}/enfants`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers,
         body: JSON.stringify(payload),
       });
       const data = await res.json();
+
       if (res.ok) {
-        setSuccess('Dossier enfant créé avec succès ! Le calendrier vaccinal a été généré automatiquement.');
-        setNom(''); setPrenom(''); setDateNaissance(''); setIdentifiantSanitaire('');
-        setNomTuteur(''); setPrenomTuteur(''); setTelephoneTuteur(''); setSexe('M');
-        // Rafraîchir la liste des enfants
+        const msg = tuteurId
+          ? 'Dossier enfant créé avec succès ! Tuteur enregistré et calendrier vaccinal généré.'
+          : 'Dossier enfant créé. Note : le tuteur n\'a pas pu être enregistré (vérifiez les champs).';
+        setSuccess(msg);
+        // Reset formulaire
+        setNom(''); setPrenom(''); setDateNaissance(''); setIdentifiantSanitaire(''); setSexe('M');
+        setNomTuteur(''); setPrenomTuteur(''); setTelephoneTuteur(''); setRelationTuteur('MERE'); setCentreId('');
+        // Rafraîchir liste enfants
         const fresh = await fetch(`${API}/enfants`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
         if (fresh.ok) { const d = await fresh.json(); setEnfants(d.data || d); }
       } else {
-        setError(data.message || JSON.stringify(data.errors));
+        const errMessages = data.errors
+          ? Object.values(data.errors).flat().join(' | ')
+          : data.message || 'Erreur inconnue';
+        setError(`Erreur : ${errMessages}`);
       }
     } catch (e: any) {
       setError('Erreur réseau : ' + e.message);
