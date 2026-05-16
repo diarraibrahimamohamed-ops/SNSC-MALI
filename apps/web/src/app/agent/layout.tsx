@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 const navItems = [
   { href: '/agent/dashboard', icon: '◈', label: 'Tableau de bord' },
   { href: '/agent/enfants', icon: '◉', label: 'Dossiers Enfants' },
-  { href: '/agent/vaccination', icon: '✦', label: 'Nouvelle Vaccination' },
+  { href: '/agent/ajout', icon: '✦', label: 'Saisie médicale' },
   { href: '/agent/calendrier', icon: '◷', label: 'Planning' },
   { href: '/agent/notifications', icon: '◬', label: 'SMS / Relances' },
 ];
@@ -117,8 +117,8 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
               <span style={{ color: '#16a34a', fontSize: '12px', fontWeight: 700 }}>API Connectée</span>
             </div>
-            <a href="/agent/vaccination" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '13px', textDecoration: 'none', boxShadow: '0 2px 8px rgba(59,130,246,0.35)' }}>
-              + Nouvelle Vaccination
+            <a href="/agent/ajout" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '13px', textDecoration: 'none', boxShadow: '0 2px 8px rgba(59,130,246,0.35)' }}>
+              + Saisie médicale
             </a>
           </div>
         </header>
