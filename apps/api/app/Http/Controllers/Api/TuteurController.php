@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTuteurRequest;
+use App\Http\Requests\UpdateTuteurRequest;
 use App\Http\Resources\TuteurResource;
 use App\Models\Tuteur;
 use Illuminate\Http\Request;
@@ -15,9 +17,17 @@ class TuteurController extends Controller
         return TuteurResource::collection($tuteurs);
     }
 
-    public function store(Request $request)
+    public function store(StoreTuteurRequest $request)
     {
-        $tuteur = Tuteur::create($request->all());
+        $data = $request->validated();
+        if (!isset($data['id'])) {
+            $data['id'] = (string) \Illuminate\Support\Str::uuid();
+        }
+        if (!isset($data['cree_le'])) {
+            $data['cree_le'] = now();
+        }
+
+        $tuteur = Tuteur::create($data);
         return new TuteurResource($tuteur);
     }
 
@@ -27,10 +37,10 @@ class TuteurController extends Controller
         return new TuteurResource($tuteur);
     }
 
-    public function update(Request $request, string $id)
+    public function update(UpdateTuteurRequest $request, string $id)
     {
         $tuteur = Tuteur::findOrFail($id);
-        $tuteur->update($request->all());
+        $tuteur->update($request->validated());
         return new TuteurResource($tuteur);
     }
 
