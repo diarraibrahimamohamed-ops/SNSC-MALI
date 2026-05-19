@@ -1,7 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/useAuth';
+
+// ─── Vaccins contexte Mali (alignés avec le seeder API) ───────────────────────
+const VACCINS_MALI = [
+  { id: '11111111-1111-4111-8111-111111111101', nom: 'BCG', description: 'Tuberculose · Dose unique à la naissance', couleur: '#3b82f6' },
+  { id: '11111111-1111-4111-8111-111111111102', nom: 'Pentavalent 1', description: 'DTC-HepB-Hib · 1ʳᵉ dose (6 semaines)', couleur: '#8b5cf6' },
+  { id: '11111111-1111-4111-8111-111111111103', nom: 'Pentavalent 2', description: 'DTC-HepB-Hib · 2ᵉ dose (10 semaines)', couleur: '#06b6d4' },
+  { id: '11111111-1111-4111-8111-111111111104', nom: 'Rougeole', description: 'RR · 9 mois et 15-18 mois', couleur: '#f59e0b' },
+  { id: '11111111-1111-4111-8111-111111111105', nom: 'Fièvre jaune', description: 'VAA · 9 mois (obligatoire Mali)', couleur: '#10b981' },
+];
 
 // ─── Helpers styles ────────────────────────────────────────────────────────────
 const S = {
@@ -14,13 +24,12 @@ const S = {
 };
 
 export default function AjoutPage() {
+  const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'enfant' | 'vaccination'>('enfant');
-  type ApiEntity = { id: string; [key: string]: unknown };
-  const [centres, setCentres] = useState<ApiEntity[]>([]);
-  const [enfants, setEnfants] = useState<ApiEntity[]>([]);
+  const [centres, setCentres] = useState<any[]>([]);
+  const [enfants, setEnfants] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [vaccins, setVaccins] = useState<ApiEntity[]>([]);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
@@ -53,11 +62,9 @@ export default function AjoutPage() {
     Promise.all([
       fetch(`${API}/centres-sante`, { headers: h }).then(r => r.ok ? r.json() : null),
       fetch(`${API}/enfants`, { headers: h }).then(r => r.ok ? r.json() : null),
-      fetch(`${API}/vaccins`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([c, e, v]) => {
+    ]).then(([c, e]) => {
       if (c) setCentres(c.data || c);
       if (e) setEnfants(e.data || e);
-      if (v) setVaccins(v.data || v);
     });
   }, [isAuthenticated]);
 
@@ -96,8 +103,8 @@ export default function AjoutPage() {
         }
       }
 
-      // 2. Créer l&apos;enfant avec le bon payload
-      const payload: Record<string, unknown> = {
+      // 2. Créer l'enfant avec le bon payload
+      const payload: any = {
         nom, prenom,
         date_naissance: dateNaissance,
         sexe,
@@ -140,8 +147,8 @@ export default function AjoutPage() {
           : data.message || 'Erreur inconnue';
         setError(`Erreur : ${errMessages}`);
       }
-    } catch (e: unknown) {
-      setError('Erreur réseau : ' + (e instanceof Error ? e.message : 'inconnue'));
+    } catch (e: any) {
+      setError('Erreur réseau : ' + e.message);
     } finally {
       setLoading(false);
     }
@@ -176,8 +183,8 @@ export default function AjoutPage() {
       } else {
         setError(data.message || JSON.stringify(data.errors));
       }
-    } catch (e: unknown) {
-      setError('Erreur réseau : ' + (e instanceof Error ? e.message : 'inconnue'));
+    } catch (e: any) {
+      setError('Erreur réseau : ' + e.message);
     } finally {
       setLoading(false);
     }
@@ -229,7 +236,7 @@ export default function AjoutPage() {
 
             {/* Section Identité */}
             <div style={S.card}>
-              <div style={S.sectionTitle}><span>🪪</span> Identité de l&apos;enfant</div>
+              <div style={S.sectionTitle}><span>🪪</span> Identité de l'enfant</div>
               <div style={S.row2}>
                 <div>
                   <label style={S.label}>Nom *</label>
@@ -248,6 +255,7 @@ export default function AjoutPage() {
                 <div>
                   <label style={S.label}>Identifiant sanitaire</label>
                   <input style={S.input} value={identifiantSanitaire} onChange={e => setIdentifiantSanitaire(e.target.value)} placeholder="Auto-généré si vide" />
+                </div>
               </div>
 
               {/* Sexe selector */}
@@ -260,7 +268,6 @@ export default function AjoutPage() {
                       {s.label}
                     </button>
                   ))}
-                </div>
                 </div>
               </div>
             </div>
@@ -301,13 +308,13 @@ export default function AjoutPage() {
             <div style={S.card}>
               <div style={S.sectionTitle}><span>🏥</span> Centre de santé rattaché</div>
               <select style={S.select} value={centreId} onChange={e => setCentreId(e.target.value)}>
-                <option value="">— Centre de l&apos;agent connecté (par défaut) —</option>
-                {centres.map((c) => (
+                <option value="">— Centre de l'agent connecté (par défaut) —</option>
+                {centres.map((c: any) => (
                   <option key={c.id} value={c.id}>{c.nom} {c.type_etablissement ? `· ${c.type_etablissement}` : ''}</option>
                 ))}
               </select>
               <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-                ℹ️ Laissez vide pour utiliser automatiquement votre centre d&apos;affectation.
+                ℹ️ Laissez vide pour utiliser automatiquement votre centre d'affectation.
               </p>
             </div>
 
@@ -328,7 +335,7 @@ export default function AjoutPage() {
               <div style={S.sectionTitle}><span>👶</span> Enfant vacciné</div>
               <select style={S.select} value={enfantId} onChange={e => setEnfantId(e.target.value)} required>
                 <option value="">— Sélectionner un enfant —</option>
-                {enfants.map((e) => (
+                {enfants.map((e: any) => (
                   <option key={e.id} value={e.id}>{e.nom} {e.prenom} · {e.identifiant_sanitaire}</option>
                 ))}
               </select>
@@ -338,30 +345,27 @@ export default function AjoutPage() {
             <div style={S.card}>
               <div style={S.sectionTitle}><span>💉</span> Vaccin administré</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                {vaccins.map((v, index: number) => {
-                  const accent = ['#3b82f6', '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981'][index % 5];
-                  return (
+                {VACCINS_MALI.map(v => (
                   <button key={v.id} type="button" onClick={() => setVaccinId(v.id)}
                     style={{
-                      padding: '14px 16px', border: `2px solid ${vaccinId === v.id ? accent : '#e2e8f0'}`, borderRadius: '12px', background: vaccinId === v.id ? `${accent}12` : '#f8fafc', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+                      padding: '14px 16px', border: `2px solid ${vaccinId === v.id ? v.couleur : '#e2e8f0'}`, borderRadius: '12px', background: vaccinId === v.id ? `${v.couleur}12` : '#f8fafc', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                     }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                       {vaccinId === v.id && <span style={{ fontSize: '14px' }}>✓</span>}
-                      <span style={{ fontWeight: 800, fontSize: '14px', color: vaccinId === v.id ? accent : '#0f172a' }}>{v.nom}</span>
+                      <span style={{ fontWeight: 800, fontSize: '14px', color: vaccinId === v.id ? v.couleur : '#0f172a' }}>{v.nom}</span>
                     </div>
-                    <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>{v.maladie_ciblee || 'Vaccin du calendrier national'}</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>{v.description}</p>
                   </button>
-                );
-                })}
+                ))}
               </div>
             </div>
 
             {/* Détails acte */}
             <div style={S.card}>
-              <div style={S.sectionTitle}><span>📋</span> Détails de l&apos;acte</div>
+              <div style={S.sectionTitle}><span>📋</span> Détails de l'acte</div>
               <div style={S.row2}>
                 <div>
-                  <label style={S.label}>Date d&apos;administration *</label>
+                  <label style={S.label}>Date d'administration *</label>
                   <input type="date" style={S.input} value={administreLe} onChange={e => setAdministreLe(e.target.value)} max={new Date().toISOString().split('T')[0]} required />
                 </div>
                 <div>
@@ -379,7 +383,7 @@ export default function AjoutPage() {
             <div style={{ padding: '14px 18px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: '12px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
               <span style={{ fontSize: '16px' }}>ℹ️</span>
               <p style={{ margin: 0, fontSize: '13px', color: '#92400e', fontWeight: 500 }}>
-                L&apos;acte vaccinal sera automatiquement lié au calendrier de l&apos;enfant et son statut vaccinal sera recalculé.
+                L'acte vaccinal sera automatiquement lié au calendrier de l'enfant et son statut vaccinal sera recalculé.
               </p>
             </div>
 

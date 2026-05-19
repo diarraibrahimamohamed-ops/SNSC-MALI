@@ -6,16 +6,12 @@ use App\Models\Enfant;
 use App\Models\ModeleCalendrier;
 use App\Models\DoseCalendrierEnfant;
 use App\Models\RendezVous;
-use App\Modules\RisqueIA\Services\RisqueService;
+use App\Models\ScoreRisque;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class VaccinationService
 {
-    public function __construct(private readonly RisqueService $risqueService)
-    {
-    }
-
     /**
      * Génère le calendrier vaccinal complet pour un enfant
      */
@@ -44,9 +40,37 @@ class VaccinationService
      */
     public function evaluerRisque(Enfant $enfant)
     {
-        $score = $this->risqueService->evaluer($enfant);
+        $dosesRetard = DoseCalendrierEnfant::where('enfant_id', $enfant->id)
+            ->where('statut', 'A_VENIR')
+            ->where('date_echeance', '<', now())
+            ->count();
 
-        return $score->niveau_risque;
+        $niveau = 'FAIBLE';
+        $score = 0;
+
+        if ($dosesRetard > 0) {
+            $score = $dosesRetard * 20;
+            if ($dosesRetard >= 3) {
+                $niveau = 'ÉLEVÉ';
+            } elseif ($dosesRetard >= 1) {
+                $niveau = 'MODÉRÉ';
+            }
+        }
+
+        ScoreRisque::updateOrCreate(
+            ['enfant_id' => $enfant->id],
+            [
+                'id' => (string) Str::uuid(),
+                'version_modele' => 'v1.0',
+                'score' => min($score, 100),
+                'niveau_risque' => $niveau,
+                'confiance' => 0.95,
+                'facteurs_explicatifs' => ['doses_retard' => $dosesRetard],
+                'calcule_le' => now(),
+            ]
+        );
+
+        return $niveau;
     }
 
     /**
