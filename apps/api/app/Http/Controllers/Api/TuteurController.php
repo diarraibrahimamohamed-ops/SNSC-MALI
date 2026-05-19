@@ -7,7 +7,6 @@ use App\Http\Requests\StoreTuteurRequest;
 use App\Http\Requests\UpdateTuteurRequest;
 use App\Http\Resources\TuteurResource;
 use App\Models\Tuteur;
-use Illuminate\Http\Request;
 
 class TuteurController extends Controller
 {
