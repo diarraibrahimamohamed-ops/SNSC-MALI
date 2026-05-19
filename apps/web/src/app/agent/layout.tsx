@@ -1,83 +1,94 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Building2,
-  ClipboardList,
+  Baby,
+  CalendarDays,
+  FileText,
   LayoutDashboard,
   LogOut,
-  UserCog,
-  Users,
+  Syringe,
+  User,
 } from 'lucide-react';
 
-export default function AdminLayout({
+type AgentInfo = {
+  email?: string;
+  prenom?: string;
+  nom?: string;
+  centre?: string;
+};
+
+export default function AgentLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [adminInfo, setAdminInfo] = useState<any>(null);
   const pathname = usePathname();
+  const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
 
   useEffect(() => {
-    // Récupérer les infos de l'admin depuis localStorage
-    const storedAdmin = localStorage.getItem('adminInfo');
-    if (storedAdmin) {
-      setAdminInfo(JSON.parse(storedAdmin));
+    const storedAgent = localStorage.getItem('agentInfo');
+    if (storedAgent) {
+      setAgentInfo(JSON.parse(storedAgent));
     }
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminInfo');
-    window.location.href = '/login';
+    localStorage.removeItem('agentInfo');
+    window.location.href = '/agent-auth';
   };
 
   const navItems = [
     {
-      href: '/admin/dashboard',
+      href: '/agent/dashboard',
       label: 'Tableau de bord',
       icon: LayoutDashboard,
     },
     {
-      href: '/admin/agents',
-      label: 'Agents',
-      icon: Users,
+      href: '/agent/enfants',
+      label: 'Enfants',
+      icon: Baby,
     },
     {
-      href: '/admin/centres',
-      label: 'Centres de santé',
-      icon: Building2,
+      href: '/agent/rendez-vous',
+      label: 'Rendez-vous',
+      icon: CalendarDays,
     },
     {
-      href: '/admin/utilisateurs',
-      label: 'Utilisateurs',
-      icon: UserCog,
+      href: '/agent/vaccinations',
+      label: 'Vaccinations',
+      icon: Syringe,
     },
     {
-      href: '/admin/audit',
-      label: 'Audit',
-      icon: ClipboardList,
+      href: '/agent/rapports',
+      label: 'Rapports',
+      icon: FileText,
+    },
+    {
+      href: '/agent/profile',
+      label: 'Mon profil',
+      icon: User,
     },
   ];
+
+  const initials = `${agentInfo?.prenom?.[0] || 'A'}${agentInfo?.nom?.[0] || 'G'}`;
 
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="flex min-h-screen">
-        {/* Sidebar */}
-        <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col bg-gradient-to-b from-emerald-600 to-teal-600 text-white shadow-lg lg:flex">
-          {/* Logo */}
+        <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-lg lg:flex">
           <div className="flex items-center gap-4 border-b border-white/20 p-6">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white">
-              <Building2 className="h-6 w-6" />
+              <User className="h-6 w-6" />
             </div>
             <div>
               <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
-              <p className="text-sm text-white/80">Espace Admin</p>
+              <p className="text-sm text-white/80">Espace Agent</p>
             </div>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 space-y-1 p-4">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -100,16 +111,17 @@ export default function AdminLayout({
             })}
           </nav>
 
-          {/* User Profile */}
           <div className="border-t border-white/20 p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
-                AD
+                {initials}
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">Admin</div>
+                <div className="truncate text-sm font-semibold">
+                  {agentInfo?.prenom || 'Agent'}
+                </div>
                 <div className="truncate text-xs text-white/80">
-                  {adminInfo?.email || 'admin@vaccintrack.ml'}
+                  {agentInfo?.email || 'agent@vaccintrack.ml'}
                 </div>
               </div>
             </div>
@@ -123,19 +135,19 @@ export default function AdminLayout({
           </div>
         </aside>
 
-        {/* Main Content */}
         <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
-          {/* Top Bar */}
           <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
-                <p className="text-sm text-gray-600">Panneau de contrôle</p>
+                <h2 className="text-lg font-bold text-gray-900">Espace Agent</h2>
+                <p className="text-sm text-gray-600">
+                  Bienvenue {agentInfo?.prenom || 'Agent'}
+                  {agentInfo?.centre ? ` - ${agentInfo.centre}` : ''}
+                </p>
               </div>
             </div>
           </header>
 
-          {/* Page Content */}
           <main className="p-6 lg:p-8">{children}</main>
         </div>
       </div>
