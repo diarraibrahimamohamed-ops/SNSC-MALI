@@ -9,6 +9,8 @@ use App\Models\RendezVous;
 use App\Models\ScoreRisque;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class VaccinationService
 {
@@ -39,6 +41,34 @@ class VaccinationService
      */
     public function evaluerRisque(Enfant $enfant)
     {
+        try {
+            $iaApiUrl = env('IA_API_URL', 'http://localhost:8000');
+            $response = Http::timeout(10)->post("{$iaApiUrl}/predict", [
+                'enfant_id' => $enfant->id
+            ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                ScoreRisque::create([
+                    'enfant_id' => $enfant->id,
+                    'version_modele' => 'v1.0', // Could be fetched from AI response if dynamic
+                    'score' => $data['score'] ?? 0,
+                    'niveau_risque' => $data['niveau_risque'] ?? 'BAS',
+                    'confiance' => $data['confiance'] ?? 0.85,
+                    'facteurs_explicatifs' => $data['facteurs_explicatifs'] ?? [],
+                    'calcule_le' => now(),
+                ]);
+
+                return $data['niveau_risque'] ?? 'BAS';
+            }
+
+            Log::error('Erreur API IA: Réponse non fructueuse', ['status' => $response->status(), 'body' => $response->body()]);
+        } catch (\Exception $e) {
+            Log::error('Erreur de connexion à l\'API IA: ' . $e->getMessage());
+        }
+
+        // Fallback local en cas d'échec de l'IA
         $dosesRetard = DoseCalendrierEnfant::where('enfant_id', $enfant->id)
             ->where('statut', 'A_VENIR')
             ->where('date_echeance', '<', now())
@@ -58,11 +88,11 @@ class VaccinationService
 
         ScoreRisque::create([
             'enfant_id' => $enfant->id,
-            'version_modele' => 'v1.0',
+            'version_modele' => 'fallback-v1.0',
             'score' => min($score, 100),
             'niveau_risque' => $niveau,
-            'confiance' => 0.95,
-            'facteurs_explicatifs' => ['doses_retard' => $dosesRetard],
+            'confiance' => 0.50, // Lower confidence for fallback
+            'facteurs_explicatifs' => ['doses_retard' => $dosesRetard, 'source' => 'fallback_local'],
             'calcule_le' => now(),
         ]);
 

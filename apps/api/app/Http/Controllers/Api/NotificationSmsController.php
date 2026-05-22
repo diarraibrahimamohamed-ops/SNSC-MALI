@@ -9,10 +9,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Services\OrangeSmsService;
 
 class NotificationSmsController extends Controller
 {
     use AuthorizesRequests;
+
+    protected OrangeSmsService $smsService;
+
+    public function __construct(OrangeSmsService $smsService)
+    {
+        $this->smsService = $smsService;
+    }
     public function index()
     {
         $notifications = NotificationSms::with(['enfant', 'rendezVous'])->get();
@@ -74,13 +82,22 @@ class NotificationSmsController extends Controller
 
         DB::transaction(function () use ($rendezVous) {
             foreach ($rendezVous as $rv) {
+                $telephone = $rv->enfant->tuteurPrincipal->telephone ?? null;
+                if (!$telephone) continue;
+
+                $contenuMessage = "SNSC Mali - Rappel: Rendez-vous de vaccination pour {$rv->enfant->prenom} prévu demain. Merci de vous présenter au centre de santé.";
+                
+                // Envoyer via l'API Orange
+                $result = $this->smsService->sendSms($telephone, $contenuMessage);
+
                 NotificationSms::create([
-                    'id' => (string) Str::uuid(),
                     'enfant_id' => $rv->enfant_id,
                     'rendez_vous_id' => $rv->id,
-                    'numero_telephone' => $rv->enfant->tuteurPrincipal->telephone ?? '00000000',
-                    'contenu_message' => "Rappel : Rendez-vous vaccination pour votre enfant demain.",
-                    'statut_livraison' => 'ENVOYE',
+                    'tuteur_id' => $rv->enfant->tuteur_principal_id,
+                    'numero_telephone' => $telephone,
+                    'contenu_message' => $contenuMessage,
+                    'statut_livraison' => $result['success'] ? 'ENVOYE' : 'ECHEC',
+                    'id_message_fournisseur' => $result['id_message'] ?? null,
                     'envoye_le' => now(),
                 ]);
             }
