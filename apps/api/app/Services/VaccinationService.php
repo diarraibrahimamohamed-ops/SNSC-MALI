@@ -24,7 +24,6 @@ class VaccinationService
             $dateEcheance = $dateNaissance->copy()->addDays($modele->age_recommandee_jours);
             
             DoseCalendrierEnfant::create([
-                'id' => (string) Str::uuid(),
                 'enfant_id' => $enfant->id,
                 'modele_calendrier_id' => $modele->id,
                 'date_echeance' => $dateEcheance,
@@ -45,30 +44,27 @@ class VaccinationService
             ->where('date_echeance', '<', now())
             ->count();
 
-        $niveau = 'FAIBLE';
+        $niveau = 'BAS';
         $score = 0;
 
         if ($dosesRetard > 0) {
             $score = $dosesRetard * 20;
             if ($dosesRetard >= 3) {
-                $niveau = 'ÉLEVÉ';
+                $niveau = 'ELEVE';
             } elseif ($dosesRetard >= 1) {
-                $niveau = 'MODÉRÉ';
+                $niveau = 'MOYEN';
             }
         }
 
-        ScoreRisque::updateOrCreate(
-            ['enfant_id' => $enfant->id],
-            [
-                'id' => (string) Str::uuid(),
-                'version_modele' => 'v1.0',
-                'score' => min($score, 100),
-                'niveau_risque' => $niveau,
-                'confiance' => 0.95,
-                'facteurs_explicatifs' => ['doses_retard' => $dosesRetard],
-                'calcule_le' => now(),
-            ]
-        );
+        ScoreRisque::create([
+            'enfant_id' => $enfant->id,
+            'version_modele' => 'v1.0',
+            'score' => min($score, 100),
+            'niveau_risque' => $niveau,
+            'confiance' => 0.95,
+            'facteurs_explicatifs' => ['doses_retard' => $dosesRetard],
+            'calcule_le' => now(),
+        ]);
 
         return $niveau;
     }
@@ -90,7 +86,6 @@ class VaccinationService
                     'dose_calendrier_enfant_id' => $prochaineDose->id,
                 ],
                 [
-                    'id' => (string) Str::uuid(),
                     'date_cible' => $prochaineDose->date_echeance,
                     'statut' => 'PROGRAMME',
                     'cree_le' => now(),
