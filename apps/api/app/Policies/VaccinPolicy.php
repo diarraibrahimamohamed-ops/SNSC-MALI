@@ -2,18 +2,18 @@
 
 namespace App\Policies;
 
-use App\Models\CentreSante;
+use App\Models\Vaccin;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use App\Models\Admin;
 
-class CentreSantePolicy
+class VaccinPolicy
 {
     public function viewAny(Authenticatable $user): bool
     {
         return true;
     }
 
-    public function view(Authenticatable $user, CentreSante $centreSante): bool
+    public function view(Authenticatable $user, Vaccin $vaccin): bool
     {
         return true;
     }
@@ -23,12 +23,12 @@ class CentreSantePolicy
         return $user instanceof Admin;
     }
 
-    public function update(Authenticatable $user, CentreSante $centreSante): bool
+    public function update(Authenticatable $user, Vaccin $vaccin): bool
     {
         return $user instanceof Admin;
     }
 
-    public function delete(Authenticatable $user, CentreSante $centreSante): bool
+    public function delete(Authenticatable $user, Vaccin $vaccin): bool
     {
         return $user instanceof Admin;
     }

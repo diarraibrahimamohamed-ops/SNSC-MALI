@@ -16,18 +16,18 @@ class DashboardController extends Controller
         try {
             $totalEnfants = DB::table('enfants')->count();
             $vaccinationsAujourdhui = DB::table('actes_vaccinaux')
-                ->whereDate('date_vaccination', now()->toDateString())
+                ->whereDate('administre_le', now()->toDateString())
                 ->count();
             $rendezVousAujourdhui = DB::table('rendez_vous')
-                ->whereDate('date_rendez_vous', now()->toDateString())
-                ->where('statut', 'planifié')
+                ->whereDate('date_cible', now()->toDateString())
+                ->where('statut', 'PROGRAMME')
                 ->count();
             $relancesEnvoyees = DB::table('notifications_sms')
                 ->whereDate('envoye_le', now()->toDateString())
-                ->where('statut', 'envoyé')
+                ->where('statut_livraison', 'ENVOYE')
                 ->count();
             $enfantsARisque = DB::table('scores_risque')
-                ->where('niveau', 'élevé')
+                ->where('niveau_risque', 'ELEVE')
                 ->count();
                 
             // Calculer la couverture vaccinale (simplifié : % d'enfants ayant au moins un acte vaccinal)

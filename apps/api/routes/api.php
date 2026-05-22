@@ -35,6 +35,7 @@ Route::middleware('auth:api')->group(function () {
     
     // Dashboard statistics
     Route::get('/dashboard/stats', [App\Http\Controllers\Api\DashboardController::class, 'stats']);
+    Route::get('/dashboard-admin', [App\Http\Controllers\Api\DashboardAdminController::class, 'index']);
 
     // Enfants routes
     Route::apiResource('enfants', App\Http\Controllers\Api\EnfantController::class);
@@ -75,6 +76,9 @@ Route::middleware('auth:api')->group(function () {
     // File synchronization routes
     Route::apiResource('file-sync', App\Http\Controllers\Api\FileSynchronisationController::class);
 
-    // Utilisateurs (Admin)
+    // Utilisateurs (User/Agent)
     Route::apiResource('utilisateurs', App\Http\Controllers\Api\UtilisateurController::class);
+
+    // Admins routes
+    Route::apiResource('admins', App\Http\Controllers\Api\AdminController::class);
 });

@@ -11,10 +11,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use App\Traits\Auditable;
 
 class Agent extends Authenticatable implements JWTSubject
 {
-    use Notifiable, HasRoles, HasFactory, HasUuids;
+    use Notifiable, HasRoles, HasFactory, HasUuids, Auditable;
 
     protected $keyType = 'string';
     public $incrementing = false;

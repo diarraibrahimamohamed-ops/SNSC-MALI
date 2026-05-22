@@ -33,7 +33,7 @@ class StatistiqueController extends Controller
             'data' => [
                 'mes_enfants' => Enfant::where('centre_sante_id', $agent->centre_sante_id)->count(),
                 'vaccinations_jour' => ActeVaccinal::where('agent_id', $agent->id)
-                    ->whereDate('date_administration', now())
+                    ->whereDate('administre_le', now())
                     ->count(),
                 'vaccinations_mois' => ActeVaccinal::where('agent_id', $agent->id)
                     ->where('cree_le', '>=', now()->startOfMonth())
