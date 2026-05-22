@@ -20,7 +20,7 @@ class DashboardController extends Controller
                 ->count();
             $rendezVousAujourdhui = DB::table('rendez_vous')
                 ->whereDate('date_cible', now()->toDateString())
-                ->where('statut', 'PROGRAMME')
+                ->where('statut', 'PLANIFIE')
                 ->count();
             $relancesEnvoyees = DB::table('notifications_sms')
                 ->whereDate('envoye_le', now()->toDateString())

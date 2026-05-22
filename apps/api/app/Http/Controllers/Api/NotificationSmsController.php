@@ -77,7 +77,7 @@ class NotificationSmsController extends Controller
         // Envoi de SMS en masse pour les rendez-vous de demain
         $demain = now()->addDay()->toDateString();
         $rendezVous = \App\Models\RendezVous::with(['enfant.tuteurPrincipal'])->whereDate('date_cible', $demain)
-            ->where('statut', 'PROGRAMME')
+            ->where('statut', 'PLANIFIE')
             ->get();
 
         DB::transaction(function () use ($rendezVous) {

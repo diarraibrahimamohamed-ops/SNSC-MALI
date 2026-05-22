@@ -117,7 +117,7 @@ class VaccinationService
                 ],
                 [
                     'date_cible' => $prochaineDose->date_echeance,
-                    'statut' => 'PROGRAMME',
+                    'statut' => 'PLANIFIE',
                     'cree_le' => now(),
                 ]
             );

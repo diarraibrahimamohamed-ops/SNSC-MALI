@@ -66,7 +66,11 @@ class RendezVousController extends Controller
     {
         $rendezVous = RendezVous::findOrFail($id);
         $this->authorize('update', $rendezVous);
-        $rendezVous->update(['statut' => 'CONFIRME']);
+        
+        DB::transaction(function () use ($rendezVous) {
+            $rendezVous->update(['statut' => 'CONFIRME']);
+        });
+        
         return new RendezVousResource($rendezVous);
     }
 
@@ -74,7 +78,11 @@ class RendezVousController extends Controller
     {
         $rendezVous = RendezVous::findOrFail($id);
         $this->authorize('update', $rendezVous);
-        $rendezVous->update(['statut' => 'ANNULE']);
+        
+        DB::transaction(function () use ($rendezVous) {
+            $rendezVous->update(['statut' => 'ANNULE']);
+        });
+        
         return new RendezVousResource($rendezVous);
     }
 }

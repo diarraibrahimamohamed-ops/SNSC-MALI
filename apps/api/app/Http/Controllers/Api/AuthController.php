@@ -53,29 +53,6 @@ class AuthController extends Controller
         return response()->json(['message' => 'Déconnexion réussie']);
     }
 
-    public function register(Request $request)
-    {
-        $request->validate([
-            'nom_complet' => 'required|string',
-            'matricule' => 'required|string|unique:agents',
-            'password' => 'required|string|min:8',
-            'centre_sante_id' => 'required|uuid',
-            'role' => 'required|string',
-        ]);
-
-        $agent = Agent::create([
-            'id' => (string) \Illuminate\Support\Str::uuid(),
-            'nom_complet' => $request->nom_complet,
-            'matricule' => $request->matricule,
-            'password' => Hash::make($request->password),
-            'centre_sante_id' => $request->centre_sante_id,
-            'role' => $request->role,
-            'telephone' => $request->telephone,
-            'est_actif' => true,
-        ]);
-
-        return response()->json(['data' => $agent], 201);
-    }
 
     public function me()
     {
