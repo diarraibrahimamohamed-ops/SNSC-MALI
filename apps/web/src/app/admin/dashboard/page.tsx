@@ -1,6 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import {
+  AlertTriangle,
+  Baby,
+  BarChart3,
+  Calendar,
+  CheckCircle2,
+  MessageSquare,
+  Plus,
+  Send,
+  Syringe,
+} from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
@@ -38,50 +50,236 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in p-6 relative">
-      {/* Background decoration for Premium Feel */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] rounded-full bg-emerald-400/10 blur-[120px]"></div>
-        <div className="absolute top-[40%] -left-[10%] w-[40%] h-[40%] rounded-full bg-blue-400/10 blur-[100px]"></div>
-      </div>
-
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Tableau de Bord National 🌍</h1>
-          <p className="text-slate-500 font-medium mt-1">Supervision globale du programme de vaccination.</p>
+    <div className="space-y-8">
+      <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-100 p-8 shadow-sm">
+        <h1 className="text-3xl font-extrabold tracking-tight text-emerald-800">
+          Tableau de bord Administrateur
+        </h1>
+        <p className="mt-2 text-gray-700">
+          Vue d'ensemble du système de vaccination
+        </p>
+        <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600">
+          <Calendar className="h-4 w-4" />
+          {new Date().toLocaleDateString('fr-ML', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Total Enfants" value={stats?.total_enfants || "0"} icon="👶" color="from-blue-500 to-indigo-600" />
-        <StatCard title="Taux Couverture" value={`${stats?.couverture_vaccinale || 0}%`} icon="📈" color="from-emerald-400 to-teal-500" />
-        <StatCard title="Enfants à Risque" value={stats?.enfants_a_risque || "0"} icon="⚠️" color="from-amber-400 to-orange-500" />
-        <StatCard title="Vaccinations du Jour" value={stats?.vaccinations_aujourd_hui || "0"} icon="💉" color="from-purple-500 to-pink-600" />
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-blue-500 to-blue-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 text-white shadow">
+              <Baby className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.total_enfants || 0}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Total Enfants
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">
+                Enregistrés dans le système
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow">
+              <Syringe className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.vaccinations_aujourd_hui || 0}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Vaccinations Aujourd'hui
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">Séances complétées</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-500 to-amber-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-white shadow">
+              <Calendar className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.rendez_vous_aujourd_hui || 0}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Rendez-vous Aujourd'hui
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">Planifiés</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-violet-500 to-violet-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-violet-700 text-white shadow">
+              <MessageSquare className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.relances_envoyees || 0}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Relances Envoyées
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">SMS envoyés aujourd'hui</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-500 to-red-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-500 to-red-700 text-white shadow">
+              <AlertTriangle className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.enfants_a_risque || 0}
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Enfants à Risque
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">Nécessitent une attention</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+          <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-teal-500 to-teal-700" />
+          <div className="flex items-center gap-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 text-white shadow">
+              <BarChart3 className="h-8 w-8" />
+            </div>
+            <div>
+              <div className="text-3xl font-extrabold leading-none text-gray-900">
+                {stats?.couverture_vaccinale || 0}%
+              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">
+                Couverture Vaccinale
+              </div>
+              <div className="mt-0.5 text-sm text-gray-500">Taux national</div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-        {/* Main Chart Area */}
-        <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="font-bold text-xl text-slate-800 flex items-center gap-3">
-              <span className="p-2 bg-emerald-100 rounded-xl text-emerald-600">📊</span>
-              Évolution de la Couverture
-            </h3>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <h4 className="text-lg font-bold text-gray-900">Distribution des Risques</h4>
+            <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+              Analyse IA
+            </span>
           </div>
-          <div className="h-[300px] flex items-end justify-between gap-4">
-            {/* Simulation of a dynamic chart */}
-            {[45, 52, 48, 61, 55, 67, 72, 68, 75, 82, 78, Math.max(10, Math.min(100, stats?.couverture_vaccinale || 84))].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                <div 
-                  className="w-full bg-gradient-to-t from-emerald-100 to-emerald-200 rounded-t-xl group-hover:from-emerald-400 group-hover:to-emerald-500 transition-all duration-500 relative shadow-sm group-hover:shadow-md" 
-                  style={{ height: `${h}%` }}
-                >
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl">
-                    {h}% Couverture
-                  </div>
-                </div>
-                <span className="text-[10px] font-bold text-slate-400">M{i+1}</span>
+
+          <div className="mt-6 flex min-h-[200px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-6 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-red-700 shadow-sm">
+              <AlertTriangle className="h-9 w-9" />
+            </div>
+            <div className="mt-4 text-base font-semibold text-gray-800">Graphique des risques</div>
+            <div className="mt-1 text-sm text-gray-600">Analyse prédictive en cours</div>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 font-semibold text-gray-900">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
+              {stats?.enfants_a_risque || 0} enfants à risque élevé
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <h4 className="text-lg font-bold text-gray-900">Couverture Vaccinale</h4>
+            <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+              National
+            </span>
+          </div>
+
+          <div className="mt-6 flex min-h-[200px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 text-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+              <CheckCircle2 className="h-9 w-9" />
+            </div>
+            <div className="mt-4 text-base font-semibold text-gray-800">Taux de couverture</div>
+            <div className="mt-1 text-sm text-gray-600">Objectif OMS: 95%</div>
+            <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xl font-extrabold text-gray-900">
+              {stats?.couverture_vaccinale || 0}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
+          <h4 className="text-lg font-bold text-gray-900">Actions Rapides</h4>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Link
+              href="/admin/agents"
+              className="group inline-flex flex-col items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 px-4 py-5 text-center text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+                <Plus className="h-5 w-5" />
+              </div>
+              <div className="text-sm font-semibold">Créer un agent</div>
+            </Link>
+
+            <Link
+              href="/admin/centres"
+              className="group inline-flex flex-col items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 px-4 py-5 text-center text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="text-sm font-semibold">Gérer les centres</div>
+            </Link>
+
+            <Link
+              href="/admin/audit"
+              className="group inline-flex flex-col items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-700 px-4 py-5 text-center text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
+                <Send className="h-5 w-5" />
+              </div>
+              <div className="text-sm font-semibold">Voir l’audit</div>
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h4 className="text-lg font-bold text-gray-900">Alertes Critiques</h4>
+          <div className="mt-6 space-y-4">
+            <div className="flex gap-4 rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-4 text-red-900">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/70">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold">Stock vaccins faible</div>
+                <div className="mt-0.5 text-sm opacity-80">BCG - 15 doses restantes</div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 text-amber-900">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/70">
+                <MessageSquare className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="font-semibold">RDV manqués</div>
+                <div className="mt-0.5 text-sm opacity-80">12 aujourd'hui</div>
               </div>
             ))}
           </div>
@@ -107,38 +305,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ title, value, icon, color }: { title: string, value: string | number, icon: string, color: string }) {
-  return (
-    <div className="group bg-white/70 backdrop-blur-md rounded-3xl p-6 border border-white shadow-lg shadow-slate-200/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-      <div className="flex items-center justify-between mb-4">
-        <div className={`w-14 h-14 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center text-2xl shadow-lg transform group-hover:scale-110 transition-transform`}>
-          <span className="drop-shadow-md">{icon}</span>
-        </div>
-      </div>
-      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-slate-900">{value}</h4>
-    </div>
-  );
-}
-
-function AlertItem({ type, message, time }: { type: 'critical' | 'warning' | 'info', message: string, time: string }) {
-  const styles = {
-    critical: 'from-red-400 to-red-500 shadow-red-200',
-    warning: 'from-amber-400 to-orange-500 shadow-amber-200',
-    info: 'from-blue-400 to-indigo-500 shadow-blue-200'
-  };
-
-  return (
-    <div className="flex gap-4 group p-3 bg-white/50 rounded-2xl hover:bg-white transition-colors border border-transparent hover:border-slate-100 shadow-sm">
-      <div className={`w-2 h-12 bg-gradient-to-b ${styles[type]} rounded-full flex-shrink-0 shadow-lg`}></div>
-      <div className="flex flex-col justify-center">
-        <p className="text-sm font-bold text-slate-800 leading-tight group-hover:text-slate-900">{message}</p>
-        <p className="text-xs text-slate-400 mt-1.5 font-medium">{time}</p>
       </div>
     </div>
   );

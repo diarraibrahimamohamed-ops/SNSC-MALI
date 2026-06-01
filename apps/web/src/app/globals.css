@@ -1,35 +1,4 @@
 @import "tailwindcss";
-@config "../../tailwind.config.js";
-
-:root {
-  --primary: #059669;
-  --primary-hover: #047857;
-  --secondary: #10b981;
-  --accent: #f59e0b;
-  --background: #f9fafb;
-  --foreground: #111827;
-  --card: #ffffff;
-  --card-foreground: #111827;
-  --border: #e5e7eb;
-  --input: #f3f4f6;
-  --ring: #10b981;
-  --radius: 0.75rem;
-}
-
-.dark {
-  --background: #030712;
-  --foreground: #f9fafb;
-  --card: #111827;
-  --card-foreground: #f9fafb;
-  --border: #1f2937;
-  --input: #1f2937;
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;

@@ -1,9 +1,5 @@
-import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { AuthProvider } from '@/features/auth/useAuth';
-
-const inter = Inter({ subsets: ['latin'] });
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: 'Vaccin-Track Mali | Plateforme de Suivi Vaccinal',
@@ -17,11 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
-        <AuthProvider>
-          <div id="toast-container" className="fixed top-4 right-4 z-50"></div>
-          <main>{children}</main>
-        </AuthProvider>
+      <head />
+      <body className="min-h-screen bg-slate-50 text-slate-900">
+        {children}
       </body>
     </html>
   );

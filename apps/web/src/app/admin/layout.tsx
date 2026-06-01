@@ -1,20 +1,23 @@
 'use client';
 
-import { useAuth } from '@/features/auth/useAuth';
-import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Building2,
+  ClipboardList,
+  LayoutDashboard,
+  LogOut,
+  UserCog,
+  Users,
+} from 'lucide-react';
 
-const navItems = [
-  { href: '/admin/dashboard', icon: '◈', label: 'Vue d\'ensemble', section: 'Principal' },
-  { href: '/admin/agents', icon: '◉', label: 'Gestion des Agents', section: 'Principal' },
-  { href: '/admin/centres', icon: '⊞', label: 'Centres de Santé', section: 'Principal' },
-  { href: '/admin/utilisateurs', icon: '◎', label: 'Utilisateurs', section: 'Système' },
-  { href: '/admin/audit', icon: '≡', label: 'Journal d\'Audit', section: 'Système' },
-];
-
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const router = useRouter();
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [adminInfo, setAdminInfo] = useState<any>(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -22,111 +25,116 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     if (!isLoading && isAuthenticated && user?.role !== 'ADMIN') router.push('/agent-auth');
   }, [isAuthenticated, isLoading, user, router]);
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: '3px solid #e2e8f0', borderTopColor: '#10b981', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }}></div>
-          <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>Chargement de l'espace administrateur...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('adminInfo');
+    window.location.href = '/login';
+  };
 
-  const initials = user?.nom_complet?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'AD';
-  const sections = [...new Set(navItems.map(n => n.section))];
+  const navItems = [
+    {
+      href: '/admin/dashboard',
+      label: 'Tableau de bord',
+      icon: LayoutDashboard,
+    },
+    {
+      href: '/admin/agents',
+      label: 'Agents',
+      icon: Users,
+    },
+    {
+      href: '/admin/centres',
+      label: 'Centres de santé',
+      icon: Building2,
+    },
+    {
+      href: '/admin/utilisateurs',
+      label: 'Utilisateurs',
+      icon: UserCog,
+    },
+    {
+      href: '/admin/audit',
+      label: 'Audit',
+      icon: ClipboardList,
+    },
+  ];
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#f1f5f9', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      
-      {/* Sidebar */}
-      <aside style={{ width: '240px', background: '#020d0a', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', zIndex: 50, boxShadow: '4px 0 24px rgba(0,0,0,0.2)' }}>
-        
-        {/* Logo */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>🛡️</div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex min-h-screen">
+        {/* Sidebar */}
+        <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col bg-gradient-to-b from-emerald-600 to-teal-600 text-white shadow-lg lg:flex">
+          {/* Logo */}
+          <div className="flex items-center gap-4 border-b border-white/20 p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white">
+              <Building2 className="h-6 w-6" />
+            </div>
             <div>
-              <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.3px' }}>VaccinTrack</div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>Admin SNSC</div>
+              <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
+              <p className="text-sm text-white/80">Espace Admin</p>
             </div>
           </div>
+
+          {/* Navigation */}
+          <nav className="flex-1 space-y-1 p-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={
+                    'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ' +
+                    (isActive
+                      ? 'bg-white/20 text-white shadow-sm'
+                      : 'text-white/90 hover:bg-white/10 hover:text-white')
+                  }
+                >
+                  <Icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* User Profile */}
+          <div className="border-t border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                AD
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">Admin</div>
+                <div className="truncate text-xs text-white/80">
+                  {adminInfo?.email || 'admin@vaccintrack.ml'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm font-semibold text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20"
+            >
+              <LogOut className="h-5 w-5" />
+              Déconnexion
+            </button>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
+          {/* Top Bar */}
+          <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
+                <p className="text-sm text-gray-600">Panneau de contrôle</p>
+              </div>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="p-6 lg:p-8">{children}</main>
         </div>
-
-        {/* Nav grouped by section */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
-          {sections.map(section => (
-            <div key={section} style={{ marginBottom: '20px' }}>
-              <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '6px' }}>{section}</div>
-              {navItems.filter(n => n.section === section).map(item => {
-                const isActive = pathname === item.href;
-                return (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '10px', marginBottom: '3px', textDecoration: 'none',
-                      background: isActive ? 'rgba(16,185,129,0.15)' : 'transparent',
-                      border: isActive ? '1px solid rgba(16,185,129,0.25)' : '1px solid transparent',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                  >
-                    <span style={{ color: isActive ? '#34d399' : 'rgba(255,255,255,0.35)', fontSize: '16px', lineHeight: 1 }}>{item.icon}</span>
-                    <span style={{ color: isActive ? '#d1fae5' : 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600 }}>{item.label}</span>
-                    {isActive && <span style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', flexShrink: 0 }}></span>}
-                  </a>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-
-        {/* User & Logout */}
-        <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', fontWeight: 800, flexShrink: 0 }}>{initials}</div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ color: '#f1f5f9', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.nom_complet}</div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', fontWeight: 600 }}>Administrateur</div>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '10px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '13px', fontWeight: 600 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; (e.currentTarget as HTMLElement).style.color = '#fca5a5'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)'; }}
-          >
-            <span>↩</span> Déconnexion
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div style={{ flex: 1, marginLeft: '240px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Top Header */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 32px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div>
-            <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
-              {navItems.find(n => n.href === pathname)?.label || 'Administration'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
-              <span style={{ color: '#16a34a', fontSize: '12px', fontWeight: 700 }}>Système Opérationnel</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '11px', fontWeight: 800 }}>{initials}</div>
-              <span style={{ color: '#374151', fontSize: '13px', fontWeight: 700 }}>{user?.nom_complet?.split(' ')[0]}</span>
-            </div>
-          </div>
-        </header>
-
-        <main style={{ flex: 1, padding: '32px' }}>
-          {children}
-        </main>
       </div>
     </div>
   );

@@ -1,131 +1,155 @@
 'use client';
 
-import { useAuth } from '@/features/auth/useAuth';
-import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  Baby,
+  CalendarDays,
+  FileText,
+  LayoutDashboard,
+  LogOut,
+  Syringe,
+  User,
+} from 'lucide-react';
 
-const navItems = [
-  { href: '/agent/dashboard', icon: '◈', label: 'Tableau de bord' },
-  { href: '/agent/enfants', icon: '◉', label: 'Dossiers Enfants' },
-  { href: '/agent/ajout', icon: '✦', label: 'Saisie médicale' },
-  { href: '/agent/calendrier', icon: '◷', label: 'Planning' },
-  { href: '/agent/notifications', icon: '◬', label: 'SMS / Relances' },
-];
+type AgentInfo = {
+  email?: string;
+  prenom?: string;
+  nom?: string;
+  centre?: string;
+};
 
-export default function AgentLayout({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const router = useRouter();
+export default function AgentLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
+  const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.push('/agent-auth');
-  }, [isAuthenticated, isLoading, router]);
+    const storedAgent = localStorage.getItem('agentInfo');
+    if (storedAgent) {
+      setAgentInfo(JSON.parse(storedAgent));
+    }
+  }, []);
 
-  if (isLoading || !isAuthenticated) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: '3px solid #e2e8f0', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }}></div>
-          <p style={{ color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>Chargement de l'espace médical...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    localStorage.removeItem('agentInfo');
+    window.location.href = '/agent-auth';
+  };
 
-  const initials = user?.nom_complet?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() || 'AG';
+  const navItems = [
+    {
+      href: '/agent/dashboard',
+      label: 'Tableau de bord',
+      icon: LayoutDashboard,
+    },
+    {
+      href: '/agent/enfants',
+      label: 'Enfants',
+      icon: Baby,
+    },
+    {
+      href: '/agent/rendez-vous',
+      label: 'Rendez-vous',
+      icon: CalendarDays,
+    },
+    {
+      href: '/agent/vaccinations',
+      label: 'Vaccinations',
+      icon: Syringe,
+    },
+    {
+      href: '/agent/rapports',
+      label: 'Rapports',
+      icon: FileText,
+    },
+    {
+      href: '/agent/profile',
+      label: 'Mon profil',
+      icon: User,
+    },
+  ];
+
+  const initials = `${agentInfo?.prenom?.[0] || 'A'}${agentInfo?.nom?.[0] || 'G'}`;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', background: '#f1f5f9', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-      
-      {/* Sidebar */}
-      <aside style={{ width: '240px', background: '#0f172a', display: 'flex', flexDirection: 'column', position: 'fixed', height: '100vh', zIndex: 50, boxShadow: '4px 0 24px rgba(0,0,0,0.15)' }}>
-        
-        {/* Logo */}
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>💉</div>
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex min-h-screen">
+        <aside className="fixed inset-y-0 left-0 hidden w-72 flex-col bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-lg lg:flex">
+          <div className="flex items-center gap-4 border-b border-white/20 p-6">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white">
+              <User className="h-6 w-6" />
+            </div>
             <div>
-              <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px', letterSpacing: '-0.3px' }}>VaccinTrack</div>
-              <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>Agent</div>
+              <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
+              <p className="text-sm text-white/80">Espace Agent</p>
             </div>
           </div>
+
+          <nav className="flex-1 space-y-1 p-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={
+                    'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ' +
+                    (isActive
+                      ? 'bg-white/20 text-white shadow-sm'
+                      : 'text-white/90 hover:bg-white/10 hover:text-white')
+                  }
+                >
+                  <Icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="border-t border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                {initials}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">
+                  {agentInfo?.prenom || 'Agent'}
+                </div>
+                <div className="truncate text-xs text-white/80">
+                  {agentInfo?.email || 'agent@vaccintrack.ml'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm font-semibold text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20"
+            >
+              <LogOut className="h-5 w-5" />
+              Déconnexion
+            </button>
+          </div>
+        </aside>
+
+        <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
+          <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Espace Agent</h2>
+                <p className="text-sm text-gray-600">
+                  Bienvenue {agentInfo?.prenom || 'Agent'}
+                  {agentInfo?.centre ? ` - ${agentInfo.centre}` : ''}
+                </p>
+              </div>
+            </div>
+          </header>
+
+          <main className="p-6 lg:p-8">{children}</main>
         </div>
-
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
-          <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px', marginBottom: '8px' }}>Navigation</div>
-          {navItems.map(item => {
-            const isActive = pathname === item.href;
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  padding: '10px 12px',
-                  borderRadius: '10px',
-                  marginBottom: '4px',
-                  textDecoration: 'none',
-                  background: isActive ? 'rgba(59,130,246,0.15)' : 'transparent',
-                  border: isActive ? '1px solid rgba(59,130,246,0.25)' : '1px solid transparent',
-                  transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
-                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-              >
-                <span style={{ color: isActive ? '#60a5fa' : 'rgba(255,255,255,0.4)', fontSize: '18px', lineHeight: 1 }}>{item.icon}</span>
-                <span style={{ color: isActive ? '#e0f2fe' : 'rgba(255,255,255,0.55)', fontSize: '13px', fontWeight: 600 }}>{item.label}</span>
-                {isActive && <span style={{ marginLeft: 'auto', width: '6px', height: '6px', borderRadius: '50%', background: '#3b82f6', flexShrink: 0 }}></span>}
-              </a>
-            );
-          })}
-        </nav>
-
-        {/* User & Logout */}
-        <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.05)', marginBottom: '8px' }}>
-            <div style={{ width: '34px', height: '34px', borderRadius: '10px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '12px', fontWeight: 800, flexShrink: 0 }}>{initials}</div>
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ color: '#f1f5f9', fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.nom_complet}</div>
-              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600 }}>{user?.matricule}</div>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '9px 12px', borderRadius: '10px', background: 'none', border: 'none', color: 'rgba(255,255,255,0.35)', cursor: 'pointer', fontSize: '13px', fontWeight: 600, transition: 'all 0.15s' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; (e.currentTarget as HTMLElement).style.color = '#fca5a5'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.35)'; }}
-          >
-            <span style={{ fontSize: '16px' }}>↩</span> Déconnexion
-          </button>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <div style={{ flex: 1, marginLeft: '240px', display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-        {/* Top Header */}
-        <header style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '0 32px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 40, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <div>
-            <span style={{ color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
-              {navItems.find(n => n.href === pathname)?.label || 'Tableau de bord'}
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '20px', padding: '4px 12px' }}>
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
-              <span style={{ color: '#16a34a', fontSize: '12px', fontWeight: 700 }}>API Connectée</span>
-            </div>
-            <a href="/agent/ajout" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', color: '#fff', borderRadius: '10px', fontWeight: 700, fontSize: '13px', textDecoration: 'none', boxShadow: '0 2px 8px rgba(59,130,246,0.35)' }}>
-              + Saisie médicale
-            </a>
-          </div>
-        </header>
-
-        <main style={{ flex: 1, padding: '32px' }}>
-          {children}
-        </main>
       </div>
     </div>
   );
