@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/useAuth';
+import { VACCINS_MALI } from '@/constants/vaccins';
 
 export default function NouvelleVaccinationPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [enfants, setEnfants] = useState<any[]>([]);
-  const [vaccinsList, setVaccinsList] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -24,18 +24,11 @@ export default function NouvelleVaccinationPage() {
       const token = localStorage.getItem('auth_token');
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
       try {
-        const [enfantsRes, vaccinsRes] = await Promise.all([
-          fetch(`${API_URL}/enfants`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } }),
-          fetch(`${API_URL}/vaccins`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } })
-        ]);
+        const response = await fetch(`${API_URL}/enfants`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } });
         
-        if (enfantsRes.ok) {
-          const result = await enfantsRes.json();
+        if (response.ok) {
+          const result = await response.json();
           setEnfants(result.data || result);
-        }
-        if (vaccinsRes.ok) {
-          const result = await vaccinsRes.json();
-          setVaccinsList(result.data || result);
         }
       } catch (err) {
         console.error('Erreur', err);
@@ -132,12 +125,17 @@ export default function NouvelleVaccinationPage() {
                 <select 
                   required
                   value={vaccinId}
-                  onChange={(e) => setVaccinId(e.target.value)}
+                  onChange={(e) => {
+                    const selectedVaccinId = e.target.value;
+                    setVaccinId(selectedVaccinId);
+                    const selectedVaccin = VACCINS_MALI.find(v => v.id === selectedVaccinId);
+                    if (selectedVaccin) setNumeroLot(selectedVaccin.lot || '');
+                  }}
                   className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">-- Choisir un vaccin --</option>
-                  {vaccinsList.map(v => (
-                    <option key={v.id} value={v.id}>{v.nom} ({v.maladie_ciblee})</option>
+                  {VACCINS_MALI.map(v => (
+                    <option key={v.id} value={v.id}>{v.nom} ({v.cible})</option>
                   ))}
                 </select>
               </div>

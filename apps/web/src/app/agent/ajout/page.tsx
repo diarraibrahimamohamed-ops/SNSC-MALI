@@ -4,14 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/features/auth/useAuth';
 
-// ─── Vaccins contexte Mali (alignés avec le seeder API) ───────────────────────
-const VACCINS_MALI = [
-  { id: '11111111-1111-4111-8111-111111111101', nom: 'BCG', description: 'Tuberculose · Dose unique à la naissance', couleur: '#3b82f6' },
-  { id: '11111111-1111-4111-8111-111111111102', nom: 'Pentavalent 1', description: 'DTC-HepB-Hib · 1ʳᵉ dose (6 semaines)', couleur: '#8b5cf6' },
-  { id: '11111111-1111-4111-8111-111111111103', nom: 'Pentavalent 2', description: 'DTC-HepB-Hib · 2ᵉ dose (10 semaines)', couleur: '#06b6d4' },
-  { id: '11111111-1111-4111-8111-111111111104', nom: 'Rougeole', description: 'RR · 9 mois et 15-18 mois', couleur: '#f59e0b' },
-  { id: '11111111-1111-4111-8111-111111111105', nom: 'Fièvre jaune', description: 'VAA · 9 mois (obligatoire Mali)', couleur: '#10b981' },
-];
+import { VACCINS_MALI } from '@/constants/vaccins';
 
 // ─── Helpers styles ────────────────────────────────────────────────────────────
 const S = {
@@ -329,7 +322,7 @@ export default function AjoutPage() {
               <div style={S.sectionTitle}><span>💉</span> Vaccin administré</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 {VACCINS_MALI.map(v => (
-                  <button key={v.id} type="button" onClick={() => setVaccinId(v.id)}
+                  <button key={v.id} type="button" onClick={() => { setVaccinId(v.id); setNumeroLot(v.lot || ''); }}
                     style={{
                       padding: '14px 16px', border: `2px solid ${vaccinId === v.id ? v.couleur : '#e2e8f0'}`, borderRadius: '12px', background: vaccinId === v.id ? `${v.couleur}12` : '#f8fafc', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
                     }}>
@@ -337,7 +330,7 @@ export default function AjoutPage() {
                       {vaccinId === v.id && <span style={{ fontSize: '14px' }}>✓</span>}
                       <span style={{ fontWeight: 800, fontSize: '14px', color: vaccinId === v.id ? v.couleur : '#0f172a' }}>{v.nom}</span>
                     </div>
-                    <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>{v.description}</p>
+                    <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8', fontWeight: 500 }}>{v.periode}</p>
                   </button>
                 ))}
               </div>
