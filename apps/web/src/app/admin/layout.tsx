@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/useAuth';
 import {
   Building2,
   ClipboardList,
@@ -17,17 +18,22 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [adminInfo, setAdminInfo] = useState<any>(null);
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) router.push('/login');
-    if (!isLoading && isAuthenticated && user?.role !== 'ADMIN') router.push('/agent-auth');
+    if (!isLoading && !isAuthenticated) {
+      router.push('/login');
+    }
+    // Allow ADMIN, SUPER_ADMIN, etc.
+    if (!isLoading && isAuthenticated && user && !user.role?.includes('ADMIN')) {
+      router.push('/agent-auth');
+    }
   }, [isAuthenticated, isLoading, user, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminInfo');
-    window.location.href = '/login';
+    logout();
   };
 
   const navItems = [
@@ -57,6 +63,16 @@ export default function AdminLayout({
       icon: ClipboardList,
     },
   ];
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -104,9 +120,11 @@ export default function AdminLayout({
                 AD
               </div>
               <div className="min-w-0">
-                <div className="truncate text-sm font-semibold">Admin</div>
+                <div className="truncate text-sm font-semibold">
+                  {user?.nom_complet || user?.matricule || 'Admin'}
+                </div>
                 <div className="truncate text-xs text-white/80">
-                  {adminInfo?.email || 'admin@vaccintrack.ml'}
+                  {user?.email || user?.matricule || 'admin'}
                 </div>
               </div>
             </div>

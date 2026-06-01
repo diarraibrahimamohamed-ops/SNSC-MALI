@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: 'Vaccin-Track Mali | Plateforme de Suivi Vaccinal',
@@ -13,9 +14,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <head />
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className="min-h-screen bg-slate-50 text-slate-900">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/features/auth/useAuth';
 import {
   AlertTriangle,
   Baby,
   CalendarDays,
   Mail,
-  ShieldAlert,
   Syringe,
 } from 'lucide-react';
 
@@ -22,77 +22,61 @@ interface DashboardStats {
   vaccins_disponibles: number;
 }
 
-interface RecentActivity {
-  id: number;
-  type: 'vaccination' | 'rendez_vous' | 'alerte';
-  titre: string;
-  description: string;
-  heure: string;
-  statut: 'success' | 'warning' | 'info';
-}
-
-type AgentInfo = {
-  email?: string;
-  prenom?: string;
-  nom?: string;
-  centre?: string;
-};
-
 export default function AgentDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const storedAgent = localStorage.getItem('agentInfo');
-    if (storedAgent) {
-      setAgentInfo(JSON.parse(storedAgent));
+    const fetchStats = async () => {
+      const token = localStorage.getItem('auth_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+      try {
+        const response = await fetch(`${API_URL}/dashboard/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          setStats(result.data || result);
+        } else {
+          // Fallback: use zeros if API returns error
+          setStats({
+            total_enfants: 0,
+            vaccinations_aujourd_hui: 0,
+            rendez_vous_aujourd_hui: 0,
+            relances_envoyees: 0,
+            enfants_a_risque: 0,
+            couverture_vaccinale: 0,
+            enfants_en_retard: 0,
+            vaccins_disponibles: 0,
+          });
+        }
+      } catch (error) {
+        console.error('Erreur chargement dashboard:', error);
+        setStats({
+          total_enfants: 0,
+          vaccinations_aujourd_hui: 0,
+          rendez_vous_aujourd_hui: 0,
+          relances_envoyees: 0,
+          enfants_a_risque: 0,
+          couverture_vaccinale: 0,
+          enfants_en_retard: 0,
+          vaccins_disponibles: 0,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (isAuthenticated) {
+      fetchStats();
     }
-
-    setTimeout(() => {
-      setStats({
-        total_enfants: 156,
-        vaccinations_aujourd_hui: 12,
-        rendez_vous_aujourd_hui: 8,
-        relances_envoyees: 24,
-        enfants_a_risque: 3,
-        couverture_vaccinale: 87,
-        enfants_en_retard: 5,
-        vaccins_disponibles: 45,
-      });
-      setLoading(false);
-    }, 800);
-  }, []);
-
-  const recentActivities: RecentActivity[] = useMemo(
-    () => [
-      {
-        id: 1,
-        type: 'vaccination',
-        titre: 'Vaccination BCG',
-        description: 'Traoré Aïssata - 2 mois',
-        heure: '10:30',
-        statut: 'success',
-      },
-      {
-        id: 2,
-        type: 'rendez_vous',
-        titre: 'Rendez-vous manqué',
-        description: 'Konaté Mohamed - VPO',
-        heure: '09:15',
-        statut: 'warning',
-      },
-      {
-        id: 3,
-        type: 'alerte',
-        titre: 'Stock faible',
-        description: 'Vaccin ROR - 10 doses restantes',
-        heure: '08:45',
-        statut: 'info',
-      },
-    ],
-    []
-  );
+  }, [isAuthenticated]);
 
   if (loading) {
     return (
@@ -112,29 +96,12 @@ export default function AgentDashboardPage() {
     day: 'numeric',
   });
 
-  const statusClasses: Record<RecentActivity['statut'], string> = {
-    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    warning: 'border-amber-200 bg-amber-50 text-amber-700',
-    info: 'border-blue-200 bg-blue-50 text-blue-700',
-  };
-
-  const activityIcon = (type: RecentActivity['type']) => {
-    switch (type) {
-      case 'vaccination':
-        return <Syringe className="h-5 w-5" />;
-      case 'rendez_vous':
-        return <CalendarDays className="h-5 w-5" />;
-      case 'alerte':
-        return <AlertTriangle className="h-5 w-5" />;
-    }
-  };
-
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">Tableau de bord</h1>
         <p className="mt-2 text-slate-600">
-          Bienvenue {agentInfo?.prenom || 'Agent'} - Voici votre activité du jour
+          Bienvenue {user?.nom_complet || user?.matricule || 'Agent'} - Voici votre activité du jour
         </p>
         <div className="mt-4 text-sm text-slate-500">{todayLabel}</div>
       </div>
@@ -159,7 +126,7 @@ export default function AgentDashboardPage() {
               <Syringe className="h-7 w-7" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-slate-600">Vaccinations aujourd'hui</div>
+              <div className="text-sm font-semibold text-slate-600">Vaccinations aujourd&apos;hui</div>
               <div className="text-2xl font-extrabold text-slate-900">{stats?.vaccinations_aujourd_hui || 0}</div>
               <div className="text-xs text-slate-500">Séances complétées</div>
             </div>
@@ -172,7 +139,7 @@ export default function AgentDashboardPage() {
               <CalendarDays className="h-7 w-7" />
             </div>
             <div>
-              <div className="text-sm font-semibold text-slate-600">Rendez-vous aujourd'hui</div>
+              <div className="text-sm font-semibold text-slate-600">Rendez-vous aujourd&apos;hui</div>
               <div className="text-2xl font-extrabold text-slate-900">{stats?.rendez_vous_aujourd_hui || 0}</div>
               <div className="text-xs text-slate-500">Planifiés</div>
             </div>
@@ -187,7 +154,7 @@ export default function AgentDashboardPage() {
             <div>
               <div className="text-sm font-semibold text-slate-600">Relances envoyées</div>
               <div className="text-2xl font-extrabold text-slate-900">{stats?.relances_envoyees || 0}</div>
-              <div className="text-xs text-slate-500">SMS aujourd'hui</div>
+              <div className="text-xs text-slate-500">SMS aujourd&apos;hui</div>
             </div>
           </div>
         </div>
@@ -195,28 +162,34 @@ export default function AgentDashboardPage() {
 
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 lg:col-span-2">
-          <h3 className="text-lg font-bold text-slate-900">Activités récentes</h3>
-          <div className="mt-6 space-y-3">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.id}
-                className={
-                  'flex items-start gap-3 rounded-2xl border p-4 ' +
-                  statusClasses[activity.statut]
-                }
-              >
-                <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
-                  {activityIcon(activity.type)}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="truncate text-sm font-semibold">{activity.titre}</div>
-                    <div className="shrink-0 text-xs text-slate-500">{activity.heure}</div>
-                  </div>
-                  <div className="mt-1 text-sm text-slate-600">{activity.description}</div>
-                </div>
+          <h3 className="text-lg font-bold text-slate-900">Indicateurs clés</h3>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-amber-600" />
+                <span className="text-sm font-bold text-amber-700">Enfants en retard</span>
               </div>
-            ))}
+              <div className="text-3xl font-extrabold text-amber-800">{stats?.enfants_en_retard || 0}</div>
+              <div className="text-xs text-amber-600 mt-1">Nécessitent une attention</div>
+            </div>
+
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <span className="text-sm font-bold text-red-700">Enfants à risque</span>
+              </div>
+              <div className="text-3xl font-extrabold text-red-800">{stats?.enfants_a_risque || 0}</div>
+              <div className="text-xs text-red-600 mt-1">Score IA élevé</div>
+            </div>
+
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Syringe className="h-5 w-5 text-emerald-600" />
+                <span className="text-sm font-bold text-emerald-700">Couverture vaccinale</span>
+              </div>
+              <div className="text-3xl font-extrabold text-emerald-800">{stats?.couverture_vaccinale || 0}%</div>
+              <div className="text-xs text-emerald-600 mt-1">Taux actuel</div>
+            </div>
           </div>
         </div>
 
@@ -224,60 +197,30 @@ export default function AgentDashboardPage() {
           <h3 className="text-lg font-bold text-slate-900">Actions rapides</h3>
           <div className="mt-6 space-y-3">
             <Link
-              href="/agent/vaccinations"
+              href="/agent/vaccination"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              Nouvelle vaccination
+              💉 Nouvelle vaccination
             </Link>
             <Link
-              href="/agent/rendez-vous"
+              href="/agent/ajout"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
-              Planifier RDV
+              👶 Nouvel enfant
             </Link>
             <Link
               href="/agent/enfants"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
-              Ajouter un enfant
+              📋 Consulter les dossiers
             </Link>
             <Link
-              href="/agent/rapports"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
+              href="/agent/calendrier"
+              className="inline-flex w-full items-center justify-center rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
             >
-              <ShieldAlert className="h-5 w-5" />
-              Envoyer rappels
+              📅 Voir le calendrier
             </Link>
           </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-slate-600">Enfants en retard</div>
-            <AlertTriangle className="h-5 w-5 text-amber-600" />
-          </div>
-          <div className="mt-4 text-3xl font-extrabold text-rose-600">{stats?.enfants_en_retard || 0}</div>
-          <div className="mt-2 text-sm text-slate-600">Nécessitent une attention</div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-slate-600">Stock de vaccins</div>
-            <Syringe className="h-5 w-5 text-blue-600" />
-          </div>
-          <div className="mt-4 text-3xl font-extrabold text-blue-600">{stats?.vaccins_disponibles || 0}</div>
-          <div className="mt-2 text-sm text-slate-600">Doses disponibles</div>
-        </div>
-
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm font-semibold text-slate-600">Couverture vaccinale</div>
-            <Mail className="h-5 w-5 text-emerald-600" />
-          </div>
-          <div className="mt-4 text-3xl font-extrabold text-emerald-600">{stats?.couverture_vaccinale || 0}%</div>
-          <div className="mt-2 text-sm text-slate-600">Taux actuel</div>
         </div>
       </div>
     </div>

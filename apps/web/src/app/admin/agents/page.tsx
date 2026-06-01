@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/Button';
-import { Table } from '@/components/ui/Table';
+import { useAuth } from '@/features/auth/useAuth';
 import { PageHeader } from '@/components/layout/PageHeader';
+import { Table } from '@/components/ui/Table';
 
 interface Agent {
   id: string;
@@ -12,31 +12,44 @@ interface Agent {
   email: string;
   telephone: string;
   role: string;
-  centre_sante: {
+  centre_sante?: {
     nom: string;
   };
-  created_at: string;
 }
 
 export default function AdminAgentsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    fetchAgents();
-  }, []);
+    const fetchAgents = async () => {
+      const token = localStorage.getItem('auth_token');
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      
+      try {
+        const response = await fetch(`${API_URL}/agents`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          setAgents(result.data || result);
+        }
+      } catch (error) {
+        console.error('Error fetching agents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchAgents = async () => {
-    try {
-      const response = await fetch('/api/agents');
-      const data = await response.json();
-      setAgents(data);
-    } catch (error) {
-      console.error('Error fetching agents:', error);
-    } finally {
-      setLoading(false);
+    if (isAuthenticated) {
+      fetchAgents();
     }
-  };
+  }, [isAuthenticated]);
 
   const columns = [
     { key: 'nom', label: 'Nom' },
@@ -48,12 +61,18 @@ export default function AdminAgentsPage() {
   ];
 
   return (
-    <div>
-      <PageHeader title="Agents de Santé" subtitle="Gestion des agents du système">
-        <Button>Ajouter un agent</Button>
-      </PageHeader>
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Agents de Santé</h1>
+          <p className="text-sm text-gray-600 mt-1">Gestion des agents du système</p>
+        </div>
+        <button className="px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition">
+          Ajouter un agent
+        </button>
+      </div>
 
-      <div className="bg-white shadow rounded-lg">
+      <div className="bg-white shadow rounded-xl overflow-hidden border border-gray-200">
         <Table data={agents} columns={columns} loading={loading} />
       </div>
     </div>

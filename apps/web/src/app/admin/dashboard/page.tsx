@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/features/auth/useAuth';
 import {
   AlertTriangle,
   Baby,
@@ -12,11 +13,36 @@ import {
   Plus,
   Send,
   Syringe,
+  Info,
 } from 'lucide-react';
+
+function AlertItem({ type, message, time }: { type: 'critical' | 'warning' | 'info'; message: string; time: string }) {
+  const styles = {
+    critical: 'border-red-200 bg-red-50 text-red-800',
+    warning: 'border-amber-200 bg-amber-50 text-amber-800',
+    info: 'border-blue-200 bg-blue-50 text-blue-800',
+  };
+  const icons = {
+    critical: <AlertTriangle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />,
+    warning: <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />,
+    info: <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />,
+  };
+
+  return (
+    <div className={`flex gap-3 rounded-xl border p-3 ${styles[type]}`}>
+      {icons[type]}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold">{message}</p>
+        <p className="text-xs opacity-70 mt-0.5">{time}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -24,22 +50,31 @@ export default function AdminDashboard() {
         const token = localStorage.getItem('auth_token');
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
-        // Fetch Stats
         const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
         });
-        const statsData = await statsRes.json();
 
-        setStats(statsData.data);
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats(statsData.data || statsData);
+        } else {
+          setStats({});
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des données', error);
+        setStats({});
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, []);
+    if (isAuthenticated) {
+      fetchDashboardData();
+    }
+  }, [isAuthenticated]);
 
   if (loading) {
     return (
@@ -56,7 +91,7 @@ export default function AdminDashboard() {
           Tableau de bord Administrateur
         </h1>
         <p className="mt-2 text-gray-700">
-          Vue d'ensemble du système de vaccination
+          Vue d&apos;ensemble du système de vaccination
         </p>
         <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600">
           <Calendar className="h-4 w-4" />
@@ -80,12 +115,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.total_enfants || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Total Enfants
-              </div>
-              <div className="mt-0.5 text-sm text-gray-500">
-                Enregistrés dans le système
-              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Total Enfants</div>
+              <div className="mt-0.5 text-sm text-gray-500">Enregistrés dans le système</div>
             </div>
           </div>
         </div>
@@ -100,9 +131,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.vaccinations_aujourd_hui || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Vaccinations Aujourd'hui
-              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Vaccinations Aujourd&apos;hui</div>
               <div className="mt-0.5 text-sm text-gray-500">Séances complétées</div>
             </div>
           </div>
@@ -118,9 +147,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.rendez_vous_aujourd_hui || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Rendez-vous Aujourd'hui
-              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Rendez-vous Aujourd&apos;hui</div>
               <div className="mt-0.5 text-sm text-gray-500">Planifiés</div>
             </div>
           </div>
@@ -136,10 +163,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.relances_envoyees || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Relances Envoyées
-              </div>
-              <div className="mt-0.5 text-sm text-gray-500">SMS envoyés aujourd'hui</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Relances Envoyées</div>
+              <div className="mt-0.5 text-sm text-gray-500">SMS envoyés aujourd&apos;hui</div>
             </div>
           </div>
         </div>
@@ -154,9 +179,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.enfants_a_risque || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Enfants à Risque
-              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Enfants à Risque</div>
               <div className="mt-0.5 text-sm text-gray-500">Nécessitent une attention</div>
             </div>
           </div>
@@ -172,9 +195,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.couverture_vaccinale || 0}%
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">
-                Couverture Vaccinale
-              </div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Couverture Vaccinale</div>
               <div className="mt-0.5 text-sm text-gray-500">Taux national</div>
             </div>
           </div>
@@ -189,7 +210,6 @@ export default function AdminDashboard() {
               Analyse IA
             </span>
           </div>
-
           <div className="mt-6 flex min-h-[200px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-red-700 shadow-sm">
               <AlertTriangle className="h-9 w-9" />
@@ -210,7 +230,6 @@ export default function AdminDashboard() {
               National
             </span>
           </div>
-
           <div className="mt-6 flex min-h-[200px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100 p-6 text-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
               <CheckCircle2 className="h-9 w-9" />
@@ -255,54 +274,23 @@ export default function AdminDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
                 <Send className="h-5 w-5" />
               </div>
-              <div className="text-sm font-semibold">Voir l’audit</div>
+              <div className="text-sm font-semibold">Voir l&apos;audit</div>
             </Link>
           </div>
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h4 className="text-lg font-bold text-gray-900">Alertes Critiques</h4>
-          <div className="mt-6 space-y-4">
-            <div className="flex gap-4 rounded-2xl border border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-4 text-red-900">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/70">
-                <AlertTriangle className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold">Stock vaccins faible</div>
-                <div className="mt-0.5 text-sm opacity-80">BCG - 15 doses restantes</div>
-              </div>
-            </div>
-
-            <div className="flex gap-4 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-amber-100 p-4 text-amber-900">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/70">
-                <MessageSquare className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="font-semibold">RDV manqués</div>
-                <div className="mt-0.5 text-sm opacity-80">12 aujourd'hui</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Sidebar Cards */}
-        <div className="space-y-8">
-          <div className="bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/40 shadow-xl shadow-slate-200/50">
-            <h3 className="font-bold text-xl text-slate-800 mb-6 flex items-center gap-3">
-              <span className="p-2 bg-red-100 rounded-xl text-red-600">🚨</span>
-              Alertes Système
-            </h3>
-            <div className="space-y-5">
-              {stats?.enfants_a_risque > 0 ? (
-                <AlertItem type="critical" message={`${stats?.enfants_a_risque} enfants nécessitent une attention urgente`} time="Maintenant" />
-              ) : (
-                <AlertItem type="info" message="Aucune alerte critique signalée" time="À l'instant" />
-              )}
-              {stats?.relances_envoyees > 0 && (
-                <AlertItem type="warning" message={`${stats?.relances_envoyees} relances SMS ont été envoyées aujourd'hui`} time="Aujourd'hui" />
-              )}
-              <AlertItem type="info" message="Synchronisation de la base de données réussie" time="Il y a 1h" />
-            </div>
+          <h4 className="text-lg font-bold text-gray-900">Alertes Système</h4>
+          <div className="mt-6 space-y-3">
+            {(stats?.enfants_a_risque || 0) > 0 ? (
+              <AlertItem type="critical" message={`${stats?.enfants_a_risque} enfants nécessitent une attention urgente`} time="Maintenant" />
+            ) : (
+              <AlertItem type="info" message="Aucune alerte critique signalée" time="À l'instant" />
+            )}
+            {(stats?.relances_envoyees || 0) > 0 && (
+              <AlertItem type="warning" message={`${stats?.relances_envoyees} relances SMS envoyées aujourd'hui`} time="Aujourd'hui" />
+            )}
+            <AlertItem type="info" message="Synchronisation de la base de données réussie" time="Il y a 1h" />
           </div>
         </div>
       </div>

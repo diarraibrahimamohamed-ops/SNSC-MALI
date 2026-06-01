@@ -1,24 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/useAuth';
 import {
   Baby,
   CalendarDays,
-  FileText,
+  Bell,
   LayoutDashboard,
   LogOut,
   Syringe,
+  PlusCircle,
   User,
 } from 'lucide-react';
-
-type AgentInfo = {
-  email?: string;
-  prenom?: string;
-  nom?: string;
-  centre?: string;
-};
 
 export default function AgentLayout({
   children,
@@ -26,20 +21,20 @@ export default function AgentLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [agentInfo, setAgentInfo] = useState<AgentInfo | null>(null);
+  const router = useRouter();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
 
   useEffect(() => {
-    const storedAgent = localStorage.getItem('agentInfo');
-    if (storedAgent) {
-      setAgentInfo(JSON.parse(storedAgent));
+    if (!isLoading && !isAuthenticated) {
+      router.push('/agent-auth');
     }
-  }, []);
+  }, [isLoading, isAuthenticated, router]);
 
   const handleLogout = () => {
-    localStorage.removeItem('agentInfo');
-    window.location.href = '/agent-auth';
+    logout();
   };
 
+  // Navigation links matching actual existing pages
   const navItems = [
     {
       href: '/agent/dashboard',
@@ -52,28 +47,40 @@ export default function AgentLayout({
       icon: Baby,
     },
     {
-      href: '/agent/rendez-vous',
-      label: 'Rendez-vous',
-      icon: CalendarDays,
+      href: '/agent/ajout',
+      label: 'Saisie médicale',
+      icon: PlusCircle,
     },
     {
-      href: '/agent/vaccinations',
-      label: 'Vaccinations',
+      href: '/agent/vaccination',
+      label: 'Vaccination',
       icon: Syringe,
     },
     {
-      href: '/agent/rapports',
-      label: 'Rapports',
-      icon: FileText,
+      href: '/agent/calendrier',
+      label: 'Calendrier',
+      icon: CalendarDays,
     },
     {
-      href: '/agent/profile',
-      label: 'Mon profil',
-      icon: User,
+      href: '/agent/notifications',
+      label: 'SMS & Relances',
+      icon: Bell,
     },
   ];
 
-  const initials = `${agentInfo?.prenom?.[0] || 'A'}${agentInfo?.nom?.[0] || 'G'}`;
+  const initials = user
+    ? `${(user.nom_complet || user.matricule || 'AG')[0]}${(user.nom_complet || '')[1] || 'T'}`
+    : 'AG';
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -114,14 +121,14 @@ export default function AgentLayout({
           <div className="border-t border-white/20 p-6">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
-                {initials}
+                {initials.toUpperCase()}
               </div>
               <div className="min-w-0">
                 <div className="truncate text-sm font-semibold">
-                  {agentInfo?.prenom || 'Agent'}
+                  {user?.nom_complet || user?.matricule || 'Agent'}
                 </div>
                 <div className="truncate text-xs text-white/80">
-                  {agentInfo?.email || 'agent@vaccintrack.ml'}
+                  {user?.matricule || 'agent'}
                 </div>
               </div>
             </div>
@@ -141,8 +148,7 @@ export default function AgentLayout({
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Espace Agent</h2>
                 <p className="text-sm text-gray-600">
-                  Bienvenue {agentInfo?.prenom || 'Agent'}
-                  {agentInfo?.centre ? ` - ${agentInfo.centre}` : ''}
+                  Bienvenue {user?.nom_complet || user?.matricule || 'Agent'}
                 </p>
               </div>
             </div>

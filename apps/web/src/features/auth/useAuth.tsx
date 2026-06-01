@@ -3,19 +3,22 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface Agent {
+interface AuthUser {
   id: string;
-  nom_complet: string;
+  nom_complet?: string;
   matricule: string;
   role: string;
-  centre_sante_id: string;
+  centre_sante_id?: string;
+  email?: string;
+  nom?: string;
+  prenom?: string;
 }
 
 interface AuthContextType {
-  user: Agent | null;
+  user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (credentials: { matricule: string; password: string }) => Promise<Agent>;
+  login: (credentials: { matricule: string; password: string }) => Promise<AuthUser>;
   logout: () => Promise<void>;
 }
 
@@ -24,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<Agent | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
@@ -43,11 +46,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       const data = await response.json();
-      setUser(data.data);
+      const userData = data.data;
+
+      // Determine role: if no role field, check stored role
+      if (!userData.role) {
+        const storedRole = localStorage.getItem('auth_role');
+        if (storedRole) userData.role = storedRole;
+      }
+
+      setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Fetch user error:', error);
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_role');
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -81,16 +93,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.message || 'Identifiants invalides');
       }
 
       const data = await response.json();
-      const { access_token, agent } = data;
+      const { access_token } = data;
+
+      // Backend returns 'agent' key for agents, 'admin' key for admins
+      const userData: AuthUser = data.agent || data.admin;
+      if (!userData) {
+        throw new Error('Réponse serveur invalide');
+      }
+
+      // If the user came from the admin response, ensure role is set
+      if (data.admin && !userData.role) {
+        userData.role = 'ADMIN';
+      }
 
       localStorage.setItem('auth_token', access_token);
-      setUser(agent);
+      localStorage.setItem('auth_role', userData.role || '');
+      setUser(userData);
       setIsAuthenticated(true);
-      return agent;
+      return userData;
     } catch (error) {
       setIsAuthenticated(false);
       throw error;
@@ -115,6 +139,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Logout error:', error);
     } finally {
       localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_role');
       setUser(null);
       setIsAuthenticated(false);
       router.push('/');
