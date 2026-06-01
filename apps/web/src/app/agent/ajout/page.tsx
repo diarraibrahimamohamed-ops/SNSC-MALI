@@ -27,7 +27,6 @@ export default function AjoutPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<'enfant' | 'vaccination'>('enfant');
-  const [centres, setCentres] = useState<any[]>([]);
   const [enfants, setEnfants] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
@@ -39,7 +38,6 @@ export default function AjoutPage() {
   const [dateNaissance, setDateNaissance] = useState('');
   const [sexe, setSexe] = useState<'M' | 'F'>('M');
   const [identifiantSanitaire, setIdentifiantSanitaire] = useState('');
-  const [centreId, setCentreId] = useState('');
   // Tuteur
   const [nomTuteur, setNomTuteur] = useState('');
   const [prenomTuteur, setPrenomTuteur] = useState('');
@@ -60,10 +58,8 @@ export default function AjoutPage() {
     const h = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
 
     Promise.all([
-      fetch(`${API}/centres-sante`, { headers: h }).then(r => r.ok ? r.json() : null),
       fetch(`${API}/enfants`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([c, e]) => {
-      if (c) setCentres(c.data || c);
+    ]).then(([e]) => {
       if (e) setEnfants(e.data || e);
     });
   }, [isAuthenticated]);
@@ -109,7 +105,7 @@ export default function AjoutPage() {
         date_naissance: dateNaissance,
         sexe,
         identifiant_sanitaire: identifiantSanitaire || `ENF-${Date.now()}`,
-        centre_sante_id: centreId || user?.centre_sante_id,
+        centre_sante_id: user?.centre_sante_id,
         statut_vaccinal_global: 'INCONNU',
       };
 
@@ -137,7 +133,7 @@ export default function AjoutPage() {
         setSuccess(msg);
         // Reset formulaire
         setNom(''); setPrenom(''); setDateNaissance(''); setIdentifiantSanitaire(''); setSexe('M');
-        setNomTuteur(''); setPrenomTuteur(''); setTelephoneTuteur(''); setRelationTuteur('MERE'); setCentreId('');
+        setNomTuteur(''); setPrenomTuteur(''); setTelephoneTuteur(''); setRelationTuteur('MERE');
         // Rafraîchir liste enfants
         const fresh = await fetch(`${API}/enfants`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' } });
         if (fresh.ok) { const d = await fresh.json(); setEnfants(d.data || d); }
@@ -304,19 +300,6 @@ export default function AjoutPage() {
               </div>
             </div>
 
-            {/* Section Centre */}
-            <div style={S.card}>
-              <div style={S.sectionTitle}><span>🏥</span> Centre de santé rattaché</div>
-              <select style={S.select} value={centreId} onChange={e => setCentreId(e.target.value)}>
-                <option value="">— Centre de l'agent connecté (par défaut) —</option>
-                {centres.map((c: any) => (
-                  <option key={c.id} value={c.id}>{c.nom} {c.type_etablissement ? `· ${c.type_etablissement}` : ''}</option>
-                ))}
-              </select>
-              <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '8px' }}>
-                ℹ️ Laissez vide pour utiliser automatiquement votre centre d'affectation.
-              </p>
-            </div>
 
             <button type="submit" disabled={loading} style={{ padding: '16px', background: loading ? '#93c5fd' : 'linear-gradient(135deg, #3b82f6, #2563eb)', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: loading ? 'not-allowed' : 'pointer', boxShadow: '0 4px 16px rgba(59,130,246,0.35)', letterSpacing: '0.3px' }}>
               {loading ? 'Enregistrement...' : '✅ Créer le dossier enfant'}
