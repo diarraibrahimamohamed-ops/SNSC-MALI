@@ -119,11 +119,11 @@ export default function AdminAgentsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Agents de Santé</h1>
           <p className="text-sm text-gray-600 mt-1">Gestion des agents du système</p>
         </div>
-        <button 
+        <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition shadow-sm"
+          style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: '12px', color: '#fff', fontWeight: 800, fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(16,185,129,0.4)', letterSpacing: '0.3px', transition: 'all 0.2s' }}
         >
-          Ajouter un agent
+          ＋ Ajouter un agent
         </button>
       </div>
 
