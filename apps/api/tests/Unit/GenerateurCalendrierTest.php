@@ -6,16 +6,25 @@ use Tests\TestCase;
 use App\Modules\PlanVaccinal\Services\GenerateurCalendrierService;
 use App\Models\Enfant;
 use App\Models\ModeleCalendrier;
+use App\Models\Vaccin;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class GenerateurCalendrierTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected GenerateurCalendrierService $generateur;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->generateur = new GenerateurCalendrierService();
+        
+        // Créer des modèles de calendrier pour les tests
+        Vaccin::factory()->count(3)->create()->each(function ($vaccin) {
+            ModeleCalendrier::factory()->create(['vaccin_id' => $vaccin->id]);
+        });
     }
 
     public function test_genere_calendrier_pour_nouveau_ne(): void
@@ -30,9 +39,9 @@ class GenerateurCalendrierTest extends TestCase
         $this->assertGreaterThan(0, $calendrier->count());
         
         foreach ($calendrier as $dose) {
-            $this->assertObjectHasAttribute('vaccin_id', $dose);
-            $this->assertObjectHasAttribute('date_prevue', $dose);
-            $this->assertObjectHasAttribute('dose_numero', $dose);
+            $this->assertObjectHasProperty('vaccin_id', $dose);
+            $this->assertObjectHasProperty('date_prevue', $dose);
+            $this->assertObjectHasProperty('dose_numero', $dose);
         }
     }
 
@@ -46,8 +55,8 @@ class GenerateurCalendrierTest extends TestCase
 
         foreach ($calendrier as $dose) {
             $this->assertGreaterThanOrEqual(
-                $enfant->date_naissance,
-                $dose->date_prevue
+                $enfant->date_naissance->toDateString(),
+                $dose->date_prevue->toDateString()
             );
         }
     }

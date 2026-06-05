@@ -8,9 +8,12 @@ use App\Models\Enfant;
 use App\Models\ActeVaccinal;
 use App\Models\CentreSante;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class CollecteurFeaturesTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected CollecteurFeaturesService $collecteur;
 
     protected function setUp(): void
@@ -30,7 +33,7 @@ class CollecteurFeaturesTest extends TestCase
         // Ajouter quelques vaccinations
         ActeVaccinal::factory()->count(3)->create([
             'enfant_id' => $enfant->id,
-            'date_vaccination' => Carbon::now()->subMonths(rand(1, 5))
+            'administre_le' => Carbon::now()->subMonths(rand(1, 5))
         ]);
 
         $features = $this->collecteur->collecterFeatures($enfant->id);
@@ -47,14 +50,21 @@ class CollecteurFeaturesTest extends TestCase
 
     public function test_calcule_age_correctement(): void
     {
+        $now = Carbon::create(2026, 6, 20, 12, 0, 0);
+        Carbon::setTestNow($now);
+
+        // Date de naissance : 20 Octobre 2025 (8 mois pile avant 20 Juin 2026)
+        // Moins 15 jours : 5 Octobre 2025
         $enfant = Enfant::factory()->create([
-            'date_naissance' => Carbon::now()->subMonths(8)->subDays(15)
+            'date_naissance' => Carbon::create(2025, 10, 5, 12, 0, 0)
         ]);
 
         $features = $this->collecteur->collecterFeatures($enfant->id);
 
         $this->assertEquals(8, $features['age_en_mois']);
         $this->assertEquals(15, $features['jours_en_plus']);
+
+        Carbon::setTestNow(); // Reset
     }
 
     public function test_handle_enfant_sans_vaccination(): void

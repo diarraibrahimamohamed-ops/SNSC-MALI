@@ -2,173 +2,156 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/features/auth/useAuth';
 
 export default function AgentLoginPage() {
-  const [email, setEmail] = useState('');
+  const [matricule, setMatricule] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const { login, isLoading } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
-    
     try {
-      // Simuler authentification agent
-      setTimeout(() => {
-        if (email && password) {
-          // Simuler stockage des infos agent
-          localStorage.setItem('agentInfo', JSON.stringify({
-            email: email,
-            nom: email.includes('konate') ? 'Konaté' : email.includes('traore') ? 'Traoré' : 'Agent',
-            prenom: email.includes('konate') ? 'Oumar' : email.includes('traore') ? 'Aminata' : 'Santé',
-            centre: email.includes('konate') ? 'Centre de Bamako' : email.includes('traore') ? 'Centre de Sikasso' : 'Centre de santé',
-            role: 'agent'
-          }));
-          setIsLoading(false);
-          router.push('/agent/dashboard');
-        } else {
-          setError('Veuillez remplir tous les champs');
-          setIsLoading(false);
-        }
-      }, 1500);
-    } catch (err) {
-      setError('Erreur de connexion. Veuillez réessayer.');
-      setIsLoading(false);
+      const user = await login({ matricule, password });
+      if (user.role === 'AGENT' || user.role === 'INFIRMIER' || user.role === 'MEDECIN') {
+        router.push('/agent/dashboard');
+      } else {
+        setError('Accès réservé aux agents de santé.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Identifiants invalides. Vérifiez votre matricule.');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-            <span className="text-2xl text-white">👨‍⚕️</span>
+    <div style={{ minHeight: '100vh', display: 'flex', background: 'linear-gradient(135deg, #0a0f1e 0%, #0d1b3e 50%, #0a0f1e 100%)' }}>
+      
+      {/* Left Panel — Branding */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '64px', position: 'relative', overflow: 'hidden' }}>
+        {/* Decorative circle */}
+        <div style={{ position: 'absolute', top: '-100px', left: '-100px', width: '500px', height: '500px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', bottom: '-50px', right: '-50px', width: '400px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', pointerEvents: 'none' }}></div>
+        
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '64px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, #3b82f6, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px', boxShadow: '0 8px 24px rgba(59,130,246,0.4)' }}>💉</div>
+            <div>
+              <div style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '-0.5px' }}>Vaccin-Track</div>
+              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase' }}>SNSC · Mali</div>
+            </div>
           </div>
-          <h2 className="text-3xl font-bold text-gray-900">Espace Agent</h2>
-          <p className="mt-2 text-sm text-gray-600">Connectez-vous à votre espace de travail</p>
+
+          {/* Headline */}
+          <h1 style={{ color: '#fff', fontSize: '42px', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', marginBottom: '20px' }}>
+            Plateforme de<br />
+            <span style={{ background: 'linear-gradient(90deg, #60a5fa, #a78bfa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>suivi vaccinal</span><br />
+            au Mali.
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '16px', lineHeight: 1.7, maxWidth: '380px' }}>
+            Suivez en temps réel la couverture vaccinale des enfants de 0 à 5 ans dans votre zone sanitaire.
+          </p>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: '32px', marginTop: '48px' }}>
+            {[
+              { value: '15K+', label: 'Enfants suivis' },
+              { value: '98%', label: 'Taux de saisie' },
+              { value: '247', label: 'Centres actifs' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <div style={{ color: '#fff', fontSize: '24px', fontWeight: 800 }}>{stat.value}</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', fontWeight: 600, marginTop: '2px' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      </div>
 
-        {/* Formulaire */}
-        <div className="bg-white shadow-2xl rounded-2xl p-8">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email professionnel
+      {/* Right Panel — Login Form */}
+      <div style={{ width: '460px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px', background: 'rgba(255,255,255,0.04)', borderLeft: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)' }}>
+        <div style={{ width: '100%' }}>
+          
+          <div style={{ marginBottom: '36px' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '20px', padding: '6px 14px', marginBottom: '20px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#3b82f6', display: 'inline-block' }}></span>
+              <span style={{ color: '#93c5fd', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Espace Agent</span>
+            </div>
+            <h2 style={{ color: '#fff', fontSize: '28px', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.5px' }}>Connexion sécurisée</h2>
+            <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>Entrez vos identifiants professionnels pour accéder à votre espace.</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            {/* Matricule */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '13px', fontWeight: 700, marginBottom: '8px', letterSpacing: '0.5px' }}>
+                MATRICULE PROFESSIONNEL
               </label>
               <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                value={matricule}
+                onChange={e => setMatricule(e.target.value)}
+                placeholder="AGT-XXXXX"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="agent@vaccintrack.ml"
+                style={{ width: '100%', padding: '14px 16px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', color: '#fff', fontSize: '15px', fontWeight: 600, outline: 'none', boxSizing: 'border-box', letterSpacing: '1px' }}
+                onFocus={e => (e.target.style.borderColor = '#3b82f6')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
               />
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Mot de passe
+            {/* Password */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', color: 'rgba(255,255,255,0.7)', fontSize: '13px', fontWeight: 700, marginBottom: '8px', letterSpacing: '0.5px' }}>
+                MOT DE PASSE
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
+              <div style={{ position: 'relative' }}>
                 <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  style={{ width: '100%', padding: '14px 48px 14px 16px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', color: '#fff', fontSize: '15px', fontWeight: 600, outline: 'none', boxSizing: 'border-box' }}
+                  onFocus={e => (e.target.style.borderColor = '#3b82f6')}
+                  onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.12)')}
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Se souvenir de moi
-                </label>
-              </div>
-
-              <div className="text-sm">
-                <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                  Mot de passe oublié?
-                </a>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '16px', padding: 0 }}
+                >
+                  {showPassword ? '🙈' : '👁️'}
+                </button>
               </div>
             </div>
 
+            {/* Error */}
             {error && (
-              <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-                <div className="flex">
-                  <div className="flex-shrink-0">
-                    <span className="text-red-400 text-lg">⚠️</span>
-                  </div>
-                  <div className="ml-3">
-                    <div className="text-sm text-red-800">{error}</div>
-                  </div>
-                </div>
+              <div style={{ padding: '12px 16px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', color: '#fca5a5', fontSize: '13px', fontWeight: 600, marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                ⚠️ {error}
               </div>
             )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 disabled:opacity-50"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="absolute left-0 inset-y-0 flex items-center pl-3">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </span>
-                    Connexion en cours...
-                  </>
-                ) : (
-                  'Se connecter'
-                )}
-              </button>
-            </div>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{ width: '100%', padding: '16px', background: isLoading ? 'rgba(59,130,246,0.5)' : 'linear-gradient(135deg, #3b82f6, #6366f1)', border: 'none', borderRadius: '12px', color: '#fff', fontSize: '15px', fontWeight: 800, cursor: isLoading ? 'not-allowed' : 'pointer', letterSpacing: '0.5px', boxShadow: '0 8px 24px rgba(59,130,246,0.35)', transition: 'all 0.2s' }}
+            >
+              {isLoading ? 'Authentification en cours...' : 'Se connecter →'}
+            </button>
           </form>
 
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Ou</span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Vous êtes un administrateur?{' '}
-                <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                  Accès admin
-                </a>
-              </p>
-            </div>
+          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid rgba(255,255,255,0.08)', textAlign: 'center' }}>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '13px', marginBottom: '12px' }}>Vous êtes administrateur ?</p>
+            <a href="/login" style={{ color: '#60a5fa', fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>
+              🛡️ Accéder à l'espace admin
+            </a>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center text-sm text-gray-500">
-          <p>&copy; 2024 Vaccin-Track Mali. Espace Agent</p>
         </div>
       </div>
     </div>

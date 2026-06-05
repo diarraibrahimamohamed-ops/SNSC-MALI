@@ -25,15 +25,12 @@ class CentreSanteFactory extends Factory
     public function definition(): array
     {
         return [
-            'uuid' => $this->faker->uuid(),
+            'id' => (string) $this->faker->uuid(),
             'nom' => $this->faker->company(),
             'adresse' => $this->faker->address(),
-            'telephone' => $this->faker->phoneNumber(),
-            'email' => $this->faker->companyEmail(),
-            'ville' => $this->faker->city(),
-            'region' => $this->faker->state(),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'code_zone' => $this->faker->postcode(),
+            'capacite' => $this->faker->numberBetween(10, 100),
+            'cree_le' => now(),
         ];
     }
 }

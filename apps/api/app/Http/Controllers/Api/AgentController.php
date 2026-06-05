@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class AgentController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        return response()->json(['message' => 'Agents list', 'data' => []]);
+        $agents = Agent::with('centreSante')->get();
+        return response()->json(['data' => $agents]);
     }
 
     /**
@@ -20,7 +25,13 @@ class AgentController extends Controller
      */
     public function store(Request $request)
     {
-        return response()->json(['message' => 'Agent created']);
+        $this->authorize('create', Agent::class);
+
+        $agent = DB::transaction(function () use ($request) {
+            return Agent::create($request->all());
+        });
+
+        return response()->json(['data' => $agent], 201);
     }
 
     /**
@@ -28,7 +39,9 @@ class AgentController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $agent = Agent::with('centreSante')->findOrFail($id);
+        $this->authorize('view', $agent);
+        return response()->json(['data' => $agent]);
     }
 
     /**
@@ -36,7 +49,15 @@ class AgentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $agent = Agent::findOrFail($id);
+        $this->authorize('update', $agent);
+
+        $agent = DB::transaction(function () use ($request, $agent) {
+            $agent->update($request->all());
+            return $agent;
+        });
+
+        return response()->json(['data' => $agent]);
     }
 
     /**
@@ -44,6 +65,13 @@ class AgentController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $agent = Agent::findOrFail($id);
+        $this->authorize('delete', $agent);
+
+        DB::transaction(function () use ($agent) {
+            $agent->delete();
+        });
+
+        return response()->json(['message' => 'Agent supprimé avec succès']);
     }
 }

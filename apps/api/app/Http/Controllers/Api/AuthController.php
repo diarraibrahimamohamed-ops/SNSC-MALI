@@ -3,47 +3,69 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Agent;
+use App\Models\Admin;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function login(Request $request)
     {
-        //
+        $credentials = $request->validate([
+            'matricule' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        // Try agent authentication first
+        if ($token = auth('api')->attempt($credentials)) {
+            $agent = auth('api')->user();
+            if (!$agent->est_actif) {
+                auth('api')->logout();
+                return response()->json(['message' => 'Compte désactivé'], 403);
+            }
+            return $this->respondWithToken($token);
+        }
+
+        // If agent auth fails, try admin table (matricule based)
+        $admin = Admin::where('matricule', $request->string('matricule'))->first();
+        if ($admin && Hash::check($request->string('password'), $admin->password)) {
+            if (! $admin->est_actif) {
+                return response()->json(['message' => 'Compte administrateur désactivé'], 403);
+            }
+            $token = JWTAuth::fromUser($admin);
+            // Return in same format as agent for frontend consistency
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60,
+                'admin' => $admin->toArray(),
+            ]);
+        }
+
+        return response()->json(['message' => 'Identifiants invalides'], 401);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function logout()
     {
-        //
+        auth('api')->logout();
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+
+    public function me()
     {
-        //
+        return response()->json(['data' => auth('api')->user()]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    protected function respondWithToken($token)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'agent' => auth('api')->user()
+        ]);
     }
 }
