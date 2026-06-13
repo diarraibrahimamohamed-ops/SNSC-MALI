@@ -3,87 +3,55 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ScoreRisqueResource;
-use App\Models\Enfant;
-use App\Models\ScoreRisque;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\ScoreRisqueVaccinal;
+use Illuminate\Support\Facades\Http;
+use App\Models\NiveauRisque;
 
 class ScoreRisqueController extends Controller
 {
-    use AuthorizesRequests;
-    protected $vaccinationService;
-
-    public function __construct(\App\Services\VaccinationService $vaccinationService)
-    {
-        $this->vaccinationService = $vaccinationService;
-    }
-
-    public function index()
-    {
-        $scores = ScoreRisque::with(['enfant', 'rendezVous'])->get();
-        return ScoreRisqueResource::collection($scores);
-    }
-
-    public function store(Request $request)
-    {
-        $this->authorize('create', ScoreRisque::class);
-
-        $score = DB::transaction(function () use ($request) {
-            return ScoreRisque::create($request->all());
-        });
-
-        return new ScoreRisqueResource($score);
-    }
-
-    public function show(string $id)
-    {
-        $score = ScoreRisque::with(['enfant', 'rendezVous'])->findOrFail($id);
-        $this->authorize('view', $score);
-        return new ScoreRisqueResource($score);
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $score = ScoreRisque::findOrFail($id);
-        $this->authorize('update', $score);
-
-        $score = DB::transaction(function () use ($request, $score) {
-            $score->update($request->all());
-            return $score;
-        });
-
-        return new ScoreRisqueResource($score);
-    }
-
-    public function destroy(string $id)
-    {
-        $score = ScoreRisque::findOrFail($id);
-        $this->authorize('delete', $score);
-
-        DB::transaction(function () use ($score) {
-            $score->delete();
-        });
-
-        return response()->json(['message' => 'Score de risque supprimé avec succès']);
-    }
-
     public function evaluer(Request $request)
     {
-        $request->validate([
-            'enfant_id' => 'required|uuid|exists:enfants,id',
+        $data = $request->validate([
+            'enfant_id' => 'required|string',
+            'features' => 'required|array'
         ]);
 
-        $enfant = Enfant::findOrFail($request->enfant_id);
-        $this->authorize('view', $enfant);
+        try {
+            // Appeler le microservice IA (Python)
+            $iaUrl = env('IA_SERVICE_URL', 'http://127.0.0.1:8000');
+            $response = Http::post("{$iaUrl}/predict", [
+                'enfant_id' => $data['enfant_id'],
+                'features' => $data['features']
+            ]);
 
-        DB::transaction(function () use ($enfant) {
-            $this->vaccinationService->evaluerRisque($enfant);
-        });
+            if ($response->successful()) {
+                $prediction = $response->json();
+                
+                // Ensure NiveauRisque exists (FAIBLE, MOYEN, ELEVE)
+                if (!NiveauRisque::find($prediction['niveau_risque'])) {
+                    NiveauRisque::create(['code' => $prediction['niveau_risque'], 'libelle' => ucfirst(strtolower($prediction['niveau_risque']))]);
+                }
 
-        $score = $enfant->scoresRisque()->latest('calcule_le')->first();
+                $score = ScoreRisqueVaccinal::create([
+                    'scoreId' => (string) \Str::uuid(),
+                    'score' => $prediction['score'],
+                    'confiance' => $prediction['confiance'],
+                    'versionModele' => $prediction['version_modele'],
+                    'dateCalcul' => now(),
+                    'enfantId' => $data['enfant_id'],
+                    'niveauCode' => $prediction['niveau_risque']
+                ]);
 
-        return new ScoreRisqueResource($score);
+                return response()->json([
+                    'data' => $score, 
+                    'explications' => $prediction['facteurs_explicatifs'] ?? null
+                ], 201);
+            }
+
+            return response()->json(['message' => 'Erreur lors de l\'évaluation par l\'IA'], 500);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Service IA indisponible', 'error' => $e->getMessage()], 503);
+        }
     }
 }

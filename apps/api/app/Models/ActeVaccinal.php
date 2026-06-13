@@ -3,61 +3,42 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Traits\Auditable;
 
 class ActeVaccinal extends Model
 {
-    use HasFactory, HasUuids, Auditable;
-
+    protected $table = 'ActeVaccinal';
+    protected $primaryKey = 'acteId';
     protected $keyType = 'string';
     public $incrementing = false;
     public $timestamps = false;
-    protected $table = 'actes_vaccinaux';
 
     protected $fillable = [
-        'id',
-        'enfant_id',
-        'vaccin_id',
-        'dose_calendrier_enfant_id',
-        'agent_id',
-        'centre_sante_id',
-        'administre_le',
-        'numero_lot',
-        'notes',
-        'cree_le',
+        'acteId',
+        'dateActe',
+        'lotVaccin',
+        'enfantId',
+        'vaccinId',
+        'statutCode',
+        'agentId',
     ];
 
-    protected $casts = [
-        'administre_le' => 'datetime',
-        'cree_le' => 'datetime',
-    ];
-
-    public function enfant(): BelongsTo
+    public function dossierEnfant()
     {
-        return $this->belongsTo(Enfant::class, 'enfant_id');
+        return $this->belongsTo(DossierEnfant::class, 'enfantId', 'enfantId');
     }
 
-    public function vaccin(): BelongsTo
+    public function vaccin()
     {
-        return $this->belongsTo(Vaccin::class, 'vaccin_id');
+        return $this->belongsTo(Vaccin::class, 'vaccinId', 'vaccinId');
     }
 
-    public function doseCalendrierEnfant(): BelongsTo
+    public function agentSante()
     {
-        return $this->belongsTo(DoseCalendrierEnfant::class, 'dose_calendrier_enfant_id');
+        return $this->belongsTo(AgentSante::class, 'agentId', 'agentId');
     }
 
-    public function agent(): BelongsTo
+    public function statut()
     {
-        return $this->belongsTo(Agent::class, 'agent_id');
-    }
-
-    public function centreSante(): BelongsTo
-    {
-        return $this->belongsTo(CentreSante::class, 'centre_sante_id');
+        return $this->belongsTo(StatutVaccinal::class, 'statutCode', 'code');
     }
 }

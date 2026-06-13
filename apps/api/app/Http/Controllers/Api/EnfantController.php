@@ -3,112 +3,53 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreEnfantRequest;
-use App\Http\Requests\UpdateEnfantRequest;
-use App\Http\Resources\EnfantResource;
-use App\Models\Enfant;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\DossierEnfant;
+use App\Models\CalendrierVaccinal;
 
 class EnfantController extends Controller
 {
-    use AuthorizesRequests;
-    protected $vaccinationService;
-
-    public function __construct(\App\Services\VaccinationService $vaccinationService)
-    {
-        $this->vaccinationService = $vaccinationService;
-    }
-
     public function index()
     {
-        $enfants = Enfant::with(['tuteurPrincipal', 'centreSante', 'tuteurs'])->get();
-        return EnfantResource::collection($enfants);
-    }
-
-    public function store(StoreEnfantRequest $request)
-    {
-        $this->authorize('create', Enfant::class);
-
-        $enfant = DB::transaction(function () use ($request) {
-            $data = $request->validated();
-            $data['id'] = (string) \Illuminate\Support\Str::uuid();
-            
-            $enfant = Enfant::create($data);
-            
-            if ($request->has('tuteurs')) {
-                foreach ($request->input('tuteurs') as $tuteurData) {
-                    $enfant->tuteurs()->attach($tuteurData['tuteur_id'], [
-                        'type_relation' => $tuteurData['type_relation'] ?? null,
-                        'est_principal' => $tuteurData['est_principal'] ?? false,
-                    ]);
-                }
-            }
-
-            // Logique métier : Générer calendrier et évaluer risque
-            $this->vaccinationService->genererCalendrierInitial($enfant);
-            $this->vaccinationService->evaluerRisque($enfant);
-            $this->vaccinationService->planifierRendezVous($enfant);
-
-            return $enfant;
+        $enfants = DossierEnfant::with(['tuteur', 'centreSante'])->get()->map(function($e) {
+            $e->id = $e->enfantId;
+            $e->nom = "Enfant";
+            $e->prenom = "N° " . substr($e->enfantId, 0, 4);
+            $e->identifiant_sanitaire = $e->identifiantSanitaire;
+            $e->date_naissance = $e->dateNaissance;
+            return $e;
         });
-        
-        return new EnfantResource($enfant->load(['tuteurs', 'dosesCalendrier', 'scoresRisque']));
+        return response()->json(['data' => $enfants]);
     }
 
-    public function show(string $id)
+    public function store(Request $request)
     {
-        $enfant = Enfant::with(['tuteurPrincipal', 'centreSante', 'tuteurs', 'dosesCalendrier', 'actesVaccinaux', 'rendezVous', 'scoresRisque'])->findOrFail($id);
-        $this->authorize('view', $enfant);
-        return new EnfantResource($enfant);
-    }
+        $data = $request->validate([
+            'identifiant_sanitaire' => 'required|string|max:100',
+            'date_naissance' => 'required|date',
+            'sexe' => 'required|string|max:20',
+            'tuteur_principal_id' => 'required|string',
+            'centre_sante_id' => 'required|string',
+        ]);
 
-    public function update(UpdateEnfantRequest $request, string $id)
-    {
-        $enfant = Enfant::findOrFail($id);
-        $this->authorize('update', $enfant);
+        $enfantId = (string) \Str::uuid();
 
-        $enfant = DB::transaction(function () use ($request, $enfant) {
-            $enfant->update($request->validated());
-            
-            if ($request->has('tuteurs')) {
-                $enfant->tuteurs()->sync([]);
-                foreach ($request->input('tuteurs') as $tuteurData) {
-                    $enfant->tuteurs()->attach($tuteurData['tuteur_id'], [
-                        'type_relation' => $tuteurData['type_relation'] ?? null,
-                        'est_principal' => $tuteurData['est_principal'] ?? false,
-                    ]);
-                }
-            }
+        $enfant = DossierEnfant::create([
+            'enfantId' => $enfantId,
+            'identifiantSanitaire' => $data['identifiant_sanitaire'],
+            'dateNaissance' => date('Y-m-d H:i:s', strtotime($data['date_naissance'])),
+            'sexe' => $data['sexe'],
+            'tuteurId' => $data['tuteur_principal_id'],
+            'centreId' => $data['centre_sante_id'],
+        ]);
 
-            $this->vaccinationService->evaluerRisque($enfant);
+        // Auto-generate CalendrierVaccinal
+        CalendrierVaccinal::create([
+            'calendrierId' => (string) \Str::uuid(),
+            'dateCreation' => now(),
+            'enfantId' => $enfantId
+        ]);
 
-            return $enfant;
-        });
-        
-        return new EnfantResource($enfant->load(['tuteurs', 'scoresRisque']));
-    }
-
-    public function destroy(string $id)
-    {
-        $enfant = Enfant::findOrFail($id);
-        $this->authorize('delete', $enfant);
-        $enfant->delete();
-        return response()->json(['message' => 'Enfant supprimé avec succès']);
-    }
-
-    public function vaccinations(string $id)
-    {
-        $enfant = Enfant::findOrFail($id);
-        $vaccinations = $enfant->actesVaccinaux()->with(['vaccin', 'agent', 'centreSante'])->get();
-        return response()->json(['data' => $vaccinations]);
-    }
-
-    public function rendezVous(string $id)
-    {
-        $enfant = Enfant::findOrFail($id);
-        $rendezVous = $enfant->rendezVous()->with(['doseCalendrierEnfant'])->get();
-        return response()->json(['data' => $rendezVous]);
+        return response()->json(['data' => $enfant], 201);
     }
 }

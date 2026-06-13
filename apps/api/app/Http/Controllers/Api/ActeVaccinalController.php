@@ -3,65 +3,44 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StoreActeVaccinalRequest;
-use App\Http\Resources\ActeVaccinalResource;
-use App\Models\ActeVaccinal;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\ActeVaccinal;
+use App\Models\StatutVaccinal;
 
 class ActeVaccinalController extends Controller
 {
-    use AuthorizesRequests;
     public function index()
     {
-        $actes = ActeVaccinal::with(['enfant', 'vaccin', 'agent', 'centreSante'])->get();
-        return ActeVaccinalResource::collection($actes);
+        $actes = ActeVaccinal::all();
+        return response()->json(['data' => $actes]);
     }
 
-    public function store(StoreActeVaccinalRequest $request)
+    public function store(Request $request)
     {
-        $this->authorize('create', ActeVaccinal::class);
+        $data = $request->validate([
+            'enfant_id' => 'required|string',
+            'vaccin_id' => 'required|string',
+            'agent_id' => 'required|string',
+            'administre_le' => 'required|date',
+            'numero_lot' => 'nullable|string|max:100'
+        ]);
 
-        $acte = DB::transaction(function () use ($request) {
-            $acte = ActeVaccinal::create($request->validated());
-            
-            if ($request->has('dose_calendrier_enfant_id')) {
-                $dose = $acte->doseCalendrierEnfant;
-                if ($dose) {
-                    $dose->update([
-                        'statut' => 'ADMINISTREE',
-                        'administree_le' => now(),
-                    ]);
-                }
-            }
+        // Ensure StatutVaccinal exists (e.g. 'ADMINISTRE')
+        $statutCode = 'ADMINISTRE';
+        if (!StatutVaccinal::find($statutCode)) {
+            StatutVaccinal::create(['code' => $statutCode, 'libelle' => 'Administré']);
+        }
 
-            return $acte;
-        });
-        
-        return new ActeVaccinalResource($acte->load(['enfant', 'vaccin', 'agent', 'doseCalendrierEnfant']));
-    }
+        $acte = ActeVaccinal::create([
+            'acteId' => (string) \Str::uuid(),
+            'dateActe' => date('Y-m-d H:i:s', strtotime($data['administre_le'])),
+            'lotVaccin' => $data['numero_lot'] ?? null,
+            'enfantId' => $data['enfant_id'],
+            'vaccinId' => $data['vaccin_id'],
+            'statutCode' => $statutCode,
+            'agentId' => $data['agent_id'],
+        ]);
 
-    public function show(string $id)
-    {
-        $acte = ActeVaccinal::with(['enfant', 'vaccin', 'agent', 'centreSante', 'doseCalendrierEnfant'])->findOrFail($id);
-        $this->authorize('view', $acte);
-        return new ActeVaccinalResource($acte);
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $acte = ActeVaccinal::findOrFail($id);
-        $this->authorize('update', $acte);
-        $acte->update($request->all());
-        return new ActeVaccinalResource($acte);
-    }
-
-    public function destroy(string $id)
-    {
-        $acte = ActeVaccinal::findOrFail($id);
-        $this->authorize('delete', $acte);
-        $acte->delete();
-        return response()->json(['message' => 'Acte vaccinal supprimé avec succès']);
+        return response()->json(['data' => $acte], 201);
     }
 }
