@@ -6,30 +6,41 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ActeVaccinal;
 use App\Models\StatutVaccinal;
+use App\Models\Vaccin;
+use App\Support\PdmApiMapper;
 
 class ActeVaccinalController extends Controller
 {
     public function index()
     {
-        $actes = ActeVaccinal::all();
+        $actes = ActeVaccinal::all()->map(fn ($a) => PdmApiMapper::acte($a));
+
         return response()->json(['data' => $actes]);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'enfant_id' => 'required|string',
+            'enfant_id' => 'required|string|exists:DossierEnfant,enfantId',
             'vaccin_id' => 'required|string',
-            'agent_id' => 'required|string',
+            'agent_id' => 'required|string|exists:AgentSante,agentId',
+            'centre_sante_id' => 'nullable|string|exists:CentreSante,centreId',
             'administre_le' => 'required|date',
-            'numero_lot' => 'nullable|string|max:100'
+            'numero_lot' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
         ]);
 
-        // Ensure StatutVaccinal exists (e.g. 'ADMINISTRE')
-        $statutCode = 'ADMINISTRE';
-        if (!StatutVaccinal::find($statutCode)) {
-            StatutVaccinal::create(['code' => $statutCode, 'libelle' => 'Administré']);
+        if (! Vaccin::where('vaccinId', $data['vaccin_id'])->exists()) {
+            return response()->json([
+                'message' => 'Vaccin introuvable. Exécutez : php artisan db:seed --class=VaccinMaliSeeder',
+            ], 422);
         }
+
+        $statutCode = 'ADMINISTRE';
+        StatutVaccinal::firstOrCreate(
+            ['code' => $statutCode],
+            ['libelle' => 'Administré']
+        );
 
         $acte = ActeVaccinal::create([
             'acteId' => (string) \Str::uuid(),
@@ -41,6 +52,6 @@ class ActeVaccinalController extends Controller
             'agentId' => $data['agent_id'],
         ]);
 
-        return response()->json(['data' => $acte], 201);
+        return response()->json(['data' => PdmApiMapper::acte($acte)], 201);
     }
 }

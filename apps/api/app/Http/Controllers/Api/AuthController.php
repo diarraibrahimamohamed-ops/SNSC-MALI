@@ -30,11 +30,11 @@ class AuthController extends Controller
         $user = auth('api')->user();
         if ($user) {
             $user->load('centreSante');
-            // Format to match frontend expectations with 'data' wrapper
             return response()->json([
                 'data' => [
                     'id' => $user->agentId,
                     'nom' => $user->nom,
+                    'nom_complet' => $user->nom,
                     'role' => $user->role,
                     'matricule' => $user->matricule,
                     'centre_sante_id' => $user->centreId,
@@ -53,11 +53,35 @@ class AuthController extends Controller
 
     protected function respondWithToken($token)
     {
-        return response()->json([
+        $user = auth('api')->user();
+        if ($user) {
+            $user->load('centreSante');
+        }
+        
+        $userPayload = [
+            'id' => $user->agentId ?? null,
+            'nom' => $user->nom ?? null,
+            'nom_complet' => $user->nom ?? null,
+            'role' => $user->role ?? null,
+            'matricule' => $user->matricule ?? null,
+            'centre_sante_id' => $user->centreId ?? null,
+            'centreSante' => $user->centreSante ?? null
+        ];
+
+        $response = [
             'access_token' => $token,
             'token_type' => 'bearer',
             'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $this->me()->original
-        ]);
+            'user' => $userPayload
+        ];
+
+        if ($user && $user->role === 'ADMIN') {
+            $response['admin'] = $userPayload;
+        } else {
+            $response['agent'] = $userPayload;
+        }
+
+        return response()->json($response);
     }
+
 }

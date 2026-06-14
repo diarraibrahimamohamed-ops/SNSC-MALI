@@ -21,7 +21,7 @@ export default function AdminAuditPage() {
   useEffect(() => {
     const fetchAudit = async () => {
       const token = localStorage.getItem('auth_token');
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
       
       try {
         const response = await fetch(`${API_URL}/journal-audit`, {

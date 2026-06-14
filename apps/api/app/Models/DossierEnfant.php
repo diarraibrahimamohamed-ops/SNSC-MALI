@@ -15,6 +15,8 @@ class DossierEnfant extends Model
     protected $fillable = [
         'enfantId',
         'identifiantSanitaire',
+        'nom',
+        'prenom',
         'dateNaissance',
         'sexe',
         'tuteurId',

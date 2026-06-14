@@ -34,7 +34,7 @@ export default function AdminAgentsPage() {
 
   const fetchData = async () => {
     const token = localStorage.getItem('auth_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
     
     try {
       const [agentsRes, centresRes] = await Promise.all([
@@ -69,7 +69,7 @@ export default function AdminAgentsPage() {
     setSuccess('');
     
     const token = localStorage.getItem('auth_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
 
     try {
       const response = await fetch(`${API_URL}/agents`, {
@@ -97,7 +97,10 @@ export default function AdminAgentsPage() {
         fetchData(); // refresh list
       } else {
         const errData = await response.json();
-        setError(`Erreur: ${errData.message || 'Vérifiez les informations'}`);
+        const details = errData.errors
+          ? Object.values(errData.errors).flat().join(' | ')
+          : errData.error || errData.message || 'Vérifiez les informations';
+        setError(`Erreur : ${details}`);
       }
     } catch (err) {
       setError('Erreur de connexion au serveur.');

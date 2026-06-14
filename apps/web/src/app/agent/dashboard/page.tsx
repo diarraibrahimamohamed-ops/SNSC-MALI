@@ -20,6 +20,22 @@ interface DashboardStats {
   couverture_vaccinale: number;
   enfants_en_retard: number;
   vaccins_disponibles: number;
+  activite_recente?: {
+    vaccinations: {
+      id: string;
+      administre_le: string;
+      vaccin?: string;
+      enfant_nom?: string;
+      agent_nom?: string;
+    }[];
+    enfants: {
+      id: string;
+      nom: string;
+      prenom: string;
+      identifiant_sanitaire: string;
+      date_naissance: string;
+    }[];
+  };
 }
 
 export default function AgentDashboardPage() {
@@ -30,7 +46,7 @@ export default function AgentDashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       const token = localStorage.getItem('auth_token');
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
 
       try {
         const response = await fetch(`${API_URL}/dashboard/stats`, {
@@ -220,6 +236,54 @@ export default function AgentDashboardPage() {
             >
               📅 Voir le calendrier
             </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h3 className="text-lg font-bold text-slate-900">Dernières vaccinations</h3>
+          <div className="mt-4 space-y-3">
+            {(stats?.activite_recente?.vaccinations?.length ?? 0) > 0 ? (
+              stats!.activite_recente!.vaccinations.map((v) => (
+                <div key={v.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{v.enfant_nom || 'Enfant'}</p>
+                    <p className="text-xs text-slate-500">{v.vaccin || 'Vaccin'} · {v.agent_nom || 'Agent'}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {v.administre_le ? new Date(v.administre_le).toLocaleDateString('fr-FR') : '—'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                Aucune vaccination enregistrée pour le moment.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+          <h3 className="text-lg font-bold text-slate-900">Derniers dossiers enregistrés</h3>
+          <div className="mt-4 space-y-3">
+            {(stats?.activite_recente?.enfants?.length ?? 0) > 0 ? (
+              stats!.activite_recente!.enfants.map((e) => (
+                <div key={e.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{e.nom} {e.prenom}</p>
+                    <p className="text-xs text-slate-500">{e.identifiant_sanitaire}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500">
+                    {e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '—'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
+                Aucun enfant enregistré dans votre centre.
+              </p>
+            )}
           </div>
         </div>
       </div>

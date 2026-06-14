@@ -21,7 +21,7 @@ export default function NouvelleVaccinationPage() {
   useEffect(() => {
     if (!isAuthenticated) return;
     const token = localStorage.getItem('auth_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
     fetch(`${API_URL}/enfants`, { headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' } })
       .then(r => r.ok ? r.json() : null)
       .then(d => { if (d) setEnfants(d.data || d); });
@@ -30,8 +30,15 @@ export default function NouvelleVaccinationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true); setErrorMsg('');
+
+    if (!user?.id || !user?.centre_sante_id) {
+      setErrorMsg('Session agent invalide ou centre non rattaché.');
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('auth_token');
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
     try {
       const res = await fetch(`${API_URL}/actes-vaccinaux`, {
         method: 'POST',

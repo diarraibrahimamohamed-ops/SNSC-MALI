@@ -35,8 +35,15 @@ export default function AjoutPage() {
   const handleEnfantSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     setError(''); setSuccess(''); setLoading(true);
+
+    if (!user?.centre_sante_id) {
+      setError('Votre compte agent n\'est pas rattaché à un centre de santé. Contactez l\'administrateur.');
+      setLoading(false);
+      return;
+    }
+
     const token = localStorage.getItem('auth_token');
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
     const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, Accept: 'application/json' };
 
     try {
@@ -56,10 +63,13 @@ export default function AjoutPage() {
         });
         if (tuteurRes.ok) {
           const tuteurData = await tuteurRes.json();
-          tuteurId = tuteurData.data?.id || tuteurData.id || newTuteurId;
+          tuteurId = tuteurData.data?.id || tuteurData.data?.tuteurId || tuteurData.id || tuteurData.tuteurId || newTuteurId;
         } else {
           const err = await tuteurRes.json();
-          console.error('Erreur tuteur:', err);
+          const errMsg = err.errors ? Object.values(err.errors).flat().join(' | ') : err.message || 'Erreur tuteur';
+          setError(`Erreur tuteur : ${errMsg}`);
+          setLoading(false);
+          return;
         }
       }
 
@@ -72,19 +82,20 @@ export default function AjoutPage() {
         statut_vaccinal_global: 'INCONNU',
       };
 
-      if (tuteurId) {
-        payload.tuteur_principal_id = tuteurId;
-        payload.tuteurs = [{ tuteur_id: tuteurId, type_relation: relationTuteur, est_principal: true }];
+      if (!tuteurId) {
+        setError('Le tuteur est obligatoire pour créer un dossier enfant.');
+        setLoading(false);
+        return;
       }
+
+      payload.tuteur_principal_id = tuteurId;
+      payload.tuteurs = [{ tuteur_id: tuteurId, type_relation: relationTuteur, est_principal: true }];
 
       const res = await fetch(`${API}/enfants`, { method: 'POST', headers, body: JSON.stringify(payload) });
       const data = await res.json();
 
       if (res.ok) {
-        const msg = tuteurId
-          ? 'Dossier enfant créé avec succès ! Tuteur enregistré et calendrier vaccinal généré.'
-          : "Dossier enfant créé. Note : le tuteur n'a pas pu être enregistré (vérifiez les champs).";
-        setSuccess(msg);
+        setSuccess('Dossier enfant créé avec succès ! Tuteur enregistré et calendrier vaccinal généré.');
         setNom(''); setPrenom(''); setDateNaissance(''); setIdentifiantSanitaire(''); setSexe('M');
         setNomTuteur(''); setPrenomTuteur(''); setTelephoneTuteur(''); setRelationTuteur('MERE');
       } else {

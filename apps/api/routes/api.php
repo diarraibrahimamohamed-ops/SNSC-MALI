@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\CentreSanteController;
 use App\Http\Controllers\Api\VaccinController;
 use App\Http\Controllers\Api\ActeVaccinalController;
 use App\Http\Controllers\Api\AgentController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\JournalAuditController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
@@ -41,11 +43,7 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('agents', AgentController::class);
     Route::post('/scores-risque/evaluer', [App\Http\Controllers\Api\ScoreRisqueController::class, 'evaluer']);
     
-    // Quick fixes for dashboard
-    Route::get('/dashboard/stats', function() {
-        return response()->json(['data' => []]);
-    });
-    Route::get('/dashboard-admin', function() {
-        return response()->json(['data' => []]);
-    });
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard-admin', [DashboardController::class, 'admin']);
+    Route::get('/journal-audit', [JournalAuditController::class, 'index']);
 });
