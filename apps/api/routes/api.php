@@ -35,6 +35,8 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('/enfants/{enfant}/calendrier-vaccinal', [EnfantController::class, 'calendrier']);
+    Route::get('/enfants/{enfant}/vaccins-eligibles', [EnfantController::class, 'vaccinsEligibles']);
     Route::apiResource('enfants', EnfantController::class);
     Route::apiResource('tuteurs', TuteurController::class);
     Route::apiResource('centres-sante', CentreSanteController::class);

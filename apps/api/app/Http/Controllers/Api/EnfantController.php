@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\DossierEnfant;
 use App\Models\CalendrierVaccinal;
+use App\Modules\PlanVaccinal\Services\CalendrierPevService;
 use App\Support\PdmApiMapper;
+use Carbon\Carbon;
 
 class EnfantController extends Controller
 {
@@ -68,5 +70,36 @@ class EnfantController extends Controller
         $enfant->load(['actesVaccinaux', 'calendrierVaccinal.dosesPlanifiees']);
 
         return response()->json(['data' => PdmApiMapper::enfant($enfant)], 201);
+    }
+
+    public function calendrier(string $enfant, CalendrierPevService $calendrierService)
+    {
+        $dossier = $this->findEnfantAutorise($enfant);
+
+        return response()->json([
+            'data' => $calendrierService->calendrierPourEnfant($dossier),
+        ]);
+    }
+
+    public function vaccinsEligibles(Request $request, string $enfant, CalendrierPevService $calendrierService)
+    {
+        $dossier = $this->findEnfantAutorise($enfant);
+        $date = Carbon::parse($request->query('date', now()->toDateString()));
+
+        return response()->json([
+            'data' => $calendrierService->vaccinsEligibles($dossier, $date),
+        ]);
+    }
+
+    private function findEnfantAutorise(string $enfantId): DossierEnfant
+    {
+        $user = auth('api')->user();
+        $dossier = DossierEnfant::where('enfantId', $enfantId)->firstOrFail();
+
+        if ($user && $user->role !== 'ADMIN' && $user->centreId && $dossier->centreId !== $user->centreId) {
+            abort(403, 'Accès non autorisé à ce dossier enfant.');
+        }
+
+        return $dossier;
     }
 }
