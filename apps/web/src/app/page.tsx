@@ -71,7 +71,7 @@ export default function Home() {
             <div className="space-y-8 animate-slide-up">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/20 rounded-full border border-emerald-400/30 backdrop-blur-sm">
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-xs font-semibold text-emerald-300">Plateforme Gouvernementale Officielle</span>
+                <span className="text-xs font-semibold text-emerald-300">Plateforme Collaborative</span>
               </div>
               
               <div className="space-y-6">
