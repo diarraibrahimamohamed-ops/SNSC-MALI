@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'telerivet' => [
+        'project_id' => env('TELERIVET_PROJECT_ID'),
+        'route_id' => env('TELERIVET_ROUTE_ID'),
+        'api_key' => env('TELERIVET_API_KEY'),
+    ],
+
 ];

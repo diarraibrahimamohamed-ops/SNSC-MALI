@@ -58,6 +58,9 @@ class AuthController extends Controller
             $user->load('centreSante');
         }
         
+        // Device fingerprint: User-Agent + IP /24
+        $deviceFingerprint = $this->generateDeviceFingerprint();
+        
         $userPayload = [
             'id' => $user->agentId ?? null,
             'nom' => $user->nom ?? null,
@@ -65,7 +68,8 @@ class AuthController extends Controller
             'role' => $user->role ?? null,
             'matricule' => $user->matricule ?? null,
             'centre_sante_id' => $user->centreId ?? null,
-            'centreSante' => $user->centreSante ?? null
+            'centreSante' => $user->centreSante ?? null,
+            'device_fingerprint' => $deviceFingerprint
         ];
 
         $response = [
@@ -82,6 +86,21 @@ class AuthController extends Controller
         }
 
         return response()->json($response);
+    }
+
+    /**
+     * Generate device fingerprint from User-Agent and IP /24
+     */
+    protected function generateDeviceFingerprint(): string
+    {
+        $userAgent = request()->userAgent();
+        $ip = request()->ip();
+        
+        // Get /24 subnet
+        $ipParts = explode('.', $ip);
+        $ipSubnet = $ipParts[0] . '.' . $ipParts[1] . '.' . $ipParts[2] . '.0';
+        
+        return hash('sha256', $userAgent . '|' . $ipSubnet);
     }
 
 }

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \App\Http\Middleware\HandleCors::class,
         ]);
+        
+        // Register device fingerprint verification middleware
+        $middleware->alias([
+            'device.verify' => \App\Http\Middleware\VerifyDeviceFingerprint::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {

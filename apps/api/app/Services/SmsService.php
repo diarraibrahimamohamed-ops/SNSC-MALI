@@ -51,6 +51,7 @@ class SmsService
 
         // Choix provider
         return match ($this->provider) {
+            'telerivet' => $this->sendViaTelerivet($phoneNumber, $message),
             'orange' => $this->sendViaOrange($phoneNumber, $message),
             'twilio' => $this->sendViaTwilio($phoneNumber, $message),
             default => $this->sendLocal($phoneNumber, $message),
@@ -118,6 +119,92 @@ class SmsService
                     "https://api.twilio.com/2010-04-01/Accounts/" . config('sms.twilio.account_sid') . "/Messages.json",
                     [
                         'To' => $phoneNumber,
+                        'From' => config('sms.twilio.phone_number'),
+                        'Body' => $message
+                    ]
+                );
+
+            if ($response->successful()) {
+                return [
+                    'success' => true,
+                    'message' => 'SMS envoyé (Twilio)',
+                    'sid' => $response->json('sid')
+                ];
+            }
+
+            Log::error('Erreur Twilio', ['body' => $response->body()]);
+
+            return [
+                'success' => false,
+                'error' => 'Erreur Twilio',
+            ];
+
+        } catch (\Throwable $e) {
+            Log::error('Exception Twilio', ['error' => $e->getMessage()]);
+
+            return [
+                'success' => false,
+                'error' => 'Exception Twilio',
+            ];
+        }
+    }
+
+    /**
+     * Mode local (fallback)
+     */
+    private function sendLocal(string $phoneNumber, string $message): array
+    {
+        Log::info('SMS local', [
+            'to' => $phoneNumber,
+            'message' => $message
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'SMS loggé localement',
+            'sid' => 'local_' . uniqid()
+        ];
+    }
+
+    /**
+     * Validation Mali (+223)
+     */
+    public function validatePhoneNumber(string $phoneNumber): bool
+    {
+        return preg_match('/^\+223[7-9][0-9]{7}$/', $phoneNumber);
+    }
+
+    /**
+     * Formatage Mali
+     */
+    public function formatPhoneNumber(string $phoneNumber): string
+    {
+        // Supprimer espaces
+        $phoneNumber = preg_replace('/\s+/', '', $phoneNumber);
+
+        // Format local → international
+        if (preg_match('/^[7-9][0-9]{7}$/', $phoneNumber)) {
+            return '+223' . $phoneNumber;
+        }
+
+        if (preg_match('/^0[7-9][0-9]{7}$/', $phoneNumber)) {
+            return '+223' . substr($phoneNumber, 1);
+        }
+
+        return $phoneNumber;
+    }
+
+    /**
+     * Mask phone number for logging (privacy)
+     */
+    private function maskPhoneNumber(string $phone): string
+    {
+        if (strlen($phone) < 4) {
+            return '***';
+        }
+        return substr($phone, 0, -4) . '****';
+    }
+}                       'To' => $phoneNumber,
                         'From' => config('sms.twilio.phone_number'),
                         'Body' => $message
                     ]

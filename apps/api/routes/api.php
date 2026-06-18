@@ -27,7 +27,8 @@ Route::prefix('auth')->group(function () {
         return response('', 200);
     });
     
-    Route::post('/login', [AuthController::class, 'login']);
+    // Rate limiting: 5 requests per minute for login
+    Route::middleware(['throttle:5,1'])->post('/login', [AuthController::class, 'login']);
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/me', [AuthController::class, 'me']);
