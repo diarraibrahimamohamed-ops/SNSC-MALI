@@ -3,24 +3,66 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\AgentSante;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $request->validate([
-            'matricule' => 'required|string',
-            'password' => 'required|string',
-        ]);
-
         $credentials = $request->only('matricule', 'password');
+        $key = 'login:'.$request->ip().':'.$request->input('matricule');
+        
+        // Vérifier d'abord si le compte est déjà verrouillé AVANT de tenter l'authentification
+        $attempts = RateLimiter::attempts($key);
+        if ($attempts >= 20) {
+            return response()->json([
+                'message' => 'Compte verrouillé. Contactez l\'administrateur.',
+                'locked' => true
+            ], 423);
+        } elseif ($attempts >= 10) {
+            return response()->json([
+                'message' => 'Trop de tentatives. Réessayez dans 15 minutes.',
+                'retry_after' => 900
+            ], 429);
+        } elseif ($attempts >= 5) {
+            return response()->json([
+                'message' => 'Trop de tentatives. Réessayez dans 1 minute.',
+                'retry_after' => 60
+            ], 429);
+        }
 
         if (! $token = auth('api')->attempt($credentials)) {
+            // Incrémenter le compteur d'échecs pour les identifiants invalides
+            RateLimiter::hit($key, now()->addHours(1));
+            $attempts = RateLimiter::attempts($key);
+            
+            // Vérifier le verrouillage progressif après incrémentation
+            if ($attempts >= 20) {
+                return response()->json([
+                    'message' => 'Compte verrouillé. Contactez l\'administrateur.',
+                    'locked' => true
+                ], 423);
+            } elseif ($attempts >= 10) {
+                return response()->json([
+                    'message' => 'Trop de tentatives. Réessayez dans 15 minutes.',
+                    'retry_after' => 900
+                ], 429);
+            } elseif ($attempts >= 5) {
+                return response()->json([
+                    'message' => 'Trop de tentatives. Réessayez dans 1 minute.',
+                    'retry_after' => 60
+                ], 429);
+            }
+            
             return response()->json(['message' => 'Identifiants invalides'], 401);
         }
+
+        // Clear login attempts on successful login
+        LoginRequest::clearLoginAttempts($request->ip(), $request->input('matricule'));
 
         return $this->respondWithToken($token);
     }

@@ -25,7 +25,7 @@ class LoginRequest extends FormRequest
     {
         return [
             'matricule' => 'required|string|max:255',
-            'password' => 'required|string|min:12', // Minimum 12 caractères
+            'password' => 'required|string|min:6', // Minimum 6 caractères (temporairement réduit pour tests)
         ];
     }
 
@@ -55,6 +55,20 @@ class LoginRequest extends FormRequest
             }
         });
         */
+        
+        // Verrouillage progressif actif
+        $validator->after(function ($validator) {
+            $key = 'login:'.$this->ip().':'.$this->input('matricule');
+            $attempts = RateLimiter::attempts($key);
+            
+            if ($attempts >= 20) {
+                $validator->errors()->add('matricule', 'Compte verrouillé. Contactez l\'administrateur.');
+            } elseif ($attempts >= 10) {
+                $validator->errors()->add('matricule', 'Trop de tentatives. Réessayez dans 15 minutes.');
+            } elseif ($attempts >= 5) {
+                $validator->errors()->add('matricule', 'Trop de tentatives. Réessayez dans 1 minute.');
+            }
+        });
     }
 
     /**

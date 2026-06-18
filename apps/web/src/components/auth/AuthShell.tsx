@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Shield, Lock, CheckCircle2, Activity, Zap } from 'lucide-react';
 
 type AuthVariant = 'agent' | 'admin';
@@ -51,6 +52,20 @@ const variantConfig = {
 
 export function AuthShell({ variant, title, subtitle, children, footer }: AuthShellProps) {
   const config = variantConfig[variant];
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Generate deterministic particle positions
+  const particles = isClient ? [...Array(15)].map((_, i) => ({
+    id: i,
+    left: ((i * 7) % 100) + '%',
+    top: ((i * 13) % 100) + '%',
+    animationDelay: `${(i * 0.3) % 5}s`,
+    animationDuration: `${5 + (i * 0.7) % 10}s`,
+  })) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 overflow-hidden relative">
@@ -66,15 +81,15 @@ export function AuthShell({ variant, title, subtitle, children, footer }: AuthSh
 
       {/* Floating Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(15)].map((_, i) => (
+        {particles.map((particle) => (
           <div
-            key={i}
+            key={particle.id}
             className="absolute w-2 h-2 bg-emerald-400/30 rounded-full animate-float"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 10}s`,
+              left: particle.left,
+              top: particle.top,
+              animationDelay: particle.animationDelay,
+              animationDuration: particle.animationDuration,
             }}
           />
         ))}

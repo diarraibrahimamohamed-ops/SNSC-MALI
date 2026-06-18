@@ -76,5 +76,20 @@ async def get_audit_logs(request: Request):
         "logs": audit_log[-100:]  # Return last 100 entries
     }
 
+@app.get("/")
+async def root():
+    """Route racine avec informations sur l'API"""
+    return {
+        "service": "Vaccin Track IA Service",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "/health",
+            "predict": "/predict",
+            "audit_logs": "/audit/logs",
+            "docs": "/docs"
+        },
+        "documentation": "Visitez /docs pour la documentation interactive Swagger"
+    }
+
 app.include_router(health_router)
 app.include_router(predict_router)
