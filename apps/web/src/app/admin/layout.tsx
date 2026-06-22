@@ -9,6 +9,8 @@ import {
   ClipboardList,
   LayoutDashboard,
   LogOut,
+  Menu,
+  Slash,
   UserCog,
   Users,
 } from 'lucide-react';
@@ -31,6 +33,8 @@ export default function AdminLayout({
       router.push('/agent-auth');
     }
   }, [isAuthenticated, isLoading, user, router]);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -138,11 +142,98 @@ export default function AdminLayout({
           </div>
         </aside>
 
+        {/* Mobile Drawer */}
+        <div className={
+          `fixed inset-y-0 left-0 z-20 w-72 transform bg-emerald-600 text-white shadow-xl transition duration-300 lg:hidden ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`
+        }>
+          <div className="flex items-center justify-between gap-4 border-b border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white">
+                <Building2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
+                <p className="text-sm text-white/80">Espace Admin</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white transition hover:bg-white/25"
+            >
+              <Slash className="h-5 w-5" />
+            </button>
+          </div>
+
+          <nav className="space-y-1 p-4">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={
+                    'flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition ' +
+                    (isActive
+                      ? 'bg-white/20 text-white shadow-sm'
+                      : 'text-white/90 hover:bg-white/10 hover:text-white')
+                  }
+                >
+                  <Icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="border-t border-white/20 p-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-sm font-bold">
+                AD
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold">
+                  {user?.nom_complet || user?.matricule || 'Admin'}
+                </div>
+                <div className="truncate text-xs text-white/80">
+                  {user?.email || user?.matricule || 'admin'}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setMobileOpen(false);
+                handleLogout();
+              }}
+              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/15 px-4 py-3 text-sm font-semibold text-white ring-1 ring-inset ring-white/25 transition hover:bg-white/20"
+            >
+              <LogOut className="h-5 w-5" />
+              Déconnexion
+            </button>
+          </div>
+        </div>
+
+        {/* Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-10 bg-black/40 lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+
         {/* Main Content */}
         <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
           {/* Top Bar */}
           <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-4">
+              <button
+                type="button"
+                onClick={() => setMobileOpen(true)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 lg:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
                 <p className="text-sm text-gray-600">Panneau de contrôle</p>

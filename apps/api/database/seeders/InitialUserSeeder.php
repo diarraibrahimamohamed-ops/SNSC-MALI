@@ -16,39 +16,45 @@ class InitialUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Créer un centre de santé
-        $centre = CentreSante::create([
-            'id' => (string) Str::uuid(),
-            'nom' => 'Centre de Santé de Référence (Bamako)',
-            'region' => 'Bamako',
-            'ville' => 'Bamako',
-            'code_zone' => 'CSREF-BKO',
-            'adresse' => 'Quartier du Fleuve, Bamako',
-            'capacite' => 500,
-        ]);
+        // 1. Créer ou récupérer un centre de santé
+        $centre = CentreSante::firstOrCreate(
+            ['code_zone' => 'CSREF-BKO'],
+            [
+                'id' => (string) Str::uuid(),
+                'nom' => 'Centre de Santé de Référence (Bamako)',
+                'region' => 'Bamako',
+                'ville' => 'Bamako',
+                'adresse' => 'Quartier du Fleuve, Bamako',
+                'capacite' => 500,
+            ]
+        );
 
-        // 2. Créer les comptes
-        $admin = Agent::create([
-            'id' => (string) Str::uuid(),
-            'centre_sante_id' => $centre->id,
-            'nom_complet' => 'Admin Vaccin-Track',
-            'matricule' => 'ADM-001',
-            'password' => Hash::make('admin123'),
-            'role' => 'ADMIN',
-            'telephone' => '22370000001',
-            'est_actif' => true,
-        ]);
+        // 2. Créer ou mettre à jour les comptes
+        $admin = Agent::updateOrCreate(
+            ['matricule' => 'ADM-001'],
+            [
+                'id' => (string) Str::uuid(),
+                'centre_sante_id' => $centre->id,
+                'nom_complet' => 'Admin Vaccin-Track',
+                'password' => Hash::make('admin123'),
+                'role' => 'ADMIN',
+                'telephone' => '22370000001',
+                'est_actif' => true,
+            ]
+        );
 
-        $agent = Agent::create([
-            'id' => (string) Str::uuid(),
-            'centre_sante_id' => $centre->id,
-            'nom_complet' => 'Dr. Oumar Konaté',
-            'matricule' => 'AGT-001',
-            'password' => Hash::make('agent123'),
-            'role' => 'AGENT',
-            'telephone' => '22370000002',
-            'est_actif' => true,
-        ]);
+        $agent = Agent::updateOrCreate(
+            ['matricule' => 'AGT-001'],
+            [
+                'id' => (string) Str::uuid(),
+                'centre_sante_id' => $centre->id,
+                'nom_complet' => 'Dr. Oumar Konaté',
+                'password' => Hash::make('agent123'),
+                'role' => 'AGENT',
+                'telephone' => '22370000002',
+                'est_actif' => true,
+            ]
+        );
 
         // 3. Créer des Vaccins
         $bcg = Vaccin::firstOrCreate(['code' => 'BCG'], [
@@ -71,29 +77,37 @@ class InitialUserSeeder extends Seeder
         ];
 
         foreach ($enfants as $index => $data) {
-            $enfant = Enfant::create([
-                'id' => (string) Str::uuid(),
-                'identifiant_sanitaire' => 'MLI-' . (1000 + $index),
-                'nom' => $data['nom'],
-                'prenom' => $data['prenom'],
-                'date_naissance' => $data['date_naissance'],
-                'sexe' => $data['sexe'],
-                'centre_sante_id' => $centre->id,
-                'statut_vaccinal_global' => 'A_JOUR',
-            ]);
+            $enfant = Enfant::firstOrCreate(
+                ['identifiant_sanitaire' => 'MLI-' . (1000 + $index)],
+                [
+                    'id' => (string) Str::uuid(),
+                    'nom' => $data['nom'],
+                    'prenom' => $data['prenom'],
+                    'date_naissance' => $data['date_naissance'],
+                    'sexe' => $data['sexe'],
+                    'centre_sante_id' => $centre->id,
+                    'statut_vaccinal_global' => 'A_JOUR',
+                ]
+            );
 
             // Ajouter un acte vaccinal pour certains
             if (rand(0, 1)) {
-                ActeVaccinal::create([
-                    'id' => (string) Str::uuid(),
-                    'enfant_id' => $enfant->id,
-                    'vaccin_id' => $bcg->id,
-                    'agent_id' => $agent->id,
-                    'date_administration' => $data['date_naissance']->copy()->addDays(1),
-                    'dose_numero' => 1,
-                    'lot_numero' => 'LOT-' . rand(100, 999),
-                    'cree_le' => Carbon::now(),
-                ]);
+                ActeVaccinal::firstOrCreate(
+                    [
+                        'enfant_id' => $enfant->id,
+                        'vaccin_id' => $bcg->id,
+                        'agent_id' => $agent->id,
+                        'administre_le' => $data['date_naissance']->copy()->addDays(1),
+                    ],
+                    [
+                        'id' => (string) Str::uuid(),
+                        'dose_calendrier_enfant_id' => null,
+                        'centre_sante_id' => $centre->id,
+                        'numero_lot' => 'LOT-' . rand(100, 999),
+                        'notes' => null,
+                        'cree_le' => Carbon::now(),
+                    ]
+                );
             }
         }
     }
