@@ -57,10 +57,6 @@ class ActeVaccinalController extends Controller
         }
 
         $enfant = DossierEnfant::where('enfantId', $data['enfant_id'])->firstOrFail();
-        $user = auth('api')->user();
-        if ($user && $user->role !== 'ADMIN' && $user->centreId && $enfant->centreId !== $user->centreId) {
-            return response()->json(['message' => 'Vous ne pouvez vacciner que les enfants de votre centre.'], 403);
-        }
 
         $dateAdmin = Carbon::parse($data['administre_le']);
         $validation = $validationService->valider($enfant, $vaccin, $dateAdmin);
@@ -90,7 +86,7 @@ class ActeVaccinalController extends Controller
         ]);
 
         $enfant->load('calendrierVaccinal');
-        $rdvService->marquerDoseAdministree($enfant, $dateAdmin);
+        $rdvService->marquerDoseAdministree($enfant, $dateAdmin, $data['vaccin_id']);
         $prochainRdv = $rdvService->recalculerProchainRendezVous($enfant);
         $prochaineEcheance = $rdvService->prochaineEcheance($enfant);
 

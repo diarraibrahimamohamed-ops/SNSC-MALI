@@ -55,6 +55,7 @@ class CalendrierPevService
                 'datePrevue' => $datePrevue,
                 'dateAdministration' => null,
                 'calendrierId' => $calendrier->calendrierId,
+                'vaccinId' => $vaccin->vaccinId,
             ]);
         }
     }

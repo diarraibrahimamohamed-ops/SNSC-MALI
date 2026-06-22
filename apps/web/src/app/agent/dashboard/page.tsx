@@ -131,7 +131,7 @@ export default function AgentDashboardPage() {
             <div>
               <div className="text-sm font-semibold text-slate-600">Enfants suivis</div>
               <div className="text-2xl font-extrabold text-slate-900">{stats?.total_enfants || 0}</div>
-              <div className="text-xs text-slate-500">Dans votre centre</div>
+              <div className="text-xs text-slate-500">Tous centres CSCOM</div>
             </div>
           </div>
         </div>
@@ -269,7 +269,11 @@ export default function AgentDashboardPage() {
           <div className="mt-4 space-y-3">
             {(stats?.activite_recente?.enfants?.length ?? 0) > 0 ? (
               stats!.activite_recente!.enfants.map((e) => (
-                <div key={e.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                <Link
+                  key={e.id}
+                  href={`/agent/enfants/${e.id}`}
+                  className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 hover:bg-blue-50 hover:border-blue-100 transition-colors"
+                >
                   <div>
                     <p className="text-sm font-bold text-slate-900">{e.nom} {e.prenom}</p>
                     <p className="text-xs text-slate-500">{e.identifiant_sanitaire}</p>
@@ -277,11 +281,11 @@ export default function AgentDashboardPage() {
                   <span className="text-xs font-semibold text-slate-500">
                     {e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '—'}
                   </span>
-                </div>
+                </Link>
               ))
             ) : (
               <p className="rounded-xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-500">
-                Aucun enfant enregistré dans votre centre.
+                Aucun enfant enregistré pour le moment.
               </p>
             )}
           </div>

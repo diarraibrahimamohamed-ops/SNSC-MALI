@@ -16,22 +16,38 @@ class RendezVousService
     ) {}
 
     /**
-     * Marque la prochaine dose planifiée comme administrée.
+     * Marque la dose planifiée correspondant au vaccin administré.
      */
-    public function marquerDoseAdministree(DossierEnfant $enfant, Carbon $dateAdmin): void
+    public function marquerDoseAdministree(DossierEnfant $enfant, Carbon $dateAdmin, ?string $vaccinId = null): void
     {
         $calendrier = $enfant->calendrierVaccinal;
         if (! $calendrier) {
             return;
         }
 
-        $dose = DosePlanifie::where('calendrierId', $calendrier->calendrierId)
-            ->whereNull('dateAdministration')
-            ->orderBy('datePrevue')
-            ->first();
+        $query = DosePlanifie::where('calendrierId', $calendrier->calendrierId)
+            ->whereNull('dateAdministration');
+
+        if ($vaccinId) {
+            $query->where('vaccinId', $vaccinId);
+        }
+
+        $dose = $query->orderBy('datePrevue')->first();
+
+        // Doses anciennes sans vaccinId : marquer la première dose en attente
+        if (! $dose && $vaccinId) {
+            $dose = DosePlanifie::where('calendrierId', $calendrier->calendrierId)
+                ->whereNull('dateAdministration')
+                ->orderBy('datePrevue')
+                ->first();
+        }
 
         if ($dose) {
-            $dose->update(['dateAdministration' => $dateAdmin]);
+            $updates = ['dateAdministration' => $dateAdmin];
+            if ($vaccinId && empty($dose->vaccinId)) {
+                $updates['vaccinId'] = $vaccinId;
+            }
+            $dose->update($updates);
         }
     }
 

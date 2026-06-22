@@ -101,8 +101,11 @@ export default function NouvelleVaccinationPage() {
         setSuccess(true);
         setTimeout(() => router.push('/agent/dashboard'), 2500);
       } else {
-        const d = await res.json();
-        setErrorMsg(d.message || (d.errors ? Object.values(d.errors).flat().join(' | ') : 'Erreur inconnue.'));
+        const d = await res.json().catch(() => ({}));
+        const msg = d.message
+          || (d.errors ? Object.values(d.errors).flat().join(' | ') : null)
+          || (res.status >= 500 ? `Erreur serveur (${res.status}). Réessayez ou contactez l'administrateur.` : 'Erreur inconnue.');
+        setErrorMsg(msg);
       }
     } catch {
       setErrorMsg('Erreur réseau.');
@@ -233,7 +236,12 @@ export default function NouvelleVaccinationPage() {
             <div style={titleStyle}><span>📋</span> Détails complémentaires</div>
             <div style={{ marginTop: '0' }}>
               <label style={labelStyle}>Numéro de lot</label>
-              <input value={numeroLot} onChange={e => setNumeroLot(e.target.value)} placeholder="Auto-rempli" style={inputStyle} />
+              <input
+                value={numeroLot}
+                onChange={e => setNumeroLot(e.target.value)}
+                placeholder="Ex. PNT-MALI-001 (optionnel)"
+                style={inputStyle}
+              />
             </div>
             <div style={{ marginTop: '14px' }}>
               <label style={labelStyle}>Observations</label>

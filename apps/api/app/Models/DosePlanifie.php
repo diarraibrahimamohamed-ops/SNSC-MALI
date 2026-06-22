@@ -17,11 +17,17 @@ class DosePlanifie extends Model
         'datePrevue',
         'dateAdministration',
         'calendrierId',
+        'vaccinId',
     ];
 
     public function calendrierVaccinal()
     {
         return $this->belongsTo(CalendrierVaccinal::class, 'calendrierId', 'calendrierId');
+    }
+
+    public function vaccin()
+    {
+        return $this->belongsTo(Vaccin::class, 'vaccinId', 'vaccinId');
     }
 
     public function rendezVous()

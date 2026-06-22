@@ -133,9 +133,12 @@ export default function EnfantsPage() {
                       </span>
                     </td>
                     <td className="p-6 text-right">
-                      <button className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all font-bold text-sm shadow-sm group-hover:shadow">
+                      <Link
+                        href={`/agent/enfants/${enfant.id}`}
+                        className="inline-block px-4 py-2 bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all font-bold text-sm shadow-sm group-hover:shadow"
+                      >
                         Voir Dossier
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

@@ -62,23 +62,11 @@ class SmsMessageBuilder
 
     private function nomVaccinPourDose(RendezVousVaccinal $rdv): string
     {
-        $dose = $rdv->dosePlanifiee;
-        if (! $dose) {
-            return 'vaccination PEV';
+        $vaccin = $rdv->dosePlanifiee?->vaccin;
+        if ($vaccin) {
+            return $vaccin->libelle;
         }
 
-        $enfant = $rdv->dossierEnfant;
-        if (! $enfant) {
-            return 'vaccination PEV';
-        }
-
-        $calendrier = app(\App\Modules\PlanVaccinal\Services\CalendrierPevService::class)
-            ->calendrierPourEnfant($enfant);
-
-        $prochain = $calendrier
-            ->filter(fn ($d) => $d['date_prevue'] === Carbon::parse($dose->datePrevue)->toDateString())
-            ->first();
-
-        return $prochain['nom'] ?? 'vaccination PEV';
+        return 'vaccination PEV';
     }
 }

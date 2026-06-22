@@ -13,11 +13,8 @@ class DashboardController extends Controller
 
     public function stats()
     {
-        $user = auth('api')->user();
-        $centreId = $user && $user->role !== 'ADMIN' ? $user->centreId : null;
-
         return response()->json([
-            'data' => $this->statsService->getStats($centreId),
+            'data' => $this->statsService->getStats(null),
         ]);
     }
 

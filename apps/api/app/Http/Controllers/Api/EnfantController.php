@@ -27,10 +27,6 @@ class EnfantController extends Controller
             'calendrierVaccinal.dosesPlanifiees',
         ]);
 
-        if ($user && $user->role !== 'ADMIN' && $user->centreId) {
-            $query->where('centreId', $user->centreId);
-        }
-
         if ($request->filled('identifiant_sanitaire')) {
             $query->where('identifiantSanitaire', $request->query('identifiant_sanitaire'));
         }
@@ -189,13 +185,6 @@ class EnfantController extends Controller
 
     private function findEnfantAutorise(string $enfantId): DossierEnfant
     {
-        $user = auth('api')->user();
-        $dossier = DossierEnfant::where('enfantId', $enfantId)->firstOrFail();
-
-        if ($user && $user->role !== 'ADMIN' && $user->centreId && $dossier->centreId !== $user->centreId) {
-            abort(403, 'Accès non autorisé à ce dossier enfant.');
-        }
-
-        return $dossier;
+        return DossierEnfant::where('enfantId', $enfantId)->firstOrFail();
     }
 }

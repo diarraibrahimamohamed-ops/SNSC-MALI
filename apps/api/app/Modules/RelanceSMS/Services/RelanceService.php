@@ -60,7 +60,7 @@ class RelanceService
         $delaiJours = config('sms.relance_delai_jours', 3);
         $limite = Carbon::today()->addDays($delaiJours);
 
-        $query = RendezVousVaccinal::with(['dossierEnfant.tuteur', 'dossierEnfant.centreSante', 'dosePlanifiee'])
+        $query = RendezVousVaccinal::with(['dossierEnfant.tuteur', 'dossierEnfant.centreSante', 'dosePlanifiee.vaccin'])
             ->where('datePrevue', '<=', $limite);
 
         if ($enfantIds) {
