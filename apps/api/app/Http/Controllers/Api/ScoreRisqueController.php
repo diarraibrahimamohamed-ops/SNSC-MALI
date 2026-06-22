@@ -3,87 +3,110 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\ScoreRisqueResource;
-use App\Models\Enfant;
-use App\Models\ScoreRisque;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\DossierEnfant;
+use App\Models\ScoreRisqueVaccinal;
+use Illuminate\Support\Facades\Http;
+use App\Models\NiveauRisque;
+use App\Modules\Audit\Services\AuditService;
+use App\Modules\RisqueIA\Services\CollecteurFeaturesService;
 
 class ScoreRisqueController extends Controller
 {
-    use AuthorizesRequests;
-    protected $vaccinationService;
-
-    public function __construct(\App\Services\VaccinationService $vaccinationService)
-    {
-        $this->vaccinationService = $vaccinationService;
-    }
-
-    public function index()
-    {
-        $scores = ScoreRisque::with(['enfant', 'rendezVous'])->get();
-        return ScoreRisqueResource::collection($scores);
-    }
-
-    public function store(Request $request)
-    {
-        $this->authorize('create', ScoreRisque::class);
-
-        $score = DB::transaction(function () use ($request) {
-            return ScoreRisque::create($request->all());
-        });
-
-        return new ScoreRisqueResource($score);
-    }
-
-    public function show(string $id)
-    {
-        $score = ScoreRisque::with(['enfant', 'rendezVous'])->findOrFail($id);
-        $this->authorize('view', $score);
-        return new ScoreRisqueResource($score);
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $score = ScoreRisque::findOrFail($id);
-        $this->authorize('update', $score);
-
-        $score = DB::transaction(function () use ($request, $score) {
-            $score->update($request->all());
-            return $score;
-        });
-
-        return new ScoreRisqueResource($score);
-    }
-
-    public function destroy(string $id)
-    {
-        $score = ScoreRisque::findOrFail($id);
-        $this->authorize('delete', $score);
-
-        DB::transaction(function () use ($score) {
-            $score->delete();
-        });
-
-        return response()->json(['message' => 'Score de risque supprimé avec succès']);
-    }
-
-    public function evaluer(Request $request)
-    {
-        $request->validate([
-            'enfant_id' => 'required|uuid|exists:enfants,id',
+    public function evaluer(
+        Request $request,
+        CollecteurFeaturesService $collecteur,
+        AuditService $auditService
+    ) {
+        $data = $request->validate([
+            'enfant_id' => 'required|string|exists:DossierEnfant,enfantId',
+            'features' => 'nullable|array',
         ]);
 
-        $enfant = Enfant::findOrFail($request->enfant_id);
-        $this->authorize('view', $enfant);
+        $enfant = DossierEnfant::where('enfantId', $data['enfant_id'])->firstOrFail();
 
-        DB::transaction(function () use ($enfant) {
-            $this->vaccinationService->evaluerRisque($enfant);
-        });
+        if (! $collecteur->donneesEssentiellesCompletes($enfant)) {
+            $score = ScoreRisqueVaccinal::create([
+                'scoreId' => (string) \Str::uuid(),
+                'score' => 0,
+                'confiance' => 0,
+                'versionModele' => 'N/A',
+                'dateCalcul' => now(),
+                'enfantId' => $data['enfant_id'],
+                'niveauCode' => 'INCONNU',
+            ]);
 
-        $score = $enfant->scoresRisque()->latest('calcule_le')->first();
+            NiveauRisque::firstOrCreate(
+                ['code' => 'INCONNU'],
+                ['libelle' => 'Évaluation impossible : données incomplètes']
+            );
 
-        return new ScoreRisqueResource($score);
+            $auditService->journaliser(
+                'RISQUE_IA: évaluation impossible — données incomplètes',
+                $data['enfant_id']
+            );
+
+            return response()->json([
+                'data' => $score,
+                'etat' => 'évaluation impossible : données incomplètes',
+            ], 422);
+        }
+
+        $features = $data['features'] ?? $collecteur->collecterFeatures($data['enfant_id']);
+
+        try {
+            $iaUrl = env('IA_SERVICE_URL', 'http://127.0.0.1:8000');
+            $response = Http::timeout(10)->post("{$iaUrl}/predict", [
+                'enfant_id' => $data['enfant_id'],
+                'features' => $features,
+            ]);
+
+            if ($response->successful()) {
+                return $this->persisterScore($data['enfant_id'], $response->json());
+            }
+
+            throw new \RuntimeException('Service IA a retourné une erreur: ' . $response->status());
+        } catch (\Exception $e) {
+            $auditService->journaliser(
+                'RISQUE_IA_ECHEC: ' . $e->getMessage() . ' — utilisation règle de secours',
+                $data['enfant_id']
+            );
+
+            $prediction = $collecteur->calculerScoreSecours($enfant);
+
+            return $this->persisterScore($data['enfant_id'], $prediction, fallback: true);
+        }
+    }
+
+    private function persisterScore(string $enfantId, array $prediction, bool $fallback = false)
+    {
+        $niveauCode = $prediction['niveau_risque'];
+
+        NiveauRisque::firstOrCreate(
+            ['code' => $niveauCode],
+            ['libelle' => ucfirst(strtolower($niveauCode))]
+        );
+
+        $score = ScoreRisqueVaccinal::create([
+            'scoreId' => (string) \Str::uuid(),
+            'score' => $prediction['score'],
+            'confiance' => $prediction['confiance'],
+            'versionModele' => $prediction['version_modele'],
+            'dateCalcul' => now(),
+            'enfantId' => $enfantId,
+            'niveauCode' => $niveauCode,
+        ]);
+
+        $response = [
+            'data' => $score,
+            'explications' => $prediction['facteurs_explicatifs'] ?? null,
+        ];
+
+        if ($fallback) {
+            $response['mode'] = 'secours';
+            $response['message'] = 'Service IA indisponible — score calculé par règle de secours (retard de jours).';
+        }
+
+        return response()->json($response, 201);
     }
 }

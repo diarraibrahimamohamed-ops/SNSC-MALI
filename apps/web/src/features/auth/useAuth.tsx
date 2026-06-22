@@ -24,7 +24,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -93,6 +93,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json();
+        
+        // Gérer les messages de verrouillage progressif
+        if (response.status === 429) {
+          throw new Error(errorData.message || 'Trop de tentatives. Réessayez plus tard.');
+        } else if (response.status === 423) {
+          throw new Error(errorData.message || 'Compte verrouillé. Contactez l\'administrateur.');
+        } else if (response.status === 500) {
+          throw new Error('Erreur serveur. Veuillez réessayer.');
+        }
+        
         throw new Error(errorData.message || 'Identifiants invalides');
       }
 

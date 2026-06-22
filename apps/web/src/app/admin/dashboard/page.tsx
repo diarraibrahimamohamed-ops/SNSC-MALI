@@ -48,9 +48,9 @@ export default function AdminDashboard() {
     const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
 
-        const statsRes = await fetch(`${API_URL}/dashboard/stats`, {
+        const statsRes = await fetch(`${API_URL}/dashboard-admin`, {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: 'application/json',
@@ -205,20 +205,80 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="text-lg font-bold text-gray-900">Distribution des Risques</h4>
+            <h4 className="text-lg font-bold text-gray-900">Dernières vaccinations</h4>
             <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
-              Analyse IA
+              Base de données
             </span>
           </div>
-          <div className="mt-6 flex min-h-[200px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-red-200 bg-gradient-to-br from-red-50 to-red-100 p-6 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-red-700 shadow-sm">
-              <AlertTriangle className="h-9 w-9" />
+          <div className="mt-4 space-y-3">
+            {(stats?.activite_recente?.vaccinations?.length ?? 0) > 0 ? (
+              stats.activite_recente.vaccinations.map((v: any) => (
+                <div key={v.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{v.enfant_nom || 'Enfant'}</p>
+                    <p className="text-xs text-gray-500">{v.vaccin || 'Vaccin'} · {v.agent_nom || 'Agent'}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-500">
+                    {v.administre_le ? new Date(v.administre_le).toLocaleDateString('fr-FR') : '—'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                Aucune vaccination enregistrée dans le système.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between gap-4">
+            <h4 className="text-lg font-bold text-gray-900">Derniers enfants enregistrés</h4>
+            <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
+              {stats?.total_enfants || 0} au total
+            </span>
+          </div>
+          <div className="mt-4 space-y-3">
+            {(stats?.activite_recente?.enfants?.length ?? 0) > 0 ? (
+              stats.activite_recente.enfants.map((e: any) => (
+                <div key={e.id} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{e.nom} {e.prenom}</p>
+                    <p className="text-xs text-gray-500">{e.identifiant_sanitaire}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-500">
+                    {e.date_naissance ? new Date(e.date_naissance).toLocaleDateString('fr-FR') : '—'}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
+                Aucun enfant enregistré pour le moment.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h4 className="text-lg font-bold text-gray-900">Synthèse système</h4>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+              <div className="text-2xl font-extrabold text-blue-800">{stats?.total_agents || 0}</div>
+              <div className="text-sm font-semibold text-blue-700">Agents</div>
             </div>
-            <div className="mt-4 text-base font-semibold text-gray-800">Graphique des risques</div>
-            <div className="mt-1 text-sm text-gray-600">Analyse prédictive en cours</div>
-            <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 font-semibold text-gray-900">
-              <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
-              {stats?.enfants_a_risque || 0} enfants à risque élevé
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+              <div className="text-2xl font-extrabold text-emerald-800">{stats?.total_centres || 0}</div>
+              <div className="text-sm font-semibold text-emerald-700">Centres</div>
+            </div>
+            <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
+              <div className="text-2xl font-extrabold text-amber-800">{stats?.enfants_en_retard || 0}</div>
+              <div className="text-sm font-semibold text-amber-700">Enfants en retard</div>
+            </div>
+            <div className="rounded-xl border border-red-100 bg-red-50 p-4">
+              <div className="text-2xl font-extrabold text-red-800">{stats?.enfants_a_risque || 0}</div>
+              <div className="text-sm font-semibold text-red-700">Enfants à risque</div>
             </div>
           </div>
         </div>
@@ -235,7 +295,7 @@ export default function AdminDashboard() {
               <CheckCircle2 className="h-9 w-9" />
             </div>
             <div className="mt-4 text-base font-semibold text-gray-800">Taux de couverture</div>
-            <div className="mt-1 text-sm text-gray-600">Objectif OMS: 95%</div>
+            <div className="mt-1 text-sm text-gray-600">Calculé depuis les actes vaccinaux en base</div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xl font-extrabold text-gray-900">
               {stats?.couverture_vaccinale || 0}%
             </div>
@@ -290,7 +350,12 @@ export default function AdminDashboard() {
             {(stats?.relances_envoyees || 0) > 0 && (
               <AlertItem type="warning" message={`${stats?.relances_envoyees} relances SMS envoyées aujourd'hui`} time="Aujourd'hui" />
             )}
-            <AlertItem type="info" message="Synchronisation de la base de données réussie" time="Il y a 1h" />
+            {(stats?.enfants_en_retard || 0) > 0 && (
+              <AlertItem type="warning" message={`${stats?.enfants_en_retard} enfants en retard de vaccination`} time="Données en base" />
+            )}
+            {(stats?.total_enfants || 0) === 0 && (
+              <AlertItem type="info" message="Aucun enfant enregistré — commencez par créer des dossiers via un agent" time="État actuel" />
+            )}
           </div>
         </div>
       </div>

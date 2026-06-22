@@ -5,3 +5,6 @@ scikit-learn
 pandas
 numpy
 pytest
+slowapi
+redis
+python-dotenv

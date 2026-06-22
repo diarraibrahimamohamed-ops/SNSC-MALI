@@ -3,38 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class JournalAudit extends Model
 {
-    use HasFactory, HasUuids;
-
+    protected $table = 'JournalAudit';
+    protected $primaryKey = 'auditId';
     protected $keyType = 'string';
     public $incrementing = false;
     public $timestamps = false;
-    protected $table = 'journaux_audit';
 
     protected $fillable = [
-        'id',
-        'agent_id',
+        'auditId',
         'action',
-        'type_cible',
-        'id_cible',
-        'resultat',
-        'metadonnees',
-        'date_evenement',
+        'horodatage',
+        'enfantId',
     ];
 
-    protected $casts = [
-        'metadonnees' => 'array',
-        'date_evenement' => 'datetime',
-    ];
-
-    public function agent(): BelongsTo
+    public function dossierEnfant()
     {
-        return $this->belongsTo(Agent::class, 'agent_id');
+        return $this->belongsTo(DossierEnfant::class, 'enfantId', 'enfantId');
     }
 }

@@ -3,61 +3,35 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\TuteurResource;
-use App\Models\Tuteur;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\Tuteur;
+use App\Support\PdmApiMapper;
 
 class TuteurController extends Controller
 {
-    use AuthorizesRequests;
     public function index()
     {
-        $tuteurs = Tuteur::all();
-        return TuteurResource::collection($tuteurs);
+        $tuteurs = Tuteur::all()->map(fn ($t) => PdmApiMapper::tuteur($t));
+
+        return response()->json(['data' => $tuteurs]);
     }
 
     public function store(Request $request)
     {
-        $this->authorize('create', Tuteur::class);
+        $data = $request->validate([
+            'id' => 'nullable|uuid',
+            'nom_complet' => 'required|string|max:255',
+            'telephone' => 'required|string|max:30',
+        ]);
 
-        $tuteur = DB::transaction(function () use ($request) {
-            return Tuteur::create($request->all());
-        });
+        $tuteurId = $data['id'] ?? (string) \Str::uuid();
 
-        return new TuteurResource($tuteur);
-    }
+        $tuteur = Tuteur::create([
+            'tuteurId' => $tuteurId,
+            'nomComplet' => $data['nom_complet'],
+            'telephone' => $data['telephone'],
+        ]);
 
-    public function show(string $id)
-    {
-        $tuteur = Tuteur::findOrFail($id);
-        $this->authorize('view', $tuteur);
-        return new TuteurResource($tuteur);
-    }
-
-    public function update(Request $request, string $id)
-    {
-        $tuteur = Tuteur::findOrFail($id);
-        $this->authorize('update', $tuteur);
-
-        $tuteur = DB::transaction(function () use ($request, $tuteur) {
-            $tuteur->update($request->all());
-            return $tuteur;
-        });
-
-        return new TuteurResource($tuteur);
-    }
-
-    public function destroy(string $id)
-    {
-        $tuteur = Tuteur::findOrFail($id);
-        $this->authorize('delete', $tuteur);
-
-        DB::transaction(function () use ($tuteur) {
-            $tuteur->delete();
-        });
-
-        return response()->json(['message' => 'Tuteur supprimé avec succès']);
+        return response()->json(['data' => PdmApiMapper::tuteur($tuteur)], 201);
     }
 }

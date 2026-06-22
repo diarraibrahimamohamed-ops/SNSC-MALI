@@ -2,55 +2,109 @@
 
 namespace App\Modules\RisqueIA\Services;
 
-use App\Models\Enfant;
 use App\Models\ActeVaccinal;
+use App\Models\DosePlanifie;
+use App\Models\DossierEnfant;
+use App\Models\RendezVousVaccinal;
 use Carbon\Carbon;
 
 class CollecteurFeaturesService
 {
     /**
-     * Collecte les caractéristiques pour le modèle de risque
+     * Collecte les caractéristiques pour le modèle de risque d'abandon.
      */
     public function collecterFeatures(string $enfantId): array
     {
-        $enfant = Enfant::with('centreSante')->findOrFail($enfantId);
-        $dateNaissance = Carbon::parse($enfant->date_naissance)->startOfDay();
+        $enfant = DossierEnfant::with(['centreSante', 'calendrierVaccinal.dosesPlanifiees', 'actesVaccinaux'])
+            ->where('enfantId', $enfantId)
+            ->firstOrFail();
+
+        $naissance = Carbon::parse($enfant->dateNaissance)->startOfDay();
         $maintenant = now()->startOfDay();
-        
-        $vaccinations = ActeVaccinal::where('enfant_id', $enfantId)
-            ->orderBy('administre_le', 'desc')
+
+        $actes = ActeVaccinal::where('enfantId', $enfantId)
+            ->orderByDesc('dateActe')
             ->get();
 
-        $derniereVaccination = $vaccinations->first();
-        
-        $ageEnMois = (int) $dateNaissance->diffInMonths($maintenant);
-        $dateApresMoisComplets = $dateNaissance->copy()->addMonths($ageEnMois);
-        $joursEnPlus = (int) $dateApresMoisComplets->diffInDays($maintenant);
+        $retardsJours = $this->calculerRetardsJours($enfant);
+        $rdvManques = $this->compterRendezVousManques($enfantId);
 
         return [
-            'age_en_mois' => $ageEnMois,
-            'jours_en_plus' => $joursEnPlus,
-            'nombre_vaccinations' => $vaccinations->count(),
-            'jours_derniere_vaccination' => $derniereVaccination ? Carbon::parse($derniereVaccination->administre_le)->startOfDay()->diffInDays($maintenant) : null,
-            'region_centre' => $enfant->centreSante->region ?? null,
-            'ville_centre' => $enfant->centreSante->ville ?? null,
-            'intervalle_moyen_vaccinations' => $this->calculerIntervalleMoyen($vaccinations),
+            'retards_jours' => $retardsJours,
+            'rendez_vous_manques' => $rdvManques,
+            'distance_km' => 10,
+            'age_en_mois' => (int) $naissance->diffInMonths($maintenant),
+            'nombre_vaccinations' => $actes->count(),
+            'jours_derniere_vaccination' => $actes->first()
+                ? (int) Carbon::parse($actes->first()->dateActe)->diffInDays($maintenant)
+                : null,
+            'zone_sanitaire' => $enfant->centreSante?->zoneSanitaire,
         ];
     }
 
-    private function calculerIntervalleMoyen($vaccinations): ?float
+    public function donneesEssentiellesCompletes(DossierEnfant $enfant): bool
     {
-        if ($vaccinations->count() < 2) {
-            return null;
+        if (! $enfant->dateNaissance) {
+            return false;
         }
 
-        $intervalles = [];
-        for ($i = 0; $i < $vaccinations->count() - 1; $i++) {
-            $d1 = Carbon::parse($vaccinations[$i]->administre_le)->startOfDay();
-            $d2 = Carbon::parse($vaccinations[$i+1]->administre_le)->startOfDay();
-            $intervalles[] = abs($d1->diffInDays($d2));
+        return true;
+    }
+
+    public function calculerScoreSecours(DossierEnfant $enfant): array
+    {
+        $retardsJours = $this->calculerRetardsJours($enfant);
+
+        $score = min(max(round($retardsJours * 0.05, 2), 0.0), 1.0);
+        $niveau = match (true) {
+            $retardsJours > 14 => 'ELEVE',
+            $retardsJours > 0 => 'MOYEN',
+            default => 'FAIBLE',
+        };
+
+        return [
+            'score' => $score,
+            'niveau_risque' => $niveau,
+            'confiance' => 0.5,
+            'version_modele' => 'v1.0-fallback-retard',
+            'facteurs_explicatifs' => [
+                'mode' => 'secours',
+                'retards_jours' => $retardsJours,
+            ],
+        ];
+    }
+
+    private function calculerRetardsJours(DossierEnfant $enfant): int
+    {
+        $calendrier = $enfant->calendrierVaccinal;
+        if (! $calendrier) {
+            return 0;
         }
 
-        return array_sum($intervalles) / count($intervalles);
+        $doses = $calendrier->relationLoaded('dosesPlanifiees')
+            ? $calendrier->dosesPlanifiees
+            : $calendrier->dosesPlanifiees()->get();
+
+        $maxRetard = 0;
+        foreach ($doses as $dose) {
+            if ($dose->dateAdministration !== null) {
+                continue;
+            }
+            $datePrevue = Carbon::parse($dose->datePrevue)->startOfDay();
+            if ($datePrevue->lt(now())) {
+                $retard = (int) $datePrevue->diffInDays(now());
+                $maxRetard = max($maxRetard, $retard);
+            }
+        }
+
+        return $maxRetard;
+    }
+
+    private function compterRendezVousManques(string $enfantId): int
+    {
+        return RendezVousVaccinal::where('enfantId', $enfantId)
+            ->where('datePrevue', '<', now())
+            ->whereDoesntHave('notificationsSms', fn ($q) => $q->where('statutLivraison', 'ENVOYE'))
+            ->count();
     }
 }

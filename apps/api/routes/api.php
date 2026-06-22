@@ -2,82 +2,57 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EnfantController;
+use App\Http\Controllers\Api\TuteurController;
+use App\Http\Controllers\Api\CentreSanteController;
+use App\Http\Controllers\Api\VaccinController;
+use App\Http\Controllers\Api\ActeVaccinalController;
+use App\Http\Controllers\Api\AgentController;
+use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\JournalAuditController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-*/
-
-// Health check endpoint
 Route::get('/health', function () {
-    return response()->json([
-        'status' => 'ok',
-        'message' => 'Vaccin-Track API is running',
-        'timestamp' => now()->toISOString(),
-        'version' => '1.0.0'
-    ]);
+    return response()->json(['status' => 'ok']);
 });
 
-// Authentication routes
 Route::prefix('auth')->group(function () {
-    Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::options('/login', function() {
+        return response('', 200);
+    });
+    Route::options('/logout', function() {
+        return response('', 200);
+    });
+    Route::options('/me', function() {
+        return response('', 200);
+    });
     
+    // Rate limiting: 5 requests per minute for login
+    Route::middleware(['throttle:5,1'])->post('/login', [AuthController::class, 'login']);
     Route::middleware('auth:api')->group(function () {
-        Route::post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
-        Route::get('/me', [App\Http\Controllers\Api\AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
     });
 });
 
-// Protected routes
 Route::middleware('auth:api')->group(function () {
-    
-    // Dashboard statistics
-    Route::get('/dashboard/stats', [App\Http\Controllers\Api\DashboardController::class, 'stats']);
-    Route::get('/dashboard-admin', [App\Http\Controllers\Api\DashboardAdminController::class, 'index']);
-
-    // Enfants routes
-    Route::apiResource('enfants', App\Http\Controllers\Api\EnfantController::class);
-    Route::get('/enfants/{enfant}/vaccinations', [App\Http\Controllers\Api\EnfantController::class, 'vaccinations']);
-    Route::get('/enfants/{enfant}/rendez-vous', [App\Http\Controllers\Api\EnfantController::class, 'rendezVous']);
-
-    // Tuteurs routes
-    Route::apiResource('tuteurs', App\Http\Controllers\Api\TuteurController::class);
-
-    // Centres de santé routes
-    Route::apiResource('centres-sante', App\Http\Controllers\Api\CentreSanteController::class);
-
-    // Vaccins routes
-    Route::apiResource('vaccins', App\Http\Controllers\Api\VaccinController::class);
-
-    // Actes vaccinaux routes
-    Route::apiResource('actes-vaccinaux', App\Http\Controllers\Api\ActeVaccinalController::class);
-
-    // Rendez-vous routes
-    Route::apiResource('rendez-vous', App\Http\Controllers\Api\RendezVousController::class);
-    Route::post('/rendez-vous/{rendezVous}/confirmer', [App\Http\Controllers\Api\RendezVousController::class, 'confirmer']);
-    Route::post('/rendez-vous/{rendezVous}/annuler', [App\Http\Controllers\Api\RendezVousController::class, 'annuler']);
-
-    // Relances SMS routes
-    Route::apiResource('relances-sms', App\Http\Controllers\Api\NotificationSmsController::class);
-    Route::post('/relances-sms/declencher', [App\Http\Controllers\Api\NotificationSmsController::class, 'declencher']);
-
-    // Scores de risque routes
-    Route::apiResource('scores-risque', App\Http\Controllers\Api\ScoreRisqueController::class);
+    Route::get('/enfants/{enfant}/calendrier-vaccinal', [EnfantController::class, 'calendrier']);
+    Route::get('/enfants/{enfant}/vaccins-eligibles', [EnfantController::class, 'vaccinsEligibles']);
+    Route::apiResource('enfants', EnfantController::class);
+    Route::apiResource('tuteurs', TuteurController::class);
+    Route::apiResource('centres-sante', CentreSanteController::class);
+    Route::apiResource('vaccins', VaccinController::class);
+    Route::apiResource('actes-vaccinaux', ActeVaccinalController::class);
+    Route::apiResource('agents', AgentController::class);
     Route::post('/scores-risque/evaluer', [App\Http\Controllers\Api\ScoreRisqueController::class, 'evaluer']);
-
-    // Agents routes
-    Route::apiResource('agents', App\Http\Controllers\Api\AgentController::class);
-
-    // Journal d'audit routes
-    Route::apiResource('journal-audit', App\Http\Controllers\Api\JournalAuditController::class);
-
-    // File synchronization routes
-    Route::apiResource('file-sync', App\Http\Controllers\Api\FileSynchronisationController::class);
-
-    // Utilisateurs (User/Agent)
-    Route::apiResource('utilisateurs', App\Http\Controllers\Api\UtilisateurController::class);
-
-    // Admins routes
-    Route::apiResource('admins', App\Http\Controllers\Api\AdminController::class);
+    Route::get('/relances-sms', [App\Http\Controllers\Api\RelanceSmsController::class, 'index']);
+    Route::post('/relances-sms/declencher', [App\Http\Controllers\Api\RelanceSmsController::class, 'declencher']);
+    
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard-admin', [DashboardController::class, 'admin']);
+    Route::get('/journal-audit', [JournalAuditController::class, 'index']);
+    
+    // Mobile Sync Routes
+    Route::post('/mobile/sync', [App\Http\Controllers\Api\MobileSyncController::class, 'sync']);
+    Route::get('/mobile/pull', [App\Http\Controllers\Api\MobileSyncController::class, 'pull']);
 });

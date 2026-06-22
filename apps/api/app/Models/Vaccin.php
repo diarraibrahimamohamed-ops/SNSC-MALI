@@ -3,38 +3,23 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use App\Traits\Auditable;
 
 class Vaccin extends Model
 {
-    use HasFactory, HasUuids, Auditable;
-
+    protected $table = 'Vaccin';
+    protected $primaryKey = 'vaccinId';
     protected $keyType = 'string';
     public $incrementing = false;
     public $timestamps = false;
 
     protected $fillable = [
-        'id',
+        'vaccinId',
+        'libelle',
         'code',
-        'nom',
-        'maladie_cible',
-        'est_actif',
     ];
 
-    protected $casts = [
-        'est_actif' => 'boolean',
-    ];
-
-    public function modelesCalendrier(): HasMany
+    public function actesVaccinaux()
     {
-        return $this->hasMany(ModeleCalendrier::class, 'vaccin_id');
-    }
-
-    public function actesVaccinaux(): HasMany
-    {
-        return $this->hasMany(ActeVaccinal::class, 'vaccin_id');
+        return $this->hasMany(ActeVaccinal::class, 'vaccinId', 'vaccinId');
     }
 }

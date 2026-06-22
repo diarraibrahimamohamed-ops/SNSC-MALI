@@ -40,7 +40,7 @@ return [
 
         'agents' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Agent::class,
+            'model' => App\Models\AgentSante::class,
         ],
     ],
 

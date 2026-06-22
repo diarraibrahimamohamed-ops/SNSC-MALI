@@ -4,14 +4,18 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/features/auth/useAuth';
 
 interface CentreSante {
-  id: string;
+  id?: string;
+  centreId?: string;
   nom: string;
-  region: string;
+  region?: string;
+  zoneSanitaire?: string;
   ville?: string;
   code_zone?: string;
   type_etablissement?: string;
   agents?: { id: string; nom_complet: string; role: string }[];
 }
+
+const getCentreId = (centre: CentreSante) => centre.id ?? centre.centreId ?? '';
 
 export default function AdminCentresPage() {
   const [centres, setCentres] = useState<CentreSante[]>([]);
@@ -24,7 +28,7 @@ export default function AdminCentresPage() {
   useEffect(() => {
     if (!isAuthenticated) return;
     const token = localStorage.getItem('auth_token');
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
     const h = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
 
     Promise.all([
@@ -38,7 +42,12 @@ export default function AdminCentresPage() {
   }, [isAuthenticated]);
 
   const getAgentsForCentre = (centreId: string) =>
-    agents.filter((a: any) => a.centre_sante_id === centreId || a.centre_sante?.id === centreId);
+    agents.filter((a: any) =>
+      a.centre_sante_id === centreId ||
+      a.centreId === centreId ||
+      a.centre_sante?.id === centreId ||
+      a.centre_sante?.centreId === centreId
+    );
 
   const myAffiliation = agents.find((a: any) => a.matricule === user?.matricule || a.id === user?.id);
   const myCentreId = myAffiliation?.centre_sante_id || myAffiliation?.centre_sante?.id;
@@ -58,7 +67,7 @@ export default function AdminCentresPage() {
         </div>
         {myCentreId && (
           <div style={{ padding: '10px 16px', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '12px', fontSize: '13px', color: '#1d4ed8', fontWeight: 700 }}>
-            🏥 Votre centre : {centres.find(c => c.id === myCentreId)?.nom || 'N/A'}
+            🏥 Votre centre : {centres.find(c => getCentreId(c) === myCentreId)?.nom || 'N/A'}
           </div>
         )}
       </div>
@@ -70,11 +79,12 @@ export default function AdminCentresPage() {
           </div>
         )}
         {centres.map(centre => {
-          const centreAgents = getAgentsForCentre(centre.id);
-          const isMyCentre = centre.id === myCentreId;
+          const centreId = getCentreId(centre);
+          const centreAgents = getAgentsForCentre(centreId);
+          const isMyCentre = centreId === myCentreId;
           return (
             <div
-              key={centre.id}
+              key={centreId}
               style={{
                 background: '#fff',
                 borderRadius: '16px',
@@ -84,7 +94,7 @@ export default function AdminCentresPage() {
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
-              onClick={() => setSelectedCentre(selectedCentre?.id === centre.id ? null : centre)}
+              onClick={() => setSelectedCentre(selectedCentre && getCentreId(selectedCentre) === centreId ? null : centre)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ flex: 1 }}>
@@ -103,7 +113,7 @@ export default function AdminCentresPage() {
                     )}
                   </div>
                   <div style={{ marginTop: '6px', color: '#64748b', fontSize: '13px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    {centre.region && <span>📍 {centre.region}</span>}
+                    {(centre.region || centre.zoneSanitaire) && <span>📍 {centre.region || centre.zoneSanitaire}</span>}
                     {centre.ville && <span>🏙️ {centre.ville}</span>}
                     {centre.code_zone && <span>🔑 {centre.code_zone}</span>}
                   </div>
@@ -112,18 +122,18 @@ export default function AdminCentresPage() {
                   <span style={{ padding: '6px 14px', background: centreAgents.length > 0 ? '#f0fdf4' : '#f8fafc', border: `1px solid ${centreAgents.length > 0 ? '#86efac' : '#e2e8f0'}`, borderRadius: '20px', fontSize: '12px', fontWeight: 800, color: centreAgents.length > 0 ? '#15803d' : '#94a3b8' }}>
                     👨‍⚕️ {centreAgents.length} agent{centreAgents.length > 1 ? 's' : ''}
                   </span>
-                  <span style={{ color: '#94a3b8', fontSize: '16px', transition: 'transform 0.2s', transform: selectedCentre?.id === centre.id ? 'rotate(180deg)' : 'none' }}>▼</span>
+                  <span style={{ color: '#94a3b8', fontSize: '16px', transition: 'transform 0.2s', transform: selectedCentre && getCentreId(selectedCentre) === centreId ? 'rotate(180deg)' : 'none' }}>▼</span>
                 </div>
               </div>
 
-              {selectedCentre?.id === centre.id && (
+              {selectedCentre && getCentreId(selectedCentre) === centreId && (
                 <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
                   {centreAgents.length === 0 ? (
                     <p style={{ color: '#94a3b8', fontSize: '13px', margin: 0 }}>Aucun agent affilié à ce centre.</p>
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '10px' }}>
                       {centreAgents.map((agent: any) => (
-                        <div key={agent.id} style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div key={agent.id ?? agent.agentId ?? agent.matricule} style={{ padding: '10px 14px', background: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: agent.role === 'ADMIN' ? '#dbeafe' : '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', flexShrink: 0 }}>
                             {agent.role === 'ADMIN' ? '🛡️' : '👨‍⚕️'}
                           </div>

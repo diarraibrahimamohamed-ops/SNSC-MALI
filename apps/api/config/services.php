@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'telerivet' => [
+        'project_id' => env('TELERIVET_PROJECT_ID'),
+        'route_id' => env('TELERIVET_ROUTE_ID'),
+        'api_key' => env('TELERIVET_API_KEY'),
+    ],
+
+    'ia' => [
+        'api_url' => env('IA_API_URL', 'http://localhost:8001'),
+    ],
+
 ];

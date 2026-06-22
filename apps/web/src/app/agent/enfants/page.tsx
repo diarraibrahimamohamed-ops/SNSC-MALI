@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/features/auth/useAuth';
 
 interface Enfant {
@@ -22,7 +23,7 @@ export default function EnfantsPage() {
   useEffect(() => {
     const fetchEnfants = async () => {
       const token = localStorage.getItem('auth_token');
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
       
       try {
         const response = await fetch(`${API_URL}/enfants`, {
@@ -65,9 +66,9 @@ export default function EnfantsPage() {
           <h1 className="text-3xl font-black text-slate-900 tracking-tight">Base de données Enfants 👶</h1>
           <p className="text-slate-500 font-medium mt-1">Gérez le suivi vaccinal de tous les enfants enregistrés.</p>
         </div>
-        <button className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
+        <Link href="/agent/ajout" className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
           <span className="text-xl">+</span> Nouvelle Fiche Enfant
-        </button>
+        </Link>
       </div>
 
       <div className="bg-white/60 backdrop-blur-xl p-4 rounded-3xl border border-white/40 shadow-xl shadow-slate-200/50 flex flex-col md:flex-row gap-4">
@@ -132,9 +133,12 @@ export default function EnfantsPage() {
                       </span>
                     </td>
                     <td className="p-6 text-right">
-                      <button className="px-4 py-2 bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all font-bold text-sm shadow-sm group-hover:shadow">
+                      <Link
+                        href={`/agent/enfants/${enfant.id}`}
+                        className="inline-block px-4 py-2 bg-slate-100 text-slate-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all font-bold text-sm shadow-sm group-hover:shadow"
+                      >
                         Voir Dossier
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

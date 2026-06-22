@@ -3,75 +3,50 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Agent;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Models\AgentSante;
+use App\Support\PdmApiMapper;
+use Illuminate\Support\Facades\Hash;
 
 class AgentController extends Controller
 {
-    use AuthorizesRequests;
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $agents = Agent::with('centreSante')->get();
+        $agents = AgentSante::with('centreSante')
+            ->get()
+            ->map(fn ($a) => PdmApiMapper::agent($a));
+
         return response()->json(['data' => $agents]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $this->authorize('create', Agent::class);
+        $data = $request->validate([
+            'nom' => 'nullable|string|max:255',
+            'nom_complet' => 'nullable|string|max:255',
+            'matricule' => 'required|string|unique:AgentSante,matricule',
+            'password' => 'required|string|min:6',
+            'telephone' => 'nullable|string',
+            'role' => 'nullable|string',
+            'centre_sante_id' => 'required|string|exists:CentreSante,centreId',
+        ]);
 
-        $agent = DB::transaction(function () use ($request) {
-            return Agent::create($request->all());
-        });
+        $nom = $data['nom'] ?? $data['nom_complet'] ?? null;
+        if (empty($nom)) {
+            return response()->json(['message' => 'Le champ nom ou nom_complet est requis.'], 422);
+        }
 
-        return response()->json(['data' => $agent], 201);
-    }
+        $agent = AgentSante::create([
+            'agentId' => (string) \Str::uuid(),
+            'nom' => $nom,
+            'matricule' => $data['matricule'],
+            'password' => Hash::make($data['password']),
+            'role' => $data['role'] ?? 'AGENT',
+            'centreId' => $data['centre_sante_id'],
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $agent = Agent::with('centreSante')->findOrFail($id);
-        $this->authorize('view', $agent);
-        return response()->json(['data' => $agent]);
-    }
+        $agent->load('centreSante');
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        $agent = Agent::findOrFail($id);
-        $this->authorize('update', $agent);
-
-        $agent = DB::transaction(function () use ($request, $agent) {
-            $agent->update($request->all());
-            return $agent;
-        });
-
-        return response()->json(['data' => $agent]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $agent = Agent::findOrFail($id);
-        $this->authorize('delete', $agent);
-
-        DB::transaction(function () use ($agent) {
-            $agent->delete();
-        });
-
-        return response()->json(['message' => 'Agent supprimé avec succès']);
+        return response()->json(['data' => PdmApiMapper::agent($agent)], 201);
     }
 }
