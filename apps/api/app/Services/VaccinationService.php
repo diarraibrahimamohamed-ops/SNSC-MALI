@@ -41,10 +41,30 @@ class VaccinationService
      */
     public function evaluerRisque(Enfant $enfant)
     {
+        $dosesRetardQuery = DoseCalendrierEnfant::where('enfant_id', $enfant->id)
+            ->where('statut', 'A_VENIR')
+            ->where('date_echeance', '<', now())
+            ->get();
+            
+        $maxRetardJours = 0;
+        foreach($dosesRetardQuery as $dose) {
+            $retard = Carbon::parse($dose->date_echeance)->diffInDays(now());
+            if ($retard > $maxRetardJours) {
+                $maxRetardJours = $retard;
+            }
+        }
+        
+        $rendezVousManques = $dosesRetardQuery->count();
+
         try {
-            $iaApiUrl = env('IA_API_URL', 'http://localhost:8000');
+            $iaApiUrl = config('services.ia.api_url', 'http://localhost:8001');
             $response = Http::timeout(10)->post("{$iaApiUrl}/predict", [
-                'enfant_id' => $enfant->id
+                'enfant_id' => $enfant->id,
+                'features' => [
+                    'retards_jours' => $maxRetardJours,
+                    'rendez_vous_manques' => $rendezVousManques,
+                    'distance_km' => 5 // Distance par défaut
+                ]
             ]);
 
             if ($response->successful()) {
@@ -69,10 +89,7 @@ class VaccinationService
         }
 
         // Fallback local en cas d'échec de l'IA
-        $dosesRetard = DoseCalendrierEnfant::where('enfant_id', $enfant->id)
-            ->where('statut', 'A_VENIR')
-            ->where('date_echeance', '<', now())
-            ->count();
+        $dosesRetard = $rendezVousManques;
 
         $niveau = 'BAS';
         $score = 0;

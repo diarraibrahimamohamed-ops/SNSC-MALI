@@ -8,7 +8,17 @@ class RisqueModel:
         score_base = (retards * 0.05) + (absences * 0.15) + (distance * 0.01)
         score = min(max(round(score_base, 2), 0.0), 1.0)
         
-        if score < 0.3:
+        # Logique stricte comme convenu dans les diagrammes:
+        # Tout enfant en retard de vaccination est au minimum à risque MOYEN
+        if retards > 14 or absences >= 2:
+            niveau_risque = "ELEVE"
+            confiance = 0.95
+            score = max(score, 0.8)
+        elif retards > 0 or absences >= 1:
+            niveau_risque = "MOYEN"
+            confiance = 0.85
+            score = max(score, 0.5)
+        elif score < 0.3:
             niveau_risque = "FAIBLE"
             confiance = 0.90
         elif score < 0.7:

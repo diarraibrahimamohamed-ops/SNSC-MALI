@@ -35,6 +35,7 @@ class LoginRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         // Validation forte désactivée temporairement pour compatibilité
+        // Validation forte désactivée temporairement pour compatibilité
         // Réactiver après migration des mots de passe existants
         /*
         $validator->after(function ($validator) {

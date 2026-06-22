@@ -20,8 +20,8 @@ return [
         'http://127.0.0.1:3001',
     ],
     'allowedOriginsPatterns' => [],
-    'allowedHeaders' => ['*'],
-    'allowedMethods' => ['*'],
+    'allowedHeaders' => ['Content-Type', 'X-Requested-With', 'Authorization', 'Accept', 'X-Device-ID', 'X-Sync-Signature'],
+    'allowedMethods' => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     'exposedHeaders' => ['Content-Range', 'X-Content-Range'],
     'maxAge' => 86400,
 

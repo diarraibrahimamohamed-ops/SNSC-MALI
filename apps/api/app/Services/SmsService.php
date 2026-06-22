@@ -10,12 +10,14 @@ class SmsService
     private $httpClient;
     private $provider;
     private $debugMode;
+    private ?TelerivetService $telerivetService;
 
-    public function __construct(HttpClient $httpClient)
+    public function __construct(HttpClient $httpClient, ?TelerivetService $telerivetService = null)
     {
         $this->httpClient = $httpClient;
         $this->provider = config('sms.provider', 'local');
         $this->debugMode = config('sms.debug_mode', true);
+        $this->telerivetService = $telerivetService ?? new TelerivetService();
     }
 
     /**
@@ -28,18 +30,19 @@ class SmsService
 
         //  Validation
         if (!$this->validatePhoneNumber($phoneNumber)) {
+            Log::warning('SMS: Numéro invalide', ['phone' => $this->maskPhoneNumber($phoneNumber)]);
             return [
                 'success' => false,
                 'error' => 'Numéro invalide',
-                'phone' => $phoneNumber
+                'phone' => $this->maskPhoneNumber($phoneNumber)
             ];
         }
 
         //  Mode debug
         if ($this->debugMode) {
             Log::info('SMS (debug)', [
-                'to' => $phoneNumber,
-                'message' => $message
+                'to' => $this->maskPhoneNumber($phoneNumber),
+                'message_length' => strlen($message)
             ]);
 
             return [
@@ -56,6 +59,33 @@ class SmsService
             'twilio' => $this->sendViaTwilio($phoneNumber, $message),
             default => $this->sendLocal($phoneNumber, $message),
         };
+    }
+
+    /**
+     * Envoi via Telerivet Gateway
+     */
+    private function sendViaTelerivet(string $phoneNumber, string $message): array
+    {
+        try {
+            $result = $this->telerivetService->sendSms($phoneNumber, $message);
+
+            Log::info('SMS Telerivet', [
+                'phone' => $this->maskPhoneNumber($phoneNumber),
+                'success' => $result['success'],
+            ]);
+
+            return [
+                'success' => $result['success'],
+                'message' => $result['message'] ?? 'Envoi Telerivet',
+                'sid' => $result['message_id'] ?? ('telerivet_' . uniqid()),
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Exception Telerivet', ['error' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'error' => 'Exception Telerivet: ' . $e->getMessage(),
+            ];
+        }
     }
 
     /**
@@ -85,7 +115,7 @@ class SmsService
                 ];
             }
 
-            Log::error('Erreur Orange', ['body' => $response->body()]);
+            Log::error('Erreur Orange', ['status' => $response->status()]);
 
             return [
                 'success' => false,
@@ -132,7 +162,7 @@ class SmsService
                 ];
             }
 
-            Log::error('Erreur Twilio', ['body' => $response->body()]);
+            Log::error('Erreur Twilio', ['status' => $response->status()]);
 
             return [
                 'success' => false,
@@ -155,8 +185,8 @@ class SmsService
     private function sendLocal(string $phoneNumber, string $message): array
     {
         Log::info('SMS local', [
-            'to' => $phoneNumber,
-            'message' => $message
+            'to' => $this->maskPhoneNumber($phoneNumber),
+            'message_length' => strlen($message)
         ]);
 
         return [
@@ -171,7 +201,7 @@ class SmsService
      */
     public function validatePhoneNumber(string $phoneNumber): bool
     {
-        return preg_match('/^\+223[7-9][0-9]{7}$/', $phoneNumber);
+        return (bool) preg_match('/^\+223[2-9][0-9]{7}$/', $phoneNumber);
     }
 
     /**
@@ -183,12 +213,17 @@ class SmsService
         $phoneNumber = preg_replace('/\s+/', '', $phoneNumber);
 
         // Format local → international
-        if (preg_match('/^[7-9][0-9]{7}$/', $phoneNumber)) {
+        if (preg_match('/^[2-9][0-9]{7}$/', $phoneNumber)) {
             return '+223' . $phoneNumber;
         }
 
-        if (preg_match('/^0[7-9][0-9]{7}$/', $phoneNumber)) {
+        if (preg_match('/^0[2-9][0-9]{7}$/', $phoneNumber)) {
             return '+223' . substr($phoneNumber, 1);
+        }
+
+        // Ajouter + si manquant
+        if (preg_match('/^223[2-9][0-9]{7}$/', $phoneNumber)) {
+            return '+' . $phoneNumber;
         }
 
         return $phoneNumber;
@@ -203,80 +238,5 @@ class SmsService
             return '***';
         }
         return substr($phone, 0, -4) . '****';
-    }
-}                       'To' => $phoneNumber,
-                        'From' => config('sms.twilio.phone_number'),
-                        'Body' => $message
-                    ]
-                );
-
-            if ($response->successful()) {
-                return [
-                    'success' => true,
-                    'message' => 'SMS envoyé (Twilio)',
-                    'sid' => $response->json('sid')
-                ];
-            }
-
-            Log::error('Erreur Twilio', ['body' => $response->body()]);
-
-            return [
-                'success' => false,
-                'error' => 'Erreur Twilio',
-            ];
-
-        } catch (\Throwable $e) {
-            Log::error('Exception Twilio', ['error' => $e->getMessage()]);
-
-            return [
-                'success' => false,
-                'error' => 'Exception Twilio',
-            ];
-        }
-    }
-
-    /**
-     * Mode local (fallback)
-     */
-    private function sendLocal(string $phoneNumber, string $message): array
-    {
-        Log::info('SMS local', [
-            'to' => $phoneNumber,
-            'message' => $message
-        ]);
-
-        return [
-            'success' => true,
-            'message' => 'SMS loggé localement',
-            'sid' => 'local_' . uniqid()
-        ];
-    }
-
-    /**
-     * Validation Mali (+223)
-     */
-    public function validatePhoneNumber(string $phoneNumber): bool
-    {
-        return preg_match('/^\+223[7-9][0-9]{7}$/', $phoneNumber);
-    }
-
-    /**
-     * Formatage Mali
-     */
-    public function formatPhoneNumber(string $phoneNumber): string
-    {
-        // Supprimer espaces
-        $phoneNumber = preg_replace('/\s+/', '', $phoneNumber);
-
-        // Format local → international
-        if (preg_match('/^[7-9][0-9]{7}$/', $phoneNumber)) {
-            return '+223' . $phoneNumber;
-        }
-
-        if (preg_match('/^0[7-9][0-9]{7}$/', $phoneNumber)) {
-            return '+223' . substr($phoneNumber, 1);
-        }
-
-        return $phoneNumber;
     }
 }

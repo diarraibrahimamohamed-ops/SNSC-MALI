@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
@@ -14,6 +14,13 @@ export default function AgentLoginPage() {
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
   const router = useRouter();
+
+  const [mounted, setMounted] = useState(false);
+
+  // Éviter l'erreur d'hydratation (Hydration Mismatch)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +36,8 @@ export default function AgentLoginPage() {
       setError(err instanceof Error ? err.message : 'Identifiants invalides.');
     }
   };
+
+  if (!mounted) return null; // Prévention de mismatch serveur/client
 
   return (
     <AuthShell
@@ -94,7 +103,7 @@ export default function AgentLoginPage() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !mounted}
           className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:from-emerald-600 hover:to-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-300 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]"
         >
           {isLoading ? (

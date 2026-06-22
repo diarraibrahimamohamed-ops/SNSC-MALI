@@ -45,8 +45,14 @@ Route::middleware('auth:api')->group(function () {
     Route::apiResource('actes-vaccinaux', ActeVaccinalController::class);
     Route::apiResource('agents', AgentController::class);
     Route::post('/scores-risque/evaluer', [App\Http\Controllers\Api\ScoreRisqueController::class, 'evaluer']);
+    Route::get('/relances-sms', [App\Http\Controllers\Api\RelanceSmsController::class, 'index']);
+    Route::post('/relances-sms/declencher', [App\Http\Controllers\Api\RelanceSmsController::class, 'declencher']);
     
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard-admin', [DashboardController::class, 'admin']);
     Route::get('/journal-audit', [JournalAuditController::class, 'index']);
+    
+    // Mobile Sync Routes
+    Route::post('/mobile/sync', [App\Http\Controllers\Api\MobileSyncController::class, 'sync']);
+    Route::get('/mobile/pull', [App\Http\Controllers\Api\MobileSyncController::class, 'pull']);
 });

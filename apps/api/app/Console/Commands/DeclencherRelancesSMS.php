@@ -2,19 +2,23 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Attributes\Description;
-use Illuminate\Console\Attributes\Signature;
+use App\Modules\RelanceSMS\Services\RelanceService;
 use Illuminate\Console\Command;
 
-#[Signature('app:declencher-relances-s-m-s')]
-#[Description('Command description')]
 class DeclencherRelancesSMS extends Command
 {
-    /**
-     * Execute the console command.
-     */
-    public function handle()
+    protected $signature = 'relances:sms';
+
+    protected $description = 'Déclenche les relances SMS pour les rendez-vous vaccinaux imminents ou en retard';
+
+    public function handle(RelanceService $relanceService): int
     {
-        //
+        $this->info('Démarrage du job de relance SMS...');
+
+        $resultats = $relanceService->declencherRelances();
+
+        $this->info("Envoyés: {$resultats['envoyes']}, Échecs: {$resultats['echecs']}, Ignorés: {$resultats['ignores']}");
+
+        return self::SUCCESS;
     }
 }

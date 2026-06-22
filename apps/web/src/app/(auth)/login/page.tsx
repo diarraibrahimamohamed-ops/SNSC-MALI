@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
@@ -14,6 +14,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
   const router = useRouter();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,6 +35,8 @@ export default function LoginPage() {
       setError(err instanceof Error ? err.message : 'Identifiants invalides.');
     }
   };
+
+  if (!mounted) return null;
 
   return (
     <AuthShell
@@ -94,7 +102,7 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isLoading || !mounted}
           className="w-full rounded-lg bg-gradient-to-r from-slate-700 to-slate-800 px-4 py-2.5 text-sm font-semibold text-white hover:from-slate-800 hover:to-slate-900 disabled:cursor-not-allowed disabled:opacity-60 transition-all shadow-lg shadow-slate-700/20"
         >
           {isLoading ? (
