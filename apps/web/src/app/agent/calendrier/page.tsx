@@ -89,7 +89,7 @@ export default function AgentCalendrierPage() {
       {enfantId && !loading && calendrier.length > 0 && (
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200 overflow-x-auto">
           <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span className="text-2xl">📋</span> Calendrier personnalisé
+            <span className="text-2xl"></span> Calendrier personnalisé
           </h2>
           <table className="w-full text-left min-w-[700px]">
             <thead>
@@ -159,7 +159,7 @@ export default function AgentCalendrierPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
           <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-            <span className="text-2xl">👶</span> Référence PEV — 0 à 11 mois
+            <span className="text-2xl"></span> Référence PEV — 0 à 11 mois
           </h2>
           <div className="space-y-4">
             {vaccinsReference.map(v => (
@@ -179,7 +179,7 @@ export default function AgentCalendrierPage() {
         <div className="space-y-8">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
             <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <span className="text-2xl">👧</span> Jeunes Filles
+              <span className="text-2xl"></span> Jeunes Filles
             </h2>
             <div className="space-y-4">
               {vaccinsFilles.map(v => (

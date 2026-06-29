@@ -216,25 +216,25 @@ export default function AgentDashboardPage() {
               href="/agent/vaccination"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
-              💉 Nouvelle vaccination
+               Nouvelle vaccination
             </Link>
             <Link
               href="/agent/ajout"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
-              👶 Nouvel enfant
+               Nouvel enfant
             </Link>
             <Link
               href="/agent/enfants"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
-              📋 Consulter les dossiers
+               Consulter les dossiers
             </Link>
             <Link
               href="/agent/calendrier"
               className="inline-flex w-full items-center justify-center rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
             >
-              📅 Voir le calendrier
+               Voir le calendrier
             </Link>
           </div>
         </div>

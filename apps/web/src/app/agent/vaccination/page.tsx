@@ -121,7 +121,7 @@ export default function NouvelleVaccinationPage() {
 
   if (success) return (
     <div style={{ padding: '48px 32px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '24px', color: '#15803d', textAlign: 'center', maxWidth: '760px', margin: '0 auto' }}>
-      <div style={{ fontSize: '56px', marginBottom: '16px' }}>✅</div>
+      <div style={{ fontSize: '56px', marginBottom: '16px' }}></div>
       <h2 style={{ fontSize: '22px', fontWeight: 800, margin: '0 0 8px 0' }}>Vaccination enregistrée !</h2>
       <p style={{ margin: 0 }}>Le dossier a été mis à jour. Redirection...</p>
     </div>
@@ -139,10 +139,10 @@ export default function NouvelleVaccinationPage() {
 
       <form onSubmit={handleSubmit}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {errorMsg && <div style={{ padding: '14px 18px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '12px', color: '#b91c1c', fontWeight: 600, fontSize: '14px' }}>⚠️ {errorMsg}</div>}
+          {errorMsg && <div style={{ padding: '14px 18px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '12px', color: '#b91c1c', fontWeight: 600, fontSize: '14px' }}> {errorMsg}</div>}
 
           <div style={cardStyle}>
-            <div style={titleStyle}><span>👶</span> Enfant à vacciner *</div>
+            <div style={titleStyle}><span></span> Enfant à vacciner *</div>
             <select
               required
               value={enfantId}
@@ -159,7 +159,7 @@ export default function NouvelleVaccinationPage() {
           </div>
 
           <div style={cardStyle}>
-            <div style={titleStyle}><span>📋</span> Date de l&apos;acte *</div>
+            <div style={titleStyle}><span></span> Date de l&apos;acte *</div>
             <input
               type="date"
               required
@@ -172,7 +172,7 @@ export default function NouvelleVaccinationPage() {
 
           <div style={cardStyle}>
             <div style={titleStyle}>
-              <span>💉</span> Vaccin administré *
+              <span></span> Vaccin administré *
               {loadingEligibilite && <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>Vérification...</span>}
             </div>
             {!enfantId ? (
@@ -233,7 +233,7 @@ export default function NouvelleVaccinationPage() {
           )}
 
           <div style={cardStyle}>
-            <div style={titleStyle}><span>📋</span> Détails complémentaires</div>
+            <div style={titleStyle}><span></span> Détails complémentaires</div>
             <div style={{ marginTop: '0' }}>
               <label style={labelStyle}>Numéro de lot</label>
               <input
@@ -261,7 +261,7 @@ export default function NouvelleVaccinationPage() {
               boxShadow: (loading || !canSubmit) ? 'none' : '0 6px 20px rgba(16,185,129,0.4)',
             }}
           >
-            {loading ? '⏳ Enregistrement...' : canSubmit ? '✅ Valider la vaccination' : '⛔ Vaccin non autorisé à cette date'}
+            {loading ? '⏳ Enregistrement...' : canSubmit ? ' Valider la vaccination' : ' Vaccin non autorisé à cette date'}
           </button>
         </div>
       </form>
