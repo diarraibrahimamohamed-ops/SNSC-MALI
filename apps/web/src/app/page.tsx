@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { CheckCircle2, Lock, Zap, Users, BarChart3, Shield, ArrowRight, Activity, Database, Globe, Menu, X } from 'lucide-react';
 
@@ -19,20 +19,34 @@ export default function Home() {
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiIHN0cm9rZS13aWR0aD0iMSI+PHBhdGggZD0iTTAgNjBWMG02MCAwVjYwIi8+PC9nPjwvc3ZnPg==')] opacity-30" />
       </div>
 
-      {/* Floating Particles */}
+      {/* Floating Particles (deterministic pseudo-random by index to avoid hydration mismatches) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-emerald-400/30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${5 + Math.random() * 10}s`,
-            }}
-          />
-        ))}
+        {useMemo(() => {
+          const pseudo = (n: number) => {
+            const x = Math.sin(n) * 10000;
+            return x - Math.floor(x);
+          };
+
+          return [...Array(20)].map((_, i) => {
+            const left = `${Math.floor(pseudo(i * 12.9898 + 78.233) * 10000) / 100}%`;
+            const top = `${Math.floor(pseudo(i * 7.1234 + 45.164) * 10000) / 100}%`;
+            const animationDelay = `${Math.floor(pseudo(i * 3.1415 + 2.718) * 500) / 100}s`;
+            const animationDuration = `${(5 + Math.floor(pseudo(i * 6.283 + 1.618) * 1000) / 100)}s`;
+
+            return (
+              <div
+                key={i}
+                className="absolute w-2 h-2 bg-emerald-400/30 rounded-full animate-float"
+                style={{
+                  left,
+                  top,
+                  animationDelay,
+                  animationDuration,
+                }}
+              />
+            );
+          });
+        }, [])}
       </div>
 
       {/* Navigation Header */}
