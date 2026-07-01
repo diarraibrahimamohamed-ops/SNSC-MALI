@@ -28,17 +28,23 @@ export default function AdminCentresPage() {
   useEffect(() => {
     if (!isAuthenticated) return;
     const token = localStorage.getItem('auth_token');
-    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
+    const API = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
     const h = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
 
     Promise.all([
       fetch(`${API}/centres-sante`, { headers: h }).then(r => r.ok ? r.json() : null),
       fetch(`${API}/agents`, { headers: h }).then(r => r.ok ? r.json() : null),
-    ]).then(([c, a]) => {
-      if (c) setCentres(c.data || c);
-      if (a) setAgents(a.data || a);
-      setLoading(false);
-    });
+    ])
+      .then(([c, a]) => {
+        if (c) setCentres(c.data || c);
+        if (a) setAgents(a.data || a);
+      })
+      .catch((error) => {
+        console.error('Failed to load admin centres data:', error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [isAuthenticated]);
 
   const getAgentsForCentre = (centreId: string) =>

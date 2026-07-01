@@ -225,18 +225,46 @@ export default function AdminLayout({
         {/* Main Content */}
         <div className="flex min-h-screen flex-1 flex-col lg:pl-72">
           {/* Top Bar */}
-          <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-6 py-4 backdrop-blur">
-            <div className="flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={() => setMobileOpen(true)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 lg:hidden"
-              >
-                <Menu className="h-5 w-5" />
-              </button>
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
-                <p className="text-sm text-gray-600">Panneau de contrôle</p>
+          <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/90 px-4 py-4 backdrop-blur sm:px-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex items-center gap-3 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setMobileOpen(true)}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-700 shadow-sm transition hover:bg-gray-50 lg:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </button>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
+                  <p className="text-sm text-gray-600">Panneau de contrôle</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end sm:gap-4 lg:w-auto">
+                <div className="hidden sm:inline-flex items-center rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 shadow-sm">
+                  <span className="font-semibold">Menu</span>
+                </div>
+
+                <div className="inline-flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-4 py-3 shadow-sm">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-emerald-50 text-emerald-700 font-bold">
+                    AD
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-gray-900">
+                      {user?.nom_complet || user?.matricule || 'Admin'}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">Administrateur</p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="inline-flex items-center justify-center rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                >
+                  Déconnexion
+                </button>
               </div>
             </div>
           </header>

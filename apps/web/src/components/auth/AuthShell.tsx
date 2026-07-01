@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import { Shield, Lock, CheckCircle2, Activity, Zap } from 'lucide-react';
+import { Shield, Lock, CheckCircle2, Activity, Zap, Menu, X } from 'lucide-react';
 
 type AuthVariant = 'agent' | 'admin';
 
@@ -53,6 +53,7 @@ const variantConfig = {
 export function AuthShell({ variant, title, subtitle, children, footer }: AuthShellProps) {
   const config = variantConfig[variant];
   const [isClient, setIsClient] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -110,11 +111,39 @@ export function AuthShell({ variant, title, subtitle, children, footer }: AuthSh
                 <p className="text-xs text-emerald-300">Système National de Suivi Vaccinal</p>
               </div>
             </Link>
-            <Link href="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
-              ← Retour à l'accueil
-            </Link>
+
+            <div className="flex items-center gap-3">
+              <nav className="hidden md:flex items-center gap-3">
+                <Link href="/" className="text-sm font-medium text-slate-400 hover:text-white transition-colors">
+                  ← Retour à l'accueil
+                </Link>
+              </nav>
+
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white shadow-sm shadow-black/10 transition hover:bg-white/15 md:hidden"
+                aria-label="Ouvrir le menu"
+                onClick={() => setMobileNavOpen((open) => !open)}
+              >
+                {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </div>
         </div>
+
+        {mobileNavOpen ? (
+          <div className="md:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-xl">
+            <div className="mx-auto max-w-7xl px-6 py-4 space-y-3">
+              <Link
+                href="/"
+                className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-white hover:bg-white/10 transition"
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Retour à l'accueil
+              </Link>
+            </div>
+          </div>
+        ) : null}
       </header>
 
       {/* Main Content */}
