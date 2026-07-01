@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\RateLimiter;
+// Ce fichier définit une commande Artisan personnalisée dans Laravel. 
+//Son rôle est de supprimer les tentatives de connexion enregistrées par le système de limitation de requêtes (Rate Limiting).
 
 class ClearLoginAttempts extends Command
 {

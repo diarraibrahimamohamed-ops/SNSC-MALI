@@ -123,12 +123,12 @@ export default function AjoutPage() {
       {/* Feedback */}
       {success && (
         <div style={{ padding: '14px 18px', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '12px', color: '#15803d', fontWeight: 600, fontSize: '14px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-          <span style={{ fontSize: '18px' }}>✅</span> {success}
+          <span style={{ fontSize: '18px' }}></span> {success}
         </div>
       )}
       {error && (
         <div style={{ padding: '14px 18px', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '12px', color: '#b91c1c', fontWeight: 600, fontSize: '14px', marginBottom: '20px', display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-          <span>⚠️</span> {error}
+          <span></span> {error}
         </div>
       )}
 
@@ -137,7 +137,7 @@ export default function AjoutPage() {
 
           {/* Section Identité */}
           <div style={S.card}>
-            <div style={S.sectionTitle}><span>🪪</span> Identité de l'enfant</div>
+            <div style={S.sectionTitle}><span></span> Identité de l'enfant</div>
             <div style={S.row2}>
               <div>
                 <label style={S.label}>Nom *</label>
@@ -175,7 +175,7 @@ export default function AjoutPage() {
 
           {/* Section Tuteur */}
           <div style={S.card}>
-            <div style={S.sectionTitle}><span>👨‍👩‍👦</span> Tuteur / Parent</div>
+            <div style={S.sectionTitle}><span></span> Tuteur / Parent</div>
             <div style={S.row2}>
               <div>
                 <label style={S.label}>Nom du tuteur *</label>

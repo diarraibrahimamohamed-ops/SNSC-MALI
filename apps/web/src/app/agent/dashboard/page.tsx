@@ -222,6 +222,7 @@ export default function AgentDashboardPage() {
             >
               <Syringe className="h-5 w-5" />
               Nouvelle vaccination
+               Nouvelle vaccination
             </Link>
             <Link
               href="/agent/ajout"
@@ -229,6 +230,7 @@ export default function AgentDashboardPage() {
             >
               <Baby className="h-5 w-5" />
               Nouvel enfant
+               Nouvel enfant
             </Link>
             <Link
               href="/agent/enfants"
@@ -236,6 +238,7 @@ export default function AgentDashboardPage() {
             >
               <FileText className="h-5 w-5" />
               Consulter les dossiers
+               Consulter les dossiers
             </Link>
             <Link
               href="/agent/calendrier"
@@ -243,6 +246,7 @@ export default function AgentDashboardPage() {
             >
               <CalendarDays className="h-5 w-5" />
               Voir le calendrier
+               Voir le calendrier
             </Link>
           </div>
         </div>

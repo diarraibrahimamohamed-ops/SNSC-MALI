@@ -117,7 +117,7 @@ export default function Home() {
                   Suivi vaccinal <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-300">intelligent</span> pour chaque enfant
                 </h1>
                 <p className="text-lg text-slate-300 leading-relaxed max-w-lg">
-                  Plateforme nationale pour la gestion centralisée des dossiers vaccins, du calendrier PEV Mali et des actes vaccinaux dans les centres de santé.
+                  Plateforme collaborative pour la gestion centralisée des dossiers vaccins, du calendrier PEV Mali et des actes vaccinaux dans les centres de santé.
                 </p>
               </div>
 

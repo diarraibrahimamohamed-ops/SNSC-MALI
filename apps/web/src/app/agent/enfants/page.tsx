@@ -63,7 +63,7 @@ export default function EnfantsPage() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Base de données Enfants 👶</h1>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Statut Vaccinal</h1>
           <p className="text-slate-500 font-medium mt-1">Gérez le suivi vaccinal de tous les enfants enregistrés.</p>
         </div>
         <Link href="/agent/ajout" className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200/50 hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3">
