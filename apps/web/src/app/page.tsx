@@ -1,7 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Lock, Zap, Users, BarChart3, Shield, ArrowRight, Activity, Database, Globe } from 'lucide-react';
+import { CheckCircle2, Lock, Zap, Users, BarChart3, Shield, ArrowRight, Activity, Database, Globe, Menu, X } from 'lucide-react';
 
 export default function Home() {
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-emerald-900 to-slate-900 overflow-hidden relative">
       {/* Animated Background Pattern */}
@@ -45,22 +50,55 @@ export default function Home() {
                 <p className="text-xs text-emerald-300">Système National de Suivi Vaccinal</p>
               </div>
             </div>
-            <nav className="flex items-center gap-3">
+
+            <div className="flex items-center gap-3">
+              <nav className="hidden md:flex items-center gap-3">
+                <Link
+                  href="/agent-auth"
+                  className="px-5 py-2.5 text-sm font-medium text-white rounded-xl border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
+                >
+                  Espace Agent
+                </Link>
+                <Link
+                  href="/login"
+                  className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50"
+                >
+                  Administration
+                </Link>
+              </nav>
+
+              <button
+                type="button"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-white shadow-sm shadow-black/10 transition hover:bg-white/15 md:hidden"
+                aria-label="Ouvrir le menu"
+                onClick={() => setMobileNavOpen((open) => !open)}
+              >
+                {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {mobileNavOpen ? (
+          <div className="md:hidden border-t border-white/10 bg-slate-950/95 backdrop-blur-xl">
+            <div className="mx-auto max-w-7xl px-6 py-4 space-y-3">
               <Link
                 href="/agent-auth"
-                className="px-5 py-2.5 text-sm font-medium text-white rounded-xl border border-white/20 hover:bg-white/10 hover:border-white/30 transition-all duration-300 backdrop-blur-sm"
+                className="block rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-center text-sm font-medium text-white hover:bg-white/10 transition"
+                onClick={() => setMobileNavOpen(false)}
               >
                 Espace Agent
               </Link>
               <Link
                 href="/login"
-                className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transition-all duration-300 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50"
+                className="block rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-center text-sm font-semibold text-white hover:from-emerald-600 hover:to-emerald-700 transition"
+                onClick={() => setMobileNavOpen(false)}
               >
                 Administration
               </Link>
-            </nav>
+            </div>
           </div>
-        </div>
+        ) : null}
       </header>
 
       {/* Hero Section */}
@@ -100,7 +138,7 @@ export default function Home() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-3 gap-6 pt-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8">
                 {[
                   { label: 'Accès Sécurisé', value: '100%', icon: Lock },
                   { label: 'Synchronisation', value: 'Temps réel', icon: Activity },
@@ -119,7 +157,7 @@ export default function Home() {
             </div>
 
             {/* Right Feature Cards */}
-            <div className="space-y-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="grid grid-cols-1 gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
               {[
                 {
                   icon: Users,

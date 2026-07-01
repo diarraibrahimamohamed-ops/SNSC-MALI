@@ -1,11 +1,53 @@
+# Environment
 .env
 .env.*
-vendor/
+
+# Node.js / frontend
 node_modules/
-.next/
-coverage/
-apps/api/vendor/
 apps/web/node_modules/
+.next/
 apps/web/.next/
+out/
+build/
+coverage/
+
+# PHP / Laravel
+vendor/
+apps/api/vendor/
+.env
+.phpactor.json
+.phpunit.result.cache
+/.phpunit.cache
+Homestead.json
+Homestead.yaml
+_ide_helper.php
+/.codex
+/.cursor/
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
 apps/ia/__pycache__/
 apps/ia/.pytest_cache/
+apps/ia/.venv/
+apps/ia/venv/
+venv/
+.venv/
+env/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

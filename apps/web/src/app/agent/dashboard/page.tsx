@@ -8,7 +8,11 @@ import {
   Baby,
   CalendarDays,
   Mail,
+  ShieldCheck,
   Syringe,
+  FileText,
+  Users,
+  CalendarCheck,
 } from 'lucide-react';
 
 interface DashboardStats {
@@ -126,7 +130,7 @@ export default function AgentDashboardPage() {
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white shadow-sm">
-              <Baby className="h-7 w-7" />
+              <Users className="h-7 w-7" />
             </div>
             <div>
               <div className="text-sm font-semibold text-slate-600">Enfants suivis</div>
@@ -152,7 +156,7 @@ export default function AgentDashboardPage() {
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 p-4 text-white shadow-sm">
-              <CalendarDays className="h-7 w-7" />
+              <CalendarCheck className="h-7 w-7" />
             </div>
             <div>
               <div className="text-sm font-semibold text-slate-600">Rendez-vous aujourd&apos;hui</div>
@@ -191,7 +195,7 @@ export default function AgentDashboardPage() {
 
             <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <ShieldCheck className="h-5 w-5 text-red-600" />
                 <span className="text-sm font-bold text-red-700">Enfants à risque</span>
               </div>
               <div className="text-3xl font-extrabold text-red-800">{stats?.enfants_a_risque || 0}</div>
@@ -214,26 +218,34 @@ export default function AgentDashboardPage() {
           <div className="mt-6 space-y-3">
             <Link
               href="/agent/vaccination"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
             >
+              <Syringe className="h-5 w-5" />
+              Nouvelle vaccination
                Nouvelle vaccination
             </Link>
             <Link
               href="/agent/ajout"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
             >
+              <Baby className="h-5 w-5" />
+              Nouvel enfant
                Nouvel enfant
             </Link>
             <Link
               href="/agent/enfants"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
+              <FileText className="h-5 w-5" />
+              Consulter les dossiers
                Consulter les dossiers
             </Link>
             <Link
               href="/agent/calendrier"
-              className="inline-flex w-full items-center justify-center rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-purple-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-purple-700"
             >
+              <CalendarDays className="h-5 w-5" />
+              Voir le calendrier
                Voir le calendrier
             </Link>
           </div>
