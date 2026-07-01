@@ -1,9 +1,7 @@
-'use client';
+﻿'use client';
 
-import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/features/auth/useAuth';
 import { AuthShell } from '@/components/auth/AuthShell';
 
@@ -12,10 +10,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
   const { login, isLoading } = useAuth();
   const router = useRouter();
-
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -41,35 +38,35 @@ export default function LoginPage() {
   return (
     <AuthShell
       variant="admin"
-      title="Connexion administration"
-      subtitle="Accès réservé au personnel administrateur autorisé."
+      title="Connexion administrateur"
+      subtitle="Accédez au tableau de bord de pilotage national."
       footer={
         <>
           Vous êtes agent de santé ?{' '}
-          <Link href="/agent-auth" className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
-            Accéder à l&apos;espace agent
-          </Link>
+          <a href="/agent-auth" className="font-semibold text-emerald-400 hover:text-emerald-300 transition-colors">
+            Accéder à l'espace Agent
+          </a>
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="matricule" className="mb-2 block text-sm font-semibold text-slate-700">
-            Matricule administrateur
+          <label htmlFor="matricule" className="mb-2 block text-sm font-semibold text-slate-300">
+            Matricule administratif
           </label>
           <input
             id="matricule"
             type="text"
             value={matricule}
-            onChange={e => setMatricule(e.target.value)}
+            onChange={(e) => setMatricule(e.target.value)}
             placeholder="ADM-001"
             required
-            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-500 outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-600/20 transition-colors"
+            className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-all duration-300 backdrop-blur-sm"
           />
         </div>
 
         <div>
-          <label htmlFor="password" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label htmlFor="password" className="mb-2 block text-sm font-semibold text-slate-300">
             Mot de passe
           </label>
           <div className="relative">
@@ -77,24 +74,24 @@ export default function LoginPage() {
               id="password"
               type={showPassword ? 'text' : 'password'}
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
-              className="w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 pr-11 text-sm text-slate-900 placeholder-slate-500 outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-600/20 transition-colors"
+              className="w-full rounded-xl border border-white/20 bg-white/5 px-4 py-3 pr-11 text-sm text-white placeholder-slate-500 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-all duration-300 backdrop-blur-sm"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
               aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? '🙈' : '👁️'}
             </button>
           </div>
         </div>
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 backdrop-blur-sm">
             <div className="font-semibold">Erreur de connexion</div>
             <div className="mt-1">{error}</div>
           </div>
@@ -102,20 +99,10 @@ export default function LoginPage() {
 
         <button
           type="submit"
-          disabled={isLoading || !mounted}
-          className="w-full rounded-lg bg-gradient-to-r from-slate-700 to-slate-800 px-4 py-2.5 text-sm font-semibold text-white hover:from-slate-800 hover:to-slate-900 disabled:cursor-not-allowed disabled:opacity-60 transition-all shadow-lg shadow-slate-700/20"
+          disabled={isLoading}
+          className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:from-emerald-600 hover:to-emerald-700 disabled:cursor-not-allowed disabled:opacity-60 transition-all duration-300 shadow-2xl shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:scale-[1.02]"
         >
-          {isLoading ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Connexion en cours...
-            </span>
-          ) : (
-            'Se connecter'
-          )}
+          {isLoading ? 'Connexion en cours...' : 'Se connecter'}
         </button>
       </form>
     </AuthShell>
