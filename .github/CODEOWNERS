@@ -1,0 +1,6 @@
+* @lead
+/apps/api/ @dev-backend @dev-integration
+/apps/web/ @dev-frontend
+/apps/ia/ @lead
+/docs/ @lead
+/infra/ @dev-integration

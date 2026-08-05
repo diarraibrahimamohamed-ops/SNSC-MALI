@@ -1,0 +1,47 @@
+[33m1ec5cfe[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: commit (merge): Fix: Résolution des conflits de fusion et nettoyage venv
+[33m558b760[m HEAD@{1}: commit: enlevement des icone
+[33m752ffb0[m HEAD@{2}: commit: Verification et correction d'enregistrement vaccinal
+[33mdc7cd28[m HEAD@{3}: commit: Verification de et validation des normes de la description textuelle
+[33m4cf20f5[m HEAD@{4}: commit: Ajout de Verrouillage progressif après échecs
+[33m7702c3e[m HEAD@{5}: commit: Correction des failles de sécurité les plus critiques
+[33ma6ef858[m HEAD@{6}: commit: enlevement du fichier de configuration
+[33m6a56f64[m HEAD@{7}: commit: Suppresion d'un fichier non necessaire
+[33md184753[m HEAD@{8}: commit: Ameliorations des interfaces
+[33md39708d[m HEAD@{9}: commit: Ajout de quelque règle liée à la vaccination et au date permisent
+[33m659a6b1[m HEAD@{10}: commit: Correction des erreur lié à l'authetification
+[33md8f838e[m HEAD@{11}: commit: Nouvelle mis a jours concernant le backend et la partie IA
+[33m5f9691b[m HEAD@{12}: pull --rebase origin main (finish): returning to refs/heads/main
+[33m5f9691b[m HEAD@{13}: pull --rebase origin main (pick): fix: remove vaccination tab from saisie, fix button visibility, redesign login/home pages, improve centres page with affiliations
+[33m15167c0[m HEAD@{14}: pull --rebase origin main (start): checkout 15167c047bcc1aea7ad3b4dce97135cb890ad90d
+[33mc65b02a[m HEAD@{15}: commit: fix: remove vaccination tab from saisie, fix button visibility, redesign login/home pages, improve centres page with affiliations
+[33md00d88e[m HEAD@{16}: reset: moving to HEAD
+[33md00d88e[m HEAD@{17}: commit: feat(frontend): remove pregnant women vaccines from calendar
+[33m540fb31[m HEAD@{18}: commit: feat(frontend): remove centre sante selection from agent form and update lucide-react
+[33m739d911[m HEAD@{19}: commit: fix(frontend): refactor admin and agent layouts, fix routing issues, and connect pages to backend API
+[33m44b3a8b[m HEAD@{20}: commit (merge): Merge branch origin/Boursine into main (priorité Boursine)
+[33mc2954d6[m HEAD@{21}: reset: moving to HEAD
+[33mc2954d6[m HEAD@{22}: reset: moving to HEAD
+[33mc2954d6[m HEAD@{23}: reset: moving to HEAD
+[33mc2954d6[m HEAD@{24}: commit: chore(api): sécurité maximale, suppression de l'inscription publique, throttling sur login, transaction sur confirmer/annuler, standardisation de l'enum PLANIFIE
+[33me5d92f4[m HEAD@{25}: reset: moving to HEAD
+[33me5d92f4[m HEAD@{26}: commit: feat(api): intégration de l'API IA Python et de l'API Orange SMS pour les relances
+[33m05afb0b[m HEAD@{27}: reset: moving to HEAD
+[33m05afb0b[m HEAD@{28}: commit: fix(api): correction des enums de ScoreRisque et historique, suppression de l'override manuel des UUIDs
+[33mdfa880f[m HEAD@{29}: pull --rebase origin main (finish): returning to refs/heads/main
+[33mdfa880f[m HEAD@{30}: pull --rebase origin main (pick): feat(api): sécurisation complète, intégrité transactionnelle et auditabilité du backend
+[33m0fbd905[m HEAD@{31}: pull --rebase origin main (start): checkout 0fbd9052a1711c6227cb0581909d77e161cda1ab
+[33m469a4d2[m HEAD@{32}: reset: moving to HEAD
+[33m469a4d2[m HEAD@{33}: commit: feat(api): sécurisation complète, intégrité transactionnelle et auditabilité du backend
+[33m7a28e6d[m HEAD@{34}: pull origin main: Fast-forward
+[33m8116276[m HEAD@{35}: revert: Revert "Merge pull request #1 from diarraibrahimamohamed-ops/codex/develop-complete-backend-for-application"
+[33m9020361[m HEAD@{36}: pull origin main: Fast-forward
+[33m4637568[m HEAD@{37}: checkout: moving from main to main
+[33m4637568[m HEAD@{38}: commit: fix(agent/ajout): correction enregistrement tuteur dans la BDD
+[33m34a7a62[m HEAD@{39}: commit: feat(agent): page Saisie médicale avec 2 onglets — Enregistrement Enfant & Vaccination
+[33mfdf3680[m HEAD@{40}: commit: feat: refonte complète UI/UX — dashboards, login, sidebar, pages manquantes
+[33m8291904[m HEAD@{41}: commit: feat: implémentation des dashboards dynamiques avec design premium (glassmorphism) et correction layout
+[33m94e978f[m HEAD@{42}: commit: feat(backend): complete backend infrastructure with full test coverage and schema alignment
+[33mb5eb5ce[m[33m ([m[1;32mcopilot/worktree-2026-05-14T07-43-09[m[33m, [m[1;32mcopilot/worktree-2026-05-14T07-41-33[m[33m)[m HEAD@{43}: reset: moving to HEAD
+[33mb5eb5ce[m[33m ([m[1;32mcopilot/worktree-2026-05-14T07-43-09[m[33m, [m[1;32mcopilot/worktree-2026-05-14T07-41-33[m[33m)[m HEAD@{44}: reset: moving to HEAD
+[33mb5eb5ce[m[33m ([m[1;32mcopilot/worktree-2026-05-14T07-43-09[m[33m, [m[1;32mcopilot/worktree-2026-05-14T07-41-33[m[33m)[m HEAD@{45}: Branch: renamed refs/heads/master to refs/heads/main
+[33mb5eb5ce[m[33m ([m[1;32mcopilot/worktree-2026-05-14T07-43-09[m[33m, [m[1;32mcopilot/worktree-2026-05-14T07-41-33[m[33m)[m HEAD@{47}: commit (initial): 🚀 Initial commit - Vaccin-Track Mali: Système complet de suivi de vaccination

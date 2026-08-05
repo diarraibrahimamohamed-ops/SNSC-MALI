@@ -1,0 +1,11 @@
+.env
+.env.*
+vendor/
+node_modules/
+.next/
+coverage/
+apps/api/vendor/
+apps/web/node_modules/
+apps/web/.next/
+apps/ia/__pycache__/
+apps/ia/.pytest_cache/

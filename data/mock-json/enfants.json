@@ -1,0 +1,273 @@
+[
+  {
+    "id": 1,
+    "uuid": "550e8400-e29b-41d4-a716-446655440101",
+    "nom": "Ndiaye",
+    "prenom": "Aminata",
+    "date_naissance": "2023-03-15",
+    "sexe": "F",
+    "lieu_naissance": "Hôpital Principal de Dakar",
+    "centre_sante_id": 1,
+    "statut_vaccinal": "en_retard",
+    "created_at": "2023-03-15T10:00:00Z",
+    "updated_at": "2024-01-15T14:30:00Z",
+    "tuteurs": [
+      {
+        "id": 1,
+        "uuid": "550e8400-e29b-41d4-a716-446655440201",
+        "nom": "Ndiaye",
+        "prenom": "Fatou",
+        "telephone": "221 77 123 45 67",
+        "email": "fatou.ndiaye@email.com",
+        "relation": "Mère"
+      },
+      {
+        "id": 2,
+        "uuid": "550e8400-e29b-41d4-a716-446655440202",
+        "nom": "Ndiaye",
+        "prenom": "Moussa",
+        "telephone": "221 77 234 56 78",
+        "relation": "Père"
+      }
+    ],
+    "actes_vaccinaux": [
+      {
+        "id": 1,
+        "vaccin_nom": "BCG",
+        "date_vaccination": "2023-04-01",
+        "dose": 1,
+        "lot_vaccin": "BCG202304001"
+      },
+      {
+        "id": 2,
+        "vaccin_nom": "Hépatite B",
+        "date_vaccination": "2023-04-01",
+        "dose": 1,
+        "lot_vaccin": "HEPB202304001"
+      }
+    ],
+    "score_risque": {
+      "score": 0.75,
+      "niveau": "élevé",
+      "facteurs": "retard_vaccinal, distance_élevée"
+    }
+  },
+  {
+    "id": 2,
+    "uuid": "550e8400-e29b-41d4-a716-446655440102",
+    "nom": "Sall",
+    "prenom": "Ibrahim",
+    "date_naissance": "2022-08-20",
+    "sexe": "M",
+    "lieu_naissance": "Clinique de la Madeleine",
+    "centre_sante_id": 2,
+    "statut_vaccinal": "à_jour",
+    "created_at": "2022-08-20T09:30:00Z",
+    "updated_at": "2024-01-10T11:15:00Z",
+    "tuteurs": [
+      {
+        "id": 3,
+        "uuid": "550e8400-e29b-41d4-a716-446655440203",
+        "nom": "Sall",
+        "prenom": "Aïcha",
+        "telephone": "221 76 345 67 89",
+        "relation": "Mère"
+      }
+    ],
+    "actes_vaccinaux": [
+      {
+        "id": 3,
+        "vaccin_nom": "BCG",
+        "date_vaccination": "2022-09-05",
+        "dose": 1,
+        "lot_vaccin": "BCG202209001"
+      },
+      {
+        "id": 4,
+        "vaccin_nom": "Hépatite B",
+        "date_vaccination": "2022-09-05",
+        "dose": 1,
+        "lot_vaccin": "HEPB202209001"
+      },
+      {
+        "id": 5,
+        "vaccin_nom": "DTP",
+        "date_vaccination": "2022-10-20",
+        "dose": 1,
+        "lot_vaccin": "DTP202210001"
+      },
+      {
+        "id": 6,
+        "vaccin_nom": "Polio",
+        "date_vaccination": "2022-10-20",
+        "dose": 1,
+        "lot_vaccin": "POL202210001"
+      }
+    ],
+    "score_risque": {
+      "score": 0.15,
+      "niveau": "faible",
+      "facteurs": "vaccinations_à_jour, distance_faible"
+    }
+  },
+  {
+    "id": 3,
+    "uuid": "550e8400-e29b-41d4-a716-446655440103",
+    "nom": "Diop",
+    "prenom": "Mariam",
+    "date_naissance": "2023-11-10",
+    "sexe": "F",
+    "lieu_naissance": "Maternité de Diamniadio",
+    "centre_sante_id": 3,
+    "statut_vaccinal": "en_retard",
+    "created_at": "2023-11-10T14:45:00Z",
+    "updated_at": "2024-01-20T16:20:00Z",
+    "tuteurs": [
+      {
+        "id": 4,
+        "uuid": "550e8400-e29b-41d4-a716-446655440204",
+        "nom": "Diop",
+        "prenom": "Khady",
+        "telephone": "221 78 456 78 90",
+        "relation": "Mère"
+      },
+      {
+        "id": 5,
+        "uuid": "550e8400-e29b-41d4-a716-446655440205",
+        "nom": "Diop",
+        "prenom": "Oumar",
+        "telephone": "221 78 567 89 01",
+        "relation": "Père"
+      }
+    ],
+    "actes_vaccinaux": [
+      {
+        "id": 7,
+        "vaccin_nom": "BCG",
+        "date_vaccination": "2023-11-25",
+        "dose": 1,
+        "lot_vaccin": "BCG202311001"
+      }
+    ],
+    "score_risque": {
+      "score": 0.65,
+      "niveau": "moyen",
+      "facteurs": "retard_vaccinal, nombre_tuteurs_élevé"
+    }
+  },
+  {
+    "id": 4,
+    "uuid": "550e8400-e29b-41d4-a716-446655440104",
+    "nom": "Fall",
+    "prenom": "Baba",
+    "date_naissance": "2021-05-30",
+    "sexe": "M",
+    "lieu_naissance": "Hôpital Aristide Le Dantec",
+    "centre_sante_id": 4,
+    "statut_vaccinal": "à_jour",
+    "created_at": "2021-05-30T11:20:00Z",
+    "updated_at": "2024-01-18T13:45:00Z",
+    "tuteurs": [
+      {
+        "id": 6,
+        "uuid": "550e8400-e29b-41d4-a716-446655440206",
+        "nom": "Fall",
+        "prenom": "Aminata",
+        "telephone": "221 77 678 90 12",
+        "relation": "Mère"
+      }
+    ],
+    "actes_vaccinaux": [
+      {
+        "id": 8,
+        "vaccin_nom": "BCG",
+        "date_vaccination": "2021-06-15",
+        "dose": 1,
+        "lot_vaccin": "BCG202106001"
+      },
+      {
+        "id": 9,
+        "vaccin_nom": "Hépatite B",
+        "date_vaccination": "2021-06-15",
+        "dose": 1,
+        "lot_vaccin": "HEPB202106001"
+      },
+      {
+        "id": 10,
+        "vaccin_nom": "DTP",
+        "date_vaccination": "2021-08-10",
+        "dose": 1,
+        "lot_vaccin": "DTP202108001"
+      },
+      {
+        "id": 11,
+        "vaccin_nom": "Polio",
+        "date_vaccination": "2021-08-10",
+        "dose": 1,
+        "lot_vaccin": "POL202108001"
+      },
+      {
+        "id": 12,
+        "vaccin_nom": "DTP",
+        "date_vaccination": "2021-10-15",
+        "dose": 2,
+        "lot_vaccin": "DTP202110001"
+      },
+      {
+        "id": 13,
+        "vaccin_nom": "Polio",
+        "date_vaccination": "2021-10-15",
+        "dose": 2,
+        "lot_vaccin": "POL202110001"
+      },
+      {
+        "id": 14,
+        "vaccin_nom": "DTP",
+        "date_vaccination": "2021-12-20",
+        "dose": 3,
+        "lot_vaccin": "DTP202112001"
+      },
+      {
+        "id": 15,
+        "vaccin_nom": "Polio",
+        "date_vaccination": "2021-12-20",
+        "dose": 3,
+        "lot_vaccin": "POL202112001"
+      }
+    ],
+    "score_risque": {
+      "score": 0.10,
+      "niveau": "faible",
+      "facteurs": "vaccinations_complètes, suivi_régulier"
+    }
+  },
+  {
+    "id": 5,
+    "uuid": "550e8400-e29b-41d4-a716-446655440105",
+    "nom": "Ba",
+    "prenom": "Adama",
+    "date_naissance": "2023-01-05",
+    "sexe": "F",
+    "lieu_naissance": "Centre de Santé de Rufisque",
+    "centre_sante_id": 5,
+    "statut_vaccinal": "non_vacciné",
+    "created_at": "2023-01-05T15:30:00Z",
+    "updated_at": "2024-01-22T10:15:00Z",
+    "tuteurs": [
+      {
+        "id": 7,
+        "uuid": "550e8400-e29b-41d4-a716-446655440207",
+        "nom": "Ba",
+        "prenom": "Marie",
+        "telephone": "221 76 789 01 23",
+        "relation": "Mère"
+      }
+    ],
+    "actes_vaccinaux": [],
+    "score_risque": {
+      "score": 0.85,
+      "niveau": "élevé",
+      "facteurs": "aucune_vaccination, âge_élevé_pour_première_dose"
+    }
+  }
+]

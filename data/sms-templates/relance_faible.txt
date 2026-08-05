@@ -1,0 +1,15 @@
+Vaccin-Track: Rappel vaccinal pour {enfant_nom}
+
+Cher/Chère {tuteur_nom},
+
+Un petit rappel concernant {enfant_nom} ({age_mois} mois). Un rendez-vous est prévu pour le {date_rendez_vous} à {heure_rendez_vous} au {centre_sante_nom} pour la vaccination {vaccin_nom}.
+
+L'adresse: {adresse_centre}
+Téléphone: {telephone_centre}
+
+N'oubliez pas d'apporter le carnet de santé de votre enfant.
+
+Pour toute question: {telephone_centre}
+
+Merci de votre confiance.
+Vaccin-Track - Protégeons nos enfants

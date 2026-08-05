@@ -1,0 +1,33 @@
+{
+  "model_version": "1.0",
+  "creation_date": "2024-01-01T00:00:00Z",
+  "model_type": "RandomForestClassifier",
+  "features": [
+    "age_mois",
+    "jours_derniere_vaccination",
+    "vaccinations_par_mois",
+    "region_encoded",
+    "distance_centre_log",
+    "sexe_encoded",
+    "log_nombre_tuteurs",
+    "score_couverture_age",
+    "score_regularite",
+    "score_risque_global"
+  ],
+  "performance": {
+    "accuracy": 0.85,
+    "auc": 0.92,
+    "cv_score": 0.90
+  },
+  "parameters": {
+    "n_estimators": 100,
+    "max_depth": 10,
+    "min_samples_split": 2,
+    "min_samples_leaf": 1
+  },
+  "training_data_shape": [800, 10],
+  "test_data_shape": [200, 10],
+  "description": "Modèle de prédiction du risque de retard vaccinal pour les enfants",
+  "target": "retard_vaccinal",
+  "problem_type": "binary_classification"
+}

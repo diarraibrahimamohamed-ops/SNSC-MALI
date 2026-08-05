@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "nom": "BCG",
+    "description": "Vaccin contre la tuberculose",
+    "type": "vivant_atténué",
+    "age_recommande_semaines": 0,
+    "doses_requises": 1,
+    "intervalle_doses_semaines": null,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 2,
+    "nom": "DTP",
+    "description": "Vaccin contre la diphtérie, tétanos et coqueluche",
+    "type": "combiné",
+    "age_recommande_semaines": 6,
+    "doses_requises": 5,
+    "intervalle_doses_semaines": 8,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 3,
+    "nom": "Polio",
+    "description": "Vaccin contre la poliomyélite",
+    "type": "vivant_atténué",
+    "age_recommande_semaines": 6,
+    "doses_requises": 4,
+    "intervalle_doses_semaines": 8,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 4,
+    "nom": "Rougeole",
+    "description": "Vaccin contre la rougeole",
+    "type": "vivant_atténué",
+    "age_recommande_semaines": 36,
+    "doses_requises": 2,
+    "intervalle_doses_semaines": 26,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 5,
+    "nom": "Hépatite B",
+    "description": "Vaccin contre l'hépatite B",
+    "type": "recombinant",
+    "age_recommande_semaines": 0,
+    "doses_requises": 3,
+    "intervalle_doses_semaines": 8,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 6,
+    "nom": "Hib",
+    "description": "Vaccin contre Haemophilus influenzae type b",
+    "type": "conjugué",
+    "age_recommande_semaines": 6,
+    "doses_requises": 3,
+    "intervalle_doses_semaines": 8,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 7,
+    "nom": "Pneumocoque",
+    "description": "Vaccin contre les infections à pneumocoque",
+    "type": "conjugué",
+    "age_recommande_semaines": 6,
+    "doses_requises": 4,
+    "intervalle_doses_semaines": 8,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 8,
+    "nom": "ROR",
+    "description": "Vaccin combiné rougeole-oreillons-rubéole",
+    "type": "vivant_atténué",
+    "age_recommande_semaines": 36,
+    "doses_requises": 2,
+    "intervalle_doses_semaines": 26,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 9,
+    "nom": "Fièvre Jaune",
+    "description": "Vaccin contre la fièvre jaune",
+    "type": "vivant_atténué",
+    "age_recommande_semaines": 36,
+    "doses_requises": 1,
+    "intervalle_doses_semaines": null,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  },
+  {
+    "id": 10,
+    "nom": "Meningocoque",
+    "description": "Vaccin contre les infections à méningocoque",
+    "type": "conjugué",
+    "age_recommande_semaines": 36,
+    "doses_requises": 1,
+    "intervalle_doses_semaines": null,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+]

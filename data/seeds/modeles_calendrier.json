@@ -1,0 +1,288 @@
+[
+  {
+    "id": 1,
+    "nom": "Calendrier Vaccinal Standard OMS",
+    "description": "Calendrier vaccinal recommandé par l'OMS pour le Sénégal",
+    "age_min_semaines": 0,
+    "age_max_semaines": 208,
+    "pays": "Sénégal",
+    "organisme": "OMS/Ministère de la Santé",
+    "annee": 2024,
+    "statut": "actif",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z",
+    "vaccins": [
+      {
+        "vaccin_id": 1,
+        "vaccin_nom": "BCG",
+        "age_recommande_semaines": 0,
+        "dose_numero": 1,
+        "age_min_semaines": 0,
+        "age_max_semaines": 2
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 0,
+        "dose_numero": 1,
+        "age_min_semaines": 0,
+        "age_max_semaines": 2
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 6,
+        "dose_numero": 2,
+        "age_min_semaines": 4,
+        "age_max_semaines": 8
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 14,
+        "dose_numero": 3,
+        "age_min_semaines": 12,
+        "age_max_semaines": 16
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 6,
+        "dose_numero": 1,
+        "age_min_semaines": 4,
+        "age_max_semaines": 8
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 10,
+        "dose_numero": 2,
+        "age_min_semaines": 8,
+        "age_max_semaines": 12
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 14,
+        "dose_numero": 3,
+        "age_min_semaines": 12,
+        "age_max_semaines": 16
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 6,
+        "dose_numero": 1,
+        "age_min_semaines": 4,
+        "age_max_semaines": 8
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 10,
+        "dose_numero": 2,
+        "age_min_semaines": 8,
+        "age_max_semaines": 12
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 14,
+        "dose_numero": 3,
+        "age_min_semaines": 12,
+        "age_max_semaines": 16
+      },
+      {
+        "vaccin_id": 6,
+        "vaccin_nom": "Hib",
+        "age_recommande_semaines": 6,
+        "dose_numero": 1,
+        "age_min_semaines": 4,
+        "age_max_semaines": 8
+      },
+      {
+        "vaccin_id": 6,
+        "vaccin_nom": "Hib",
+        "age_recommande_semaines": 10,
+        "dose_numero": 2,
+        "age_min_semaines": 8,
+        "age_max_semaines": 12
+      },
+      {
+        "vaccin_id": 6,
+        "vaccin_nom": "Hib",
+        "age_recommande_semaines": 14,
+        "dose_numero": 3,
+        "age_min_semaines": 12,
+        "age_max_semaines": 16
+      },
+      {
+        "vaccin_id": 7,
+        "vaccin_nom": "Pneumocoque",
+        "age_recommande_semaines": 6,
+        "dose_numero": 1,
+        "age_min_semaines": 4,
+        "age_max_semaines": 8
+      },
+      {
+        "vaccin_id": 7,
+        "vaccin_nom": "Pneumocoque",
+        "age_recommande_semaines": 10,
+        "dose_numero": 2,
+        "age_min_semaines": 8,
+        "age_max_semaines": 12
+      },
+      {
+        "vaccin_id": 7,
+        "vaccin_nom": "Pneumocoque",
+        "age_recommande_semaines": 14,
+        "dose_numero": 3,
+        "age_min_semaines": 12,
+        "age_max_semaines": 16
+      },
+      {
+        "vaccin_id": 8,
+        "vaccin_nom": "ROR",
+        "age_recommande_semaines": 36,
+        "dose_numero": 1,
+        "age_min_semaines": 34,
+        "age_max_semaines": 38
+      },
+      {
+        "vaccin_id": 8,
+        "vaccin_nom": "ROR",
+        "age_recommande_semaines": 156,
+        "dose_numero": 2,
+        "age_min_semaines": 154,
+        "age_max_semaines": 158
+      },
+      {
+        "vaccin_id": 9,
+        "vaccin_nom": "Fièvre Jaune",
+        "age_recommande_semaines": 36,
+        "dose_numero": 1,
+        "age_min_semaines": 34,
+        "age_max_semaines": 38
+      },
+      {
+        "vaccin_id": 10,
+        "vaccin_nom": "Meningocoque",
+        "age_recommande_semaines": 36,
+        "dose_numero": 1,
+        "age_min_semaines": 34,
+        "age_max_semaines": 38
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "nom": "Calendrier Vaccinal Accéléré",
+    "description": "Calendrier vaccinal avec doses rapprochées pour rattrapage",
+    "age_min_semaines": 0,
+    "age_max_semaines": 156,
+    "pays": "Sénégal",
+    "organisme": "Ministère de la Santé",
+    "annee": 2024,
+    "statut": "actif",
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z",
+    "vaccins": [
+      {
+        "vaccin_id": 1,
+        "vaccin_nom": "BCG",
+        "age_recommande_semaines": 0,
+        "dose_numero": 1,
+        "age_min_semaines": 0,
+        "age_max_semaines": 1
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 0,
+        "dose_numero": 1,
+        "age_min_semaines": 0,
+        "age_max_semaines": 1
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 4,
+        "dose_numero": 2,
+        "age_min_semaines": 3,
+        "age_max_semaines": 5
+      },
+      {
+        "vaccin_id": 5,
+        "vaccin_nom": "Hépatite B",
+        "age_recommande_semaines": 8,
+        "dose_numero": 3,
+        "age_min_semaines": 7,
+        "age_max_semaines": 9
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 4,
+        "dose_numero": 1,
+        "age_min_semaines": 3,
+        "age_max_semaines": 5
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 8,
+        "dose_numero": 2,
+        "age_min_semaines": 7,
+        "age_max_semaines": 9
+      },
+      {
+        "vaccin_id": 2,
+        "vaccin_nom": "DTP",
+        "age_recommande_semaines": 12,
+        "dose_numero": 3,
+        "age_min_semaines": 11,
+        "age_max_semaines": 13
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 4,
+        "dose_numero": 1,
+        "age_min_semaines": 3,
+        "age_max_semaines": 5
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 8,
+        "dose_numero": 2,
+        "age_min_semaines": 7,
+        "age_max_semaines": 9
+      },
+      {
+        "vaccin_id": 3,
+        "vaccin_nom": "Polio",
+        "age_recommande_semaines": 12,
+        "dose_numero": 3,
+        "age_min_semaines": 11,
+        "age_max_semaines": 13
+      },
+      {
+        "vaccin_id": 8,
+        "vaccin_nom": "ROR",
+        "age_recommande_semaines": 30,
+        "dose_numero": 1,
+        "age_min_semaines": 28,
+        "age_max_semaines": 32
+      },
+      {
+        "vaccin_id": 8,
+        "vaccin_nom": "ROR",
+        "age_recommande_semaines": 120,
+        "dose_numero": 2,
+        "age_min_semaines": 118,
+        "age_max_semaines": 122
+      }
+    ]
+  }
+]
