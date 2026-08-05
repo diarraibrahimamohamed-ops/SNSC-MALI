@@ -31,15 +31,20 @@ class ActeVaccinalController extends Controller
         RendezVousService $rdvService,
         AuditService $auditService
     ) {
-        $data = $request->validate([
-            'enfant_id' => 'required|string|exists:DossierEnfant,enfantId',
-            'vaccin_id' => 'required|string',
-            'agent_id' => 'required|string|exists:AgentSante,agentId',
-            'centre_sante_id' => 'nullable|string|exists:CentreSante,centreId',
-            'administre_le' => 'required|date|before_or_equal:today',
-            'numero_lot' => 'nullable|string|max:100',
-            'notes' => 'nullable|string',
-        ]);
+        try {
+            $data = $request->validate([
+                'enfant_id' => 'required|string|exists:DossierEnfant,enfantId',
+                'vaccin_id' => 'required|string',
+                'agent_id' => 'required|string|exists:AgentSante,agentId',
+                'centre_sante_id' => 'nullable|string|exists:CentreSante,centreId',
+                'administre_le' => 'required|date|before_or_equal:today',
+                'numero_lot' => 'nullable|string|max:100',
+                'notes' => 'nullable|string',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Illuminate\Support\Facades\Log::error('Validation erreur ActeVaccinal: ' . json_encode($e->errors()));
+            throw $e;
+        }
 
         $vaccin = Vaccin::where('vaccinId', $data['vaccin_id'])->first();
         if (! $vaccin) {

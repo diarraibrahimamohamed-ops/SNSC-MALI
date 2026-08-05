@@ -93,6 +93,7 @@ class EnfantController extends Controller
 
         $user = auth('api')->user();
         if ($user && $user->role !== 'ADMIN' && $user->centreId && $data['centre_sante_id'] !== $user->centreId) {
+            \Illuminate\Support\Facades\Log::error('403 mismatch: user->centreId=' . $user->centreId . ' data[centre_sante_id]=' . $data['centre_sante_id']);
             return response()->json(['message' => 'Vous ne pouvez enregistrer que des enfants de votre centre.'], 403);
         }
 
