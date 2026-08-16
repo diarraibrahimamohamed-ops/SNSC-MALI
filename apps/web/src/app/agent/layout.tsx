@@ -50,37 +50,37 @@ export default function AgentLayout({
   const navItems = [
     {
       href: '/agent/dashboard',
-      label: 'Tableau de bord',
+      label: 'Tableau de bord♣',
       icon: LayoutDashboard,
       color: 'text-blue-500',
     },
     {
       href: '/agent/enfants',
-      label: 'Enfants',
+      label: 'Enfants♣',
       icon: Baby,
       color: 'text-emerald-500',
     },
     {
       href: '/agent/ajout',
-      label: 'Saisie médicale',
+      label: 'Saisie médicale♣',
       icon: PlusCircle,
       color: 'text-purple-500',
     },
     {
       href: '/agent/vaccination',
-      label: 'Vaccination',
+      label: 'Vaccination♣',
       icon: Syringe,
       color: 'text-rose-500',
     },
     {
       href: '/agent/calendrier',
-      label: 'Calendrier',
+      label: 'Calendrier♣',
       icon: CalendarDays,
       color: 'text-amber-500',
     },
     {
       href: '/agent/notifications',
-      label: 'SMS & Relances',
+      label: 'SMS & Relances♣',
       icon: Bell,
       color: 'text-indigo-500',
     },
@@ -133,8 +133,8 @@ export default function AgentLayout({
                 <Activity className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-extrabold tracking-tight">SNSC</h1>
-                <p className="text-xs font-medium text-slate-400">Plateforme PEV Mali</p>
+                <h1 className="text-xl font-extrabold tracking-tight">SNSC-MALI♣</h1>
+                <p className="text-xs font-medium text-slate-400">Plateforme PEV Mali♣</p>
               </div>
             </div>
           </div>
@@ -412,7 +412,7 @@ export default function AgentLayout({
           <footer className="border-t border-slate-200/60 bg-white/50 px-6 py-4 backdrop-blur-sm">
             <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 text-sm text-slate-500 sm:flex-row">
               <p>
-                © {new Date().getFullYear()} Vaccin-Track · Plateforme PEV Mali
+                © {new Date().getFullYear()} SNSC-MALI · Plateforme PEV Mali
               </p>
               <div className="flex items-center gap-4 text-xs">
                 <Link href="/mentions-legales" className="hover:text-slate-700 transition-colors">

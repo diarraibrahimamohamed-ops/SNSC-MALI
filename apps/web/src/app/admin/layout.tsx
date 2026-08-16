@@ -89,8 +89,8 @@ export default function AdminLayout({
               <Building2 className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
-              <p className="text-sm text-white/80">Espace Admin</p>
+              <h1 className="text-xl font-extrabold leading-tight">SNSC-Mali♣</h1>
+              <p className="text-sm text-white/80">Espace Admin♣</p>
             </div>
           </div>
 
@@ -152,7 +152,7 @@ export default function AdminLayout({
                 <Building2 className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-xl font-extrabold leading-tight">Vaccin-Track</h1>
+                <h1 className="text-xl font-extrabold leading-tight">SNSC-Mali</h1>
                 <p className="text-sm text-white/80">Espace Admin</p>
               </div>
             </div>
@@ -236,8 +236,8 @@ export default function AdminLayout({
                   <Menu className="h-5 w-5" />
                 </button>
                 <div className="min-w-0">
-                  <h2 className="text-lg font-bold text-gray-900">Espace Administrateur</h2>
-                  <p className="text-sm text-gray-600">Panneau de contrôle</p>
+                  <h2 className="text-lg font-bold text-gray-900">Espace Administrateur♣</h2>
+                  <p className="text-sm text-gray-600">Panneau de contrôle♣</p>
                 </div>
               </div>
 

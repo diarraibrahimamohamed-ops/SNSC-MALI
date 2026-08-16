@@ -115,8 +115,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.total_enfants || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Total Enfants</div>
-              <div className="mt-0.5 text-sm text-gray-500">Enregistrés dans le système</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Total Enfants♣</div>
+              <div className="mt-0.5 text-sm text-gray-500">Enregistrés dans le système♣</div>
             </div>
           </div>
         </div>
@@ -131,8 +131,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.vaccinations_aujourd_hui || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Vaccinations Aujourd&apos;hui</div>
-              <div className="mt-0.5 text-sm text-gray-500">Séances complétées</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Vaccinations Aujourd&apos;hui♣</div>
+              <div className="mt-0.5 text-sm text-gray-500">Séances complétées♣</div>
             </div>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.rendez_vous_aujourd_hui || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Rendez-vous Aujourd&apos;hui</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Rendez-vous Aujourd&apos;hui♣</div>
               <div className="mt-0.5 text-sm text-gray-500">Planifiés</div>
             </div>
           </div>
@@ -163,8 +163,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.relances_envoyees || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Relances Envoyées</div>
-              <div className="mt-0.5 text-sm text-gray-500">SMS envoyés aujourd&apos;hui</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Relances Envoyées♣</div>
+              <div className="mt-0.5 text-sm text-gray-500">SMS envoyés aujourd&apos;hui♣</div>
             </div>
           </div>
         </div>
@@ -179,8 +179,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.enfants_a_risque || 0}
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Enfants à Risque</div>
-              <div className="mt-0.5 text-sm text-gray-500">Nécessitent une attention</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Enfants à Risque♣</div>
+              <div className="mt-0.5 text-sm text-gray-500">Nécessitent une attention♣</div>
             </div>
           </div>
         </div>
@@ -195,8 +195,8 @@ export default function AdminDashboard() {
               <div className="text-3xl font-extrabold leading-none text-gray-900">
                 {stats?.couverture_vaccinale || 0}%
               </div>
-              <div className="mt-1 text-sm font-semibold text-gray-700">Couverture Vaccinale</div>
-              <div className="mt-0.5 text-sm text-gray-500">Taux national</div>
+              <div className="mt-1 text-sm font-semibold text-gray-700">Couverture Vaccinale♣</div>
+              <div className="mt-0.5 text-sm text-gray-500">Taux national♣</div>
             </div>
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="text-lg font-bold text-gray-900">Dernières vaccinations</h4>
+            <h4 className="text-lg font-bold text-gray-900">Dernières vaccinations♣</h4>
             <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
               Base de données
             </span>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
               ))
             ) : (
               <p className="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-8 text-center text-sm text-gray-500">
-                Aucune vaccination enregistrée dans le système.
+                Aucune vaccination enregistrée dans le système♣
               </p>
             )}
           </div>
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h4 className="text-lg font-bold text-gray-900">Synthèse système</h4>
+          <h4 className="text-lg font-bold text-gray-900">Synthèse système♣</h4>
           <div className="mt-4 grid grid-cols-2 gap-4">
             <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
               <div className="text-2xl font-extrabold text-blue-800">{stats?.total_agents || 0}</div>
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
 
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="text-lg font-bold text-gray-900">Couverture Vaccinale</h4>
+            <h4 className="text-lg font-bold text-gray-900">Couverture Vaccinale♣</h4>
             <span className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-semibold text-gray-700">
               National
             </span>
@@ -294,8 +294,8 @@ export default function AdminDashboard() {
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
               <CheckCircle2 className="h-9 w-9" />
             </div>
-            <div className="mt-4 text-base font-semibold text-gray-800">Taux de couverture</div>
-            <div className="mt-1 text-sm text-gray-600">Calculé depuis les actes vaccinaux en base</div>
+            <div className="mt-4 text-base font-semibold text-gray-800">Taux de couverture♣</div>
+            <div className="mt-1 text-sm text-gray-600">Calculé depuis les actes vaccinaux en base♣</div>
             <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-xl font-extrabold text-gray-900">
               {stats?.couverture_vaccinale || 0}%
             </div>
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2">
-          <h4 className="text-lg font-bold text-gray-900">Actions Rapides</h4>
+          <h4 className="text-lg font-bold text-gray-900">Actions Rapides♣</h4>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Link
               href="/admin/agents"
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
                 <Plus className="h-5 w-5" />
               </div>
-              <div className="text-sm font-semibold">Créer un agent</div>
+              <div className="text-sm font-semibold">Créer un agent♣</div>
             </Link>
 
             <Link
@@ -324,7 +324,7 @@ export default function AdminDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
                 <Calendar className="h-5 w-5" />
               </div>
-              <div className="text-sm font-semibold">Gérer les centres</div>
+              <div className="text-sm font-semibold">Gérer les centres♣</div>
             </Link>
 
             <Link
@@ -334,13 +334,13 @@ export default function AdminDashboard() {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15">
                 <Send className="h-5 w-5" />
               </div>
-              <div className="text-sm font-semibold">Voir l&apos;audit</div>
+              <div className="text-sm font-semibold">Voir l&apos;audit♣</div>
             </Link>
           </div>
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h4 className="text-lg font-bold text-gray-900">Alertes Système</h4>
+          <h4 className="text-lg font-bold text-gray-900">Alertes Système♣</h4>
           <div className="mt-6 space-y-3">
             {(stats?.enfants_a_risque || 0) > 0 ? (
               <AlertItem type="critical" message={`${stats?.enfants_a_risque} enfants nécessitent une attention urgente`} time="Maintenant" />

@@ -102,7 +102,8 @@ export default function AgentNotificationsPage() {
         <button
           onClick={declencherRelances}
           disabled={declenching}
-          className="px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
+          className="px-6 py-3.5 text-white rounded-2xl font-bold shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-60"
+          style={{ background: 'linear-gradient(to right, #f97316, #d97706)' }}
         >
           {declenching ? 'Envoi en cours...' : 'Déclencher les relances'}
         </button>

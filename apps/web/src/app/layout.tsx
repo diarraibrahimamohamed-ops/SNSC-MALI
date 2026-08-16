@@ -6,7 +6,7 @@ import { Providers } from "./providers";
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: 'Vaccin-Track Mali | Plateforme de Suivi Vaccinal',
+  title: 'SNSC-Mali | Plateforme de Suivi Vaccinal',
   description: 'Solution intelligente pour la gestion et le suivi de la vaccination au Mali.',
 };
 

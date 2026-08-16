@@ -38,8 +38,8 @@ export default function LoginPage() {
   return (
     <AuthShell
       variant="admin"
-      title="Connexion administrateur"
-      subtitle="Accédez au tableau de bord de pilotage national."
+      title="Connexion administrateur♣"
+      subtitle="Accédez au tableau de bord de pilotage national♣"
       footer={
         <>
           Vous êtes agent de santé ?{' '}

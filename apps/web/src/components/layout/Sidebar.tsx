@@ -55,7 +55,7 @@ export function Sidebar({ role }: SidebarProps) {
       <div className="absolute bottom-0 w-64 p-6">
         <div className="text-sm text-gray-400">
           <p>Version 1.0.0</p>
-          <p className="mt-1">© 2024 Vaccin-Track</p>
+          <p className="mt-1">© 2026 SNSC-MALI</p>
         </div>
       </div>
     </div>

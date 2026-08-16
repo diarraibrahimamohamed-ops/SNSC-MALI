@@ -60,7 +60,7 @@ export default function Home() {
                 </svg>
               </div>
               <div className="flex flex-col">
-                <p className="font-bold text-white leading-tight">Vaccin-Track Mali</p>
+                <p className="font-bold text-white leading-tight">SNSC-Mali</p>
                 <p className="text-xs text-emerald-300">Système National de Suivi Vaccinal</p>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function Home() {
       <footer className="relative border-t border-white/10 bg-white/5 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 py-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
-            <p>© 2026 Vaccin-Track Mali · Système National de Suivi de la Couverture Vaccinale</p>
+            <p>© 2026 SNSC-Mali · Système National de Suivi de la Couverture Vaccinale</p>
             <div className="flex gap-6">
               <a href="#" className="hover:text-white transition-colors">Confidentialité</a>
               <a href="#" className="hover:text-white transition-colors">Conditions</a>

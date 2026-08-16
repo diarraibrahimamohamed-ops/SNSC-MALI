@@ -691,14 +691,16 @@ export default function DossierEnfantPage() {
             </span>
             <button
               onClick={() => setPevOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] hover:shadow-xl"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] hover:shadow-xl"
+              style={{ background: 'linear-gradient(to right, #2563eb, #4f46e5)' }}
             >
               <FileText className="h-4 w-4" />
               Voir PEV
             </button>
             <button
               onClick={() => setCarnetOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] hover:shadow-xl"
+              className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-[1.02] hover:shadow-xl"
+              style={{ background: 'linear-gradient(to right, #10b981, #0d9488)' }}
             >
               <BookOpen className="h-4 w-4" />
               Carnet
@@ -798,7 +800,8 @@ export default function DossierEnfantPage() {
             </Link>
             <button
               onClick={() => setPevOpen(true)}
-              className="group flex w-full items-center justify-between rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-purple-600/30 hover:scale-[1.02]"
+              className="group flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all hover:shadow-lg hover:scale-[1.02]"
+              style={{ background: 'linear-gradient(to right, #9333ea, #7c3aed)' }}
             >
               <span className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -808,7 +811,8 @@ export default function DossierEnfantPage() {
             </button>
             <button
               onClick={() => setCarnetOpen(true)}
-              className="group flex w-full items-center justify-between rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400 hover:bg-emerald-100"
+              className="group flex w-full items-center justify-between rounded-xl border-2 border-emerald-200 px-4 py-3 text-sm font-semibold text-emerald-700 transition-all hover:border-emerald-400"
+              style={{ backgroundColor: '#ecfdf5' }}
             >
               <span className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
