@@ -9,6 +9,8 @@ interface AuthUser {
   matricule: string;
   role: string;
   centre_sante_id?: string;
+  centreSante?: { nom?: string } | null;
+  telephone?: string;
   email?: string;
   nom?: string;
   prenom?: string;

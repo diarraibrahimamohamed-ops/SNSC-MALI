@@ -113,7 +113,7 @@ export default function AgentProfilePage() {
                 </label>
                 <p className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-slate-400" />
-                  {user?.centre_sante || 'Non renseigné'}
+                  {user?.centreSante?.nom || 'Non renseigné'}
                 </p>
               </div>
 

@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ArrowLeft, CalendarPlus, HeartPulse, Loader2, ShieldAlert, Stethoscope } from 'lucide-react';
+import { ArrowLeft, CalendarPlus, ClipboardPlus, HeartPulse, Loader2, ShieldAlert, Stethoscope } from 'lucide-react';
 import { ChronologieItem, Grossesse, labelEtat, maternalApi, Mere } from '@/lib/maternal-api';
 
 type MereResponse = { data: Mere & { grossesses?: Grossesse[] } };
@@ -17,17 +17,54 @@ export default function MereDetailPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ date_debut_estimee: '', terme_estime: '', nombre_foetus: '1', version_protocole: '' });
+  const [postpartumForm, setPostpartumForm] = useState({ suivi_le: '', type_contact: 'POSTPARTUM_VISITE', resume: '', orientation: '', prochain_rendez_vous_le: '' });
+
+  const recupererDossier = useCallback(async () => {
+    const [dossier, historique] = await Promise.all([
+      maternalApi<MereResponse>(`/meres/${id}`),
+      maternalApi<TimelineResponse>(`/meres/${id}/chronologie`),
+    ]);
+    return { mere: dossier.data, timeline: historique.data };
+  }, [id]);
 
   const charger = async () => {
-    setLoading(true); setError(null);
     try {
-      const [dossier, historique] = await Promise.all([maternalApi<MereResponse>(`/meres/${id}`), maternalApi<TimelineResponse>(`/meres/${id}/chronologie`)]);
-      setMere(dossier.data); setTimeline(historique.data);
-    } catch (err) { setError(err instanceof Error ? err.message : 'Impossible de charger le dossier.'); }
-    finally { setLoading(false); }
+      const result = await recupererDossier();
+      setMere(result.mere);
+      setTimeline(result.timeline);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Impossible de charger le dossier.');
+    }
   };
 
-  useEffect(() => { if (id) void charger(); }, [id]);
+  useEffect(() => {
+    let active = true;
+
+    const chargerInitial = async () => {
+      try {
+        const result = await recupererDossier();
+        if (active) {
+          setMere(result.mere);
+          setTimeline(result.timeline);
+          setError(null);
+        }
+      } catch (err) {
+        if (active) {
+          setError(err instanceof Error ? err.message : 'Impossible de charger le dossier.');
+          setMere(null);
+          setTimeline([]);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    if (id) void chargerInitial();
+    return () => {
+      active = false;
+    };
+  }, [id, recupererDossier]);
 
   const creerGrossesse = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setError(null);
@@ -39,6 +76,30 @@ export default function MereDetailPage() {
     finally { setSaving(false); }
   };
 
+  const enregistrerSuiviPostpartum = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await maternalApi(`/meres/${id}/suivis-postpartum`, {
+        method: 'POST',
+        body: JSON.stringify({
+          suivi_le: postpartumForm.suivi_le,
+          type_contact: postpartumForm.type_contact,
+          observations: postpartumForm.resume.trim() ? { resume: postpartumForm.resume.trim() } : undefined,
+          orientation: postpartumForm.orientation.trim() || undefined,
+          prochain_rendez_vous_le: postpartumForm.prochain_rendez_vous_le || undefined,
+        }),
+      });
+      setPostpartumForm({ suivi_le: '', type_contact: 'POSTPARTUM_VISITE', resume: '', orientation: '', prochain_rendez_vous_le: '' });
+      await charger();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Le suivi post-partum n’a pas été enregistré.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <div className="flex min-h-[45vh] items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-rose-600" /></div>;
   if (!mere) return <p className="text-sm text-slate-600">Dossier introuvable.</p>;
 
@@ -48,7 +109,25 @@ export default function MereDetailPage() {
     <header className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><div className="flex items-start gap-4"><span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-700"><HeartPulse className="h-7 w-7" /></span><div><p className="text-sm font-semibold text-rose-700">Dossier longitudinal</p><h1 className="text-3xl font-extrabold text-slate-900">{mere.nom} {mere.prenom}</h1><p className="mt-1 text-sm text-slate-500">{mere.identifiant_sanitaire || 'Identifiant non renseigné'} · Données cliniques à valider par un professionnel habilité.</p></div></div></header>
     <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_.7fr]">
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"><div className="mb-5 flex items-center gap-2"><Stethoscope className="h-5 w-5 text-rose-600" /><h2 className="font-bold text-slate-900">Chronologie mère-enfant</h2></div>{timeline.length === 0 ? <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucun évènement clinique enregistré. Les données manquantes ne sont pas interprétées comme normales.</p> : <ol className="space-y-4 border-l-2 border-rose-100 pl-5">{timeline.map((item) => <li key={`${item.type}-${item.id}`} className="relative"><span className="absolute -left-[30px] top-1 h-3 w-3 rounded-full bg-rose-500 ring-4 ring-white" /><div className="rounded-2xl bg-slate-50 p-4"><div className="flex flex-wrap justify-between gap-2"><p className="font-semibold text-slate-900">{labelEtat(item.type)}</p><time className="text-xs text-slate-500">{new Date(item.date).toLocaleString('fr-ML')}</time></div><p className="mt-1 text-xs text-slate-500">Statut : {labelEtat(item.statut)} · Source : {labelEtat(item.provenance)}</p>{item.prochaine_etape && <p className="mt-2 text-sm text-slate-700">Prochaine étape : {item.prochaine_etape}</p>}{item.vaccin && <p className="mt-2 text-sm text-slate-700">Vaccin enfant : {item.vaccin}</p>}</div></li>)}</ol>}</section>
-      <aside className="space-y-6"><section className="rounded-3xl border border-rose-100 bg-rose-50/40 p-6"><div className="mb-4 flex items-center gap-2"><CalendarPlus className="h-5 w-5 text-rose-700" /><h2 className="font-bold text-slate-900">Débuter une grossesse</h2></div><form onSubmit={creerGrossesse} className="space-y-3"><Champ label="Début estimé" value={form.date_debut_estimee} type="date" required onChange={(date_debut_estimee) => setForm({ ...form, date_debut_estimee })} /><Champ label="Terme estimé" value={form.terme_estime} type="date" onChange={(terme_estime) => setForm({ ...form, terme_estime })} /><Champ label="Nombre de fœtus" value={form.nombre_foetus} type="number" required onChange={(nombre_foetus) => setForm({ ...form, nombre_foetus })} /><Champ label="Version du protocole validée" value={form.version_protocole} onChange={(version_protocole) => setForm({ ...form, version_protocole })} /><button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />}Enregistrer</button></form></section><section className="rounded-3xl border border-slate-200 bg-white p-6"><h2 className="font-bold text-slate-900">Grossesses</h2><div className="mt-3 space-y-3">{mere.grossesses?.length ? mere.grossesses.map((grossesse) => <Link key={grossesse.id} href={`/agent/grossesses/${grossesse.id}`} className="block rounded-xl bg-slate-50 p-3 hover:bg-rose-50"><p className="font-semibold text-slate-800">{labelEtat(grossesse.statut)}</p><p className="text-xs text-slate-500">Début estimé : {new Date(grossesse.date_debut_estimee).toLocaleDateString('fr-ML')} · {grossesse.nombre_foetus} fœtus</p></Link>) : <p className="text-sm text-slate-500">Aucune grossesse enregistrée.</p>}</div></section></aside>
+      <aside className="space-y-6"><section className="rounded-3xl border border-rose-100 bg-rose-50/40 p-6"><div className="mb-4 flex items-center gap-2"><CalendarPlus className="h-5 w-5 text-rose-700" /><h2 className="font-bold text-slate-900">Débuter une grossesse</h2></div><form onSubmit={creerGrossesse} className="space-y-3"><Champ label="Début estimé" value={form.date_debut_estimee} type="date" required onChange={(date_debut_estimee) => setForm({ ...form, date_debut_estimee })} /><Champ label="Terme estimé" value={form.terme_estime} type="date" onChange={(terme_estime) => setForm({ ...form, terme_estime })} /><Champ label="Nombre de fœtus" value={form.nombre_foetus} type="number" required onChange={(nombre_foetus) => setForm({ ...form, nombre_foetus })} /><Champ label="Version du protocole validée" value={form.version_protocole} onChange={(version_protocole) => setForm({ ...form, version_protocole })} /><button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />}Enregistrer</button></form></section><section className="rounded-3xl border border-slate-200 bg-white p-6"><h2 className="font-bold text-slate-900">Grossesses</h2><div className="mt-3 space-y-3">{mere.grossesses?.length ? mere.grossesses.map((grossesse) => <Link key={grossesse.id} href={`/agent/grossesses/${grossesse.id}`} className="block rounded-xl bg-slate-50 p-3 hover:bg-rose-50"><p className="font-semibold text-slate-800">{labelEtat(grossesse.statut)}</p><p className="text-xs text-slate-500">Début estimé : {new Date(grossesse.date_debut_estimee).toLocaleDateString('fr-ML')} · {grossesse.nombre_foetus} fœtus</p></Link>) : <p className="text-sm text-slate-500">Aucune grossesse enregistrée.</p>}</div></section>
+        <section className="rounded-3xl border border-teal-100 bg-teal-50/40 p-6">
+          <div className="mb-2 flex items-center gap-2"><ClipboardPlus className="h-5 w-5 text-teal-700" /><h2 className="font-bold text-slate-900">Suivi post-partum</h2></div>
+          <p className="mb-4 text-sm text-slate-600">Consignez le contact, l’orientation et le prochain rendez-vous. Les observations restent à vérifier par un professionnel habilité.</p>
+          <form onSubmit={enregistrerSuiviPostpartum} className="space-y-3">
+            <Champ label="Date et heure du suivi" value={postpartumForm.suivi_le} type="datetime-local" required onChange={(suivi_le) => setPostpartumForm({ ...postpartumForm, suivi_le })} />
+            <label className="grid gap-1 text-sm font-medium text-slate-700">Type de contact
+              <select value={postpartumForm.type_contact} onChange={(event) => setPostpartumForm({ ...postpartumForm, type_contact: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 outline-none ring-teal-200 focus:ring-2">
+                <option value="POSTPARTUM_VISITE">Visite</option><option value="POSTPARTUM_APPEL">Appel</option><option value="AUTRE">Autre</option>
+              </select>
+            </label>
+            <label className="grid gap-1 text-sm font-medium text-slate-700">Note de suivi (facultatif)
+              <textarea value={postpartumForm.resume} onChange={(event) => setPostpartumForm({ ...postpartumForm, resume: event.target.value })} rows={3} maxLength={2000} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 outline-none ring-teal-200 focus:ring-2" placeholder="Résumé factuel, sans conclure à un diagnostic." />
+            </label>
+            <Champ label="Orientation / action prévue" value={postpartumForm.orientation} onChange={(orientation) => setPostpartumForm({ ...postpartumForm, orientation })} />
+            <Champ label="Prochain rendez-vous" value={postpartumForm.prochain_rendez_vous_le} type="date" onChange={(prochain_rendez_vous_le) => setPostpartumForm({ ...postpartumForm, prochain_rendez_vous_le })} />
+            <button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">{saving && <Loader2 className="h-4 w-4 animate-spin" />}Enregistrer le suivi</button>
+          </form>
+        </section></aside>
     </div>
   </div>;
 }

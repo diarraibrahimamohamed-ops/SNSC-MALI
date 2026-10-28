@@ -111,6 +111,16 @@ class RelanceService
             return $this->enregistrerEchec($rdv, $enfant, 'Numéro de contact manquant');
         }
 
+        // Recontrôler immédiatement avant l'appel au fournisseur : le consentement
+        // peut avoir été retiré après le chargement de la liste des rendez-vous.
+        if (! $this->consentements->smsAutorise('TUTEUR', $tuteur->tuteurId)) {
+            return [
+                'statut' => 'IGNORE',
+                'enfant_id' => $enfant->enfantId,
+                'raison' => 'Consentement SMS absent ou retiré avant envoi.',
+            ];
+        }
+
         $niveauRisque = $this->obtenirNiveauRisque($enfant);
         $message = $this->messageBuilder->construire($rdv, $niveauRisque);
 

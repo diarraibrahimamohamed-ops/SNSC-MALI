@@ -14,9 +14,11 @@ class TelerivetService
 
     public function __construct()
     {
-        $this->projectId = config('services.telerivet.project_id');
-        $this->routeId = config('services.telerivet.route_id');
-        $this->apiKey = config('services.telerivet.api_key');
+        // Credentials are optional in local/test environments. Missing secrets must
+        // disable the provider, not crash unrelated requests during dependency setup.
+        $this->projectId = (string) config('services.telerivet.project_id', '');
+        $this->routeId = (string) config('services.telerivet.route_id', '');
+        $this->apiKey = (string) config('services.telerivet.api_key', '');
         $this->apiUrl = "https://api.telerivet.com/v1/projects/" . $this->projectId . "/messages/send";
     }
 
@@ -30,6 +32,16 @@ class TelerivetService
     public function sendSms(string $phoneNumber, string $message): array
     {
         try {
+            // Never make a network request when credentials have not been configured.
+            if ($this->projectId === '' || $this->routeId === '' || $this->apiKey === '') {
+                Log::notice('Telerivet not configured; SMS delivery skipped.');
+                return [
+                    'success' => false,
+                    'error' => 'Telerivet non configuré',
+                    'message' => 'Le fournisseur SMS n’est pas configuré pour cet environnement',
+                ];
+            }
+
             // Validate phone number format
             if (!preg_match('/^\+?[0-9]{10,15}$/', $phoneNumber)) {
                 return [
@@ -178,6 +190,10 @@ class TelerivetService
      */
     public function healthCheck(): bool
     {
+        if ($this->projectId === '' || $this->apiKey === '') {
+            return false;
+        }
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => 'Basic ' . base64_encode($this->apiKey . ':'),
