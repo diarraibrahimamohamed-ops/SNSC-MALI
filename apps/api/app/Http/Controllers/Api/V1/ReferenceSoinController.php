@@ -11,6 +11,7 @@ use App\Modules\ReferenceSoin\Services\ReferenceSoinService;
 use App\Modules\SanteMaternelle\Services\AccesParStructureService;
 use App\Modules\SanteMaternelle\Services\AuditCliniqueService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ReferenceSoinController extends Controller
 {
@@ -33,19 +34,44 @@ class ReferenceSoinController extends Controller
             'patient_type' => ['required', 'in:MERE,ENFANT,GROSSESSE'],
             'patient_id' => ['required', 'uuid'],
             'grossesse_id' => ['nullable', 'uuid', 'exists:grossesses,id'],
-            'centre_destinataire_id' => ['required', 'uuid', 'different:centre_emetteur_id', 'exists:CentreSante,centreId'],
+            'centre_destinataire_id' => ['required', 'uuid', 'exists:CentreSante,centreId'],
             'centre_emetteur_id' => ['nullable', 'uuid', 'exists:CentreSante,centreId'],
             'motif_code' => ['required', 'string', 'max:100'],
             'priorite' => ['required', 'in:ROUTINE,PRIORITAIRE,URGENTE'],
             'transport' => ['nullable', 'string', 'max:100'],
         ]);
+
         $centreEmetteurId = $data['centre_emetteur_id'] ?? $acces->centreCourant();
+        $centreDestinataireId = $data['centre_destinataire_id'];
+        if (! $centreEmetteurId) {
+            throw ValidationException::withMessages(['centre_emetteur_id' => ['Une structure émettrice est requise.']]);
+        }
+        if ($centreEmetteurId === $centreDestinataireId) {
+            throw ValidationException::withMessages([
+                'centre_destinataire_id' => ['La structure destinataire doit être différente de la structure émettrice.'],
+            ]);
+        }
+
         $acces->verifierCentre($centreEmetteurId);
         $this->verifierSujetEtPerimetre($data['patient_type'], $data['patient_id'], $acces);
+
+        if ($data['patient_type'] === 'GROSSESSE') {
+            if (! empty($data['grossesse_id']) && $data['grossesse_id'] !== $data['patient_id']) {
+                throw ValidationException::withMessages(['grossesse_id' => ['Pour un patient de type GROSSESSE, grossesse_id doit correspondre à patient_id.']]);
+            }
+            $data['grossesse_id'] = $data['patient_id'];
+        } elseif (! empty($data['grossesse_id']) && $data['patient_type'] === 'MERE') {
+            $grossesseLiee = Grossesse::findOrFail($data['grossesse_id']);
+            if ($grossesseLiee->mere_id !== $data['patient_id']) {
+                throw ValidationException::withMessages(['grossesse_id' => ['La grossesse indiquée ne correspond pas à la mère référée.']]);
+            }
+            $acces->verifierCentre($grossesseLiee->centre_sante_id);
+        }
 
         $reference = ReferenceSoin::create([
             ...$data,
             'centre_emetteur_id' => $centreEmetteurId,
+            'centre_destinataire_id' => $centreDestinataireId,
             'responsable_suivi_id' => $acces->utilisateur()?->agentId,
             'cree_le' => now(),
             'statut' => 'CREEE',

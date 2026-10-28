@@ -9,6 +9,7 @@ use App\Models\PersonneMere;
 use App\Models\SuiviPostPartum;
 use App\Modules\SanteMaternelle\Services\AccesParStructureService;
 use App\Modules\SanteMaternelle\Services\AuditCliniqueService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
 class PostpartumController extends Controller
@@ -20,9 +21,17 @@ class PostpartumController extends Controller
         $data = $request->validated();
 
         if (! empty($data['accouchement_id'])) {
-            $episode = EpisodeAccouchement::with('grossesse')->findOrFail($data['accouchement_id']);
+            // L'autorisation sur la mère ne suffit pas : l'épisode lié doit aussi appartenir au périmètre de la structure.
+            $episode = EpisodeAccouchement::findOrFail($data['accouchement_id']);
+            $acces->verifierCentre($episode->centre_sante_id);
+            $episode->load('grossesse');
+
             if ($episode->grossesse->mere_id !== $maman->id) {
                 throw ValidationException::withMessages(['accouchement_id' => ['Cet accouchement ne correspond pas à la mère indiquée.']]);
+            }
+
+            if ($episode->centre_sante_id !== $maman->centre_sante_id) {
+                throw new AuthorizationException('L’épisode d’accouchement appartient à une autre structure.');
             }
         }
 

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\AccouchementController;
 use App\Http\Controllers\Api\V1\ConsentementController;
 use App\Http\Controllers\Api\V1\GrossesseController;
 use App\Http\Controllers\Api\V1\MereController;
+use App\Http\Controllers\Api\V1\MesureCliniqueController;
 use App\Http\Controllers\Api\V1\PostpartumController;
 use App\Http\Controllers\Api\V1\ReferenceSoinController;
 use App\Http\Controllers\Api\V1\SynchronisationController;
@@ -33,8 +34,7 @@ Route::prefix('auth')->group(function () {
     Route::options('/me', function() {
         return response('', 200);
     });
-    
-    // Rate limiting: 5 requests per minute for login
+
     Route::middleware(['throttle:5,1'])->post('/login', [AuthController::class, 'login']);
     Route::middleware('auth:api')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
@@ -54,17 +54,14 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/scores-risque/evaluer', [App\Http\Controllers\Api\ScoreRisqueController::class, 'evaluer']);
     Route::get('/relances-sms', [App\Http\Controllers\Api\RelanceSmsController::class, 'index']);
     Route::post('/relances-sms/declencher', [App\Http\Controllers\Api\RelanceSmsController::class, 'declencher']);
-    
     Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('/dashboard-admin', [DashboardController::class, 'admin']);
     Route::get('/journal-audit', [JournalAuditController::class, 'index']);
-    
-    // Mobile Sync Routes
     Route::post('/mobile/sync', [App\Http\Controllers\Api\MobileSyncController::class, 'sync']);
     Route::get('/mobile/pull', [App\Http\Controllers\Api\MobileSyncController::class, 'pull']);
 });
 
-// Les nouveaux contrats sont versionnés afin de préserver les clients vaccination existants.
+// Contrats v1 ajoutés sans modifier les routes historiques du suivi vaccinal.
 Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/meres', [MereController::class, 'index']);
     Route::post('/meres', [MereController::class, 'store']);
@@ -75,6 +72,8 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
 
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
     Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
+    Route::get('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'index']);
+    Route::post('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'store']);
     Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
 
     Route::get('/references', [ReferenceSoinController::class, 'index']);

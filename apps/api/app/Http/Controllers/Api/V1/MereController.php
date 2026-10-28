@@ -49,8 +49,10 @@ class MereController extends Controller
 
     public function show(string $mere, AccesParStructureService $acces)
     {
-        $dossier = PersonneMere::with(['grossesses.accouchement', 'liensEnfants.enfant'])->findOrFail($mere);
+        // Vérifier le périmètre avant de charger les relations cliniques liées.
+        $dossier = PersonneMere::findOrFail($mere);
         $acces->verifierCentre($dossier->centre_sante_id);
+        $dossier->load(['grossesses.accouchement', 'liensEnfants.enfant']);
 
         return response()->json(['data' => $dossier]);
     }

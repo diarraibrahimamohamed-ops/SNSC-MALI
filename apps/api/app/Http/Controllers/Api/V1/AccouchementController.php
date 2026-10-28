@@ -17,8 +17,9 @@ class AccouchementController extends Controller
 {
     public function store(StoreAccouchementRequest $request, string $grossesse, AccesParStructureService $acces, AuditCliniqueService $audit)
     {
-        $dossier = Grossesse::with('mere')->findOrFail($grossesse);
+        $dossier = Grossesse::findOrFail($grossesse);
         $acces->verifierCentre($dossier->centre_sante_id);
+        $dossier->load('mere');
         $data = $request->validated();
         $centreId = $data['centre_sante_id'] ?? $dossier->centre_sante_id;
         $acces->verifierCentre($centreId);

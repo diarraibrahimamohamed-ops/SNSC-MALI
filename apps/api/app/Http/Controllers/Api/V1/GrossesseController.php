@@ -38,8 +38,10 @@ class GrossesseController extends Controller
 
     public function show(string $grossesse, AccesParStructureService $acces)
     {
-        $dossier = Grossesse::with(['mere', 'contacts', 'mesures', 'accouchement'])->findOrFail($grossesse);
+        // N'exposer les relations de grossesse qu'après validation du périmètre.
+        $dossier = Grossesse::findOrFail($grossesse);
         $acces->verifierCentre($dossier->centre_sante_id);
+        $dossier->load(['mere', 'contacts', 'mesures', 'accouchement']);
 
         return response()->json(['data' => $dossier]);
     }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type JSX } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/features/auth/useAuth';
@@ -25,6 +25,8 @@ import {
   Eye,
   FileText,
   Shield,
+  Phone,
+  Mail,
 } from 'lucide-react';
 
 interface DossierDetail {

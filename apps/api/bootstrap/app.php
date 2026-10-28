@@ -40,6 +40,22 @@ return Application::configure(basePath: dirname(__DIR__))
                     return response()->json(['message' => 'Accès non autorisé'], 403);
                 }
                 
+                // Preserve HTTP status codes from abort(), middleware and framework exceptions.
+                if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {
+                    $status = $e->getStatusCode();
+                    $message = match ($status) {
+                        401 => 'Non authentifié',
+                        403 => 'Accès non autorisé',
+                        404 => 'Ressource introuvable',
+                        409 => 'Conflit de données',
+                        422 => 'Données invalides',
+                        429 => 'Trop de requêtes',
+                        default => 'La requête ne peut pas être traitée.',
+                    };
+
+                    return response()->json(['message' => $message], $status, $e->getHeaders());
+                }
+
                 // For other exceptions in production, don't leak details
                 return response()->json([
                     'message' => 'Erreur serveur',
