@@ -8,6 +8,7 @@ use App\Models\ActeVaccinal;
 use App\Models\DossierEnfant;
 use App\Models\StatutVaccinal;
 use App\Models\Vaccin;
+use App\Models\AgentSante;
 use App\Modules\Audit\Services\AuditService;
 use App\Modules\PlanVaccinal\Services\LotVaccinValidator;
 use App\Modules\PlanVaccinal\Services\ValidationDoseService;
@@ -19,7 +20,13 @@ class ActeVaccinalController extends Controller
 {
     public function index()
     {
-        $actes = ActeVaccinal::all()->map(fn ($a) => PdmApiMapper::acte($a));
+        $query = ActeVaccinal::query();
+        $user = auth('api')->user();
+        if (strtoupper((string) $user?->role) !== 'ADMIN') {
+            $enfantIds = DossierEnfant::where('centreId', $user?->centreId ?? '__AUCUN_CENTRE__')->pluck('enfantId');
+            $query->whereIn('enfantId', $enfantIds);
+        }
+        $actes = $query->get()->map(fn ($a) => PdmApiMapper::acte($a));
 
         return response()->json(['data' => $actes]);
     }
@@ -62,6 +69,17 @@ class ActeVaccinalController extends Controller
         }
 
         $enfant = DossierEnfant::where('enfantId', $data['enfant_id'])->firstOrFail();
+        $agentSante = AgentSante::where('agentId', $data['agent_id'])->firstOrFail();
+        $utilisateur = auth('api')->user();
+        if (strtoupper((string) $utilisateur?->role) !== 'ADMIN') {
+            $centreId = $utilisateur?->centreId;
+            if (! $centreId || $enfant->centreId !== $centreId || $agentSante->centreId !== $centreId || $agentSante->agentId !== $utilisateur?->agentId) {
+                return response()->json(['message' => 'Vous ne pouvez enregistrer une vaccination que pour votre centre et votre propre compte.'], 403);
+            }
+            if (! empty($data['centre_sante_id']) && $data['centre_sante_id'] !== $centreId) {
+                return response()->json(['message' => 'Le centre indiqué ne correspond pas à votre périmètre.'], 403);
+            }
+        }
 
         $dateAdmin = Carbon::parse($data['administre_le']);
         $validation = $validationService->valider($enfant, $vaccin, $dateAdmin);

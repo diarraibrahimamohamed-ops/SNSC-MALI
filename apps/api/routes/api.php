@@ -11,6 +11,13 @@ use App\Http\Controllers\Api\ActeVaccinalController;
 use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JournalAuditController;
+use App\Http\Controllers\Api\V1\AccouchementController;
+use App\Http\Controllers\Api\V1\ConsentementController;
+use App\Http\Controllers\Api\V1\GrossesseController;
+use App\Http\Controllers\Api\V1\MereController;
+use App\Http\Controllers\Api\V1\PostpartumController;
+use App\Http\Controllers\Api\V1\ReferenceSoinController;
+use App\Http\Controllers\Api\V1\SynchronisationController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
@@ -55,4 +62,28 @@ Route::middleware('auth:api')->group(function () {
     // Mobile Sync Routes
     Route::post('/mobile/sync', [App\Http\Controllers\Api\MobileSyncController::class, 'sync']);
     Route::get('/mobile/pull', [App\Http\Controllers\Api\MobileSyncController::class, 'pull']);
+});
+
+// Les nouveaux contrats sont versionnés afin de préserver les clients vaccination existants.
+Route::prefix('v1')->middleware('auth:api')->group(function () {
+    Route::get('/meres', [MereController::class, 'index']);
+    Route::post('/meres', [MereController::class, 'store']);
+    Route::get('/meres/{mere}', [MereController::class, 'show']);
+    Route::get('/meres/{mere}/chronologie', [MereController::class, 'chronologie']);
+    Route::post('/meres/{mere}/grossesses', [GrossesseController::class, 'store']);
+    Route::post('/meres/{mere}/suivis-postpartum', [PostpartumController::class, 'store']);
+
+    Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
+    Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
+    Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
+
+    Route::get('/references', [ReferenceSoinController::class, 'index']);
+    Route::post('/references', [ReferenceSoinController::class, 'store']);
+    Route::post('/references/{reference}/envoyer', [ReferenceSoinController::class, 'envoyer']);
+    Route::post('/references/{reference}/accuse-reception', [ReferenceSoinController::class, 'accuseReception']);
+    Route::patch('/references/{reference}/issue', [ReferenceSoinController::class, 'issue']);
+
+    Route::post('/consentements', [ConsentementController::class, 'store']);
+    Route::post('/consentements/{consentement}/retrait', [ConsentementController::class, 'retrait']);
+    Route::post('/mobile/sync', [SynchronisationController::class, 'sync']);
 });

@@ -9,6 +9,7 @@ use App\Models\ScoreRisqueVaccinal;
 use App\Modules\Audit\Services\AuditService;
 use App\Modules\RelanceSMS\Integrations\SmsMessageBuilder;
 use App\Services\SmsService;
+use App\Modules\Consentement\Services\ConsentementService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
@@ -19,15 +20,16 @@ class RelanceService
     public function __construct(
         private readonly SmsService $smsService,
         private readonly SmsMessageBuilder $messageBuilder,
-        private readonly AuditService $auditService
+        private readonly AuditService $auditService,
+        private readonly ConsentementService $consentements
     ) {}
 
     /**
      * Charge et traite les rendez-vous à rappeler.
      */
-    public function declencherRelances(?array $enfantIds = null): array
+    public function declencherRelances(?array $enfantIds = null, ?string $centreId = null, bool $administrateur = false): array
     {
-        $rdvs = $this->chargerRendezVousARappeler($enfantIds);
+        $rdvs = $this->chargerRendezVousARappeler($enfantIds, $centreId, $administrateur);
         $resultats = ['envoyes' => 0, 'echecs' => 0, 'ignores' => 0, 'details' => []];
 
         foreach ($rdvs as $rdv) {
@@ -44,18 +46,22 @@ class RelanceService
         return $resultats;
     }
 
-    public function listerNotifications(): Collection
+    public function listerNotifications(?string $centreId = null, bool $administrateur = false): Collection
     {
-        return NotificationSMS::with([
+        $query = NotificationSMS::with([
             'rendezVous.dossierEnfant.tuteur',
             'rendezVous.dosePlanifiee',
-        ])
-            ->orderByDesc('dateEnvoi')
-            ->get()
+        ]);
+
+        if (! $administrateur) {
+            $query->whereHas('rendezVous.dossierEnfant', fn ($enfants) => $enfants->where('centreId', $centreId ?? '__AUCUN_CENTRE__'));
+        }
+
+        return $query->orderByDesc('dateEnvoi')->get()
             ->map(fn (NotificationSMS $n) => $this->mapperNotification($n));
     }
 
-    private function chargerRendezVousARappeler(?array $enfantIds = null): Collection
+    private function chargerRendezVousARappeler(?array $enfantIds = null, ?string $centreId = null, bool $administrateur = false): Collection
     {
         $delaiJours = config('sms.relance_delai_jours', 3);
         $limite = Carbon::today()->addDays($delaiJours);
@@ -67,11 +73,20 @@ class RelanceService
             $query->whereIn('enfantId', $enfantIds);
         }
 
+        if (! $administrateur) {
+            $query->whereHas('dossierEnfant', fn ($enfants) => $enfants->where('centreId', $centreId ?? '__AUCUN_CENTRE__'));
+        }
+
         return $query->get()->filter(fn (RendezVousVaccinal $rdv) => $this->politiqueAutoriseEnvoi($rdv));
     }
 
     private function politiqueAutoriseEnvoi(RendezVousVaccinal $rdv): bool
     {
+        $tuteur = $rdv->dossierEnfant?->tuteur;
+        if (! $tuteur || ! $this->consentements->smsAutorise('TUTEUR', $tuteur->tuteurId)) {
+            return false;
+        }
+
         $cooldownHeures = config('sms.relance_cooldown_heures', 24);
 
         $derniereNotif = NotificationSMS::where('rdvId', $rdv->rdvId)

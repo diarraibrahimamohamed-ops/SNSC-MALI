@@ -57,4 +57,9 @@ class DossierEnfant extends Model
     {
         return $this->hasMany(RendezVousVaccinal::class, 'enfantId', 'enfantId');
     }
+
+    public function liensMere()
+    {
+        return $this->hasMany(LienMereEnfant::class, 'enfant_id', 'enfantId');
+    }
 }

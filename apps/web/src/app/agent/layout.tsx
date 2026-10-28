@@ -22,6 +22,8 @@ import {
   HelpCircle,
   Sparkles,
   Activity,
+  HeartPulse,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 export default function AgentLayout({
@@ -59,6 +61,18 @@ export default function AgentLayout({
       label: 'Enfants♣',
       icon: Baby,
       color: 'text-emerald-500',
+    },
+    {
+      href: '/agent/meres',
+      label: 'Mères & grossesses',
+      icon: HeartPulse,
+      color: 'text-rose-400',
+    },
+    {
+      href: '/agent/references',
+      label: 'Références de soins',
+      icon: ArrowRightLeft,
+      color: 'text-orange-400',
     },
     {
       href: '/agent/ajout',
@@ -321,6 +335,9 @@ export default function AgentLayout({
                   <p className="text-sm font-medium text-slate-500">
                     {pathname === '/agent/dashboard' && 'Aperçu général'}
                     {pathname === '/agent/enfants' && 'Gestion des enfants'}
+                    {pathname.startsWith('/agent/meres') && 'Dossier mère-enfant'}
+                    {pathname.startsWith('/agent/grossesses') && 'Parcours prénatal'}
+                    {pathname === '/agent/references' && 'Références de soins'}
                     {pathname === '/agent/ajout' && 'Saisie médicale'}
                     {pathname === '/agent/vaccination' && 'Gestion des vaccinations'}
                     {pathname === '/agent/calendrier' && 'Calendrier vaccinal'}

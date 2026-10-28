@@ -10,13 +10,15 @@ use Illuminate\Support\Facades\Http;
 use App\Models\NiveauRisque;
 use App\Modules\Audit\Services\AuditService;
 use App\Modules\RisqueIA\Services\CollecteurFeaturesService;
+use App\Modules\SanteMaternelle\Services\AccesParStructureService;
 
 class ScoreRisqueController extends Controller
 {
     public function evaluer(
         Request $request,
         CollecteurFeaturesService $collecteur,
-        AuditService $auditService
+        AuditService $auditService,
+        AccesParStructureService $acces
     ) {
         $data = $request->validate([
             'enfant_id' => 'required|string|exists:DossierEnfant,enfantId',
@@ -24,6 +26,7 @@ class ScoreRisqueController extends Controller
         ]);
 
         $enfant = DossierEnfant::where('enfantId', $data['enfant_id'])->firstOrFail();
+        $acces->verifierCentre($enfant->centreId);
 
         if (! $collecteur->donneesEssentiellesCompletes($enfant)) {
             $score = ScoreRisqueVaccinal::create([

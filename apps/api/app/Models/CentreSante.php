@@ -27,4 +27,9 @@ class CentreSante extends Model
     {
         return $this->hasMany(AgentSante::class, 'centreId', 'centreId');
     }
+
+    public function meres()
+    {
+        return $this->hasMany(PersonneMere::class, 'centre_sante_id', 'centreId');
+    }
 }

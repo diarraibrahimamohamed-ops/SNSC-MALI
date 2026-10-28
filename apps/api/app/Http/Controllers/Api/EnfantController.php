@@ -14,6 +14,7 @@ use App\Support\PdmApiMapper;
 use Carbon\Carbon;
 use App\Services\EnfantSmsNotificationService;
 use App\Services\SmsService;
+use App\Modules\Consentement\Services\ConsentementService;
 
 class EnfantController extends Controller
 {
@@ -26,6 +27,14 @@ class EnfantController extends Controller
             'actesVaccinaux',
             'calendrierVaccinal.dosesPlanifiees',
         ]);
+
+        // Une configuration d'agent sans centre ne donne jamais accès à tous les dossiers.
+        if (strtoupper((string) $user?->role) !== 'ADMIN') {
+            if (! $user?->centreId) {
+                return response()->json(['data' => []]);
+            }
+            $query->where('centreId', $user->centreId);
+        }
 
         if ($request->filled('identifiant_sanitaire')) {
             $query->where('identifiantSanitaire', $request->query('identifiant_sanitaire'));
@@ -79,7 +88,8 @@ class EnfantController extends Controller
         CalendrierPevService $calendrierService,
         RendezVousService $rdvService,
         AuditService $auditService,
-        SmsService $smsService
+        SmsService $smsService,
+        ConsentementService $consentements
     ) {
         $data = $request->validate([
             'identifiant_sanitaire' => 'required|string|max:100',
@@ -137,7 +147,9 @@ class EnfantController extends Controller
 
         $avertissements = [];
         $tuteur = $enfant->tuteur;
-        if ($tuteur && ! $smsService->validatePhoneNumber($smsService->formatPhoneNumber($tuteur->telephone))) {
+        if (! $tuteur || ! $consentements->smsAutorise('TUTEUR', $tuteur->tuteurId)) {
+            $avertissements[] = 'Aucun consentement SMS actif : aucun message de confirmation n’a été envoyé.';
+        } elseif (! $smsService->validatePhoneNumber($smsService->formatPhoneNumber($tuteur->telephone))) {
             $avertissements[] = 'Numéro de téléphone du parent invalide : enregistrement effectué sans envoi SMS.';
         } else {
             try {
@@ -186,6 +198,12 @@ class EnfantController extends Controller
 
     private function findEnfantAutorise(string $enfantId): DossierEnfant
     {
-        return DossierEnfant::where('enfantId', $enfantId)->firstOrFail();
+        $query = DossierEnfant::where('enfantId', $enfantId);
+        $user = auth('api')->user();
+        if (strtoupper((string) $user?->role) !== 'ADMIN') {
+            $query->where('centreId', $user?->centreId ?? '__AUCUN_CENTRE__');
+        }
+
+        return $query->firstOrFail();
     }
 }
