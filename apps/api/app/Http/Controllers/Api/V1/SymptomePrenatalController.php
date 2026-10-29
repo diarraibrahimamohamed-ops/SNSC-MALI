@@ -24,6 +24,10 @@ class SymptomePrenatalController extends Controller
         'PERTE_LIQUIDE' => 'Pertes liquidiennes déclarées',
         'OEDEMES_SIGNES' => 'Œdèmes signalés',
         'DIMINUTION_MOUVEMENTS_FOETAUX' => 'Diminution des mouvements fœtaux déclarée',
+        'DIFFICULTE_RESPIRATOIRE' => 'Difficulté respiratoire déclarée',
+        'CONVULSIONS' => 'Convulsions déclarées',
+        'PERTE_CONNAISSANCE' => 'Perte de connaissance déclarée',
+        'DOULEUR_THORACIQUE' => 'Douleur thoracique déclarée',
         'FATIGUE_INHABITUELLE' => 'Fatigue inhabituelle',
         'AUTRE' => 'Autre symptôme déclaré',
     ];
