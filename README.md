@@ -86,13 +86,13 @@ Après avoir démarré les conteneurs, appliquer les migrations explicitement :
 docker compose exec api php artisan migrate --force
 ```
 
-Pour vérifier les rappels en environnement contrôlé :
+Pour vérifier les rappels sans aucun envoi ni modification de données, utiliser d'abord le mode simulation :
 
 ```bash
-docker compose exec api php artisan maternite:rappels-prenataux --limit=10
-``
+docker compose exec api php artisan maternite:rappels-prenataux --dry-run --limit=10
+```
 
-La commande de rappel doit être orthographiée exactement `maternite:rappels-prenataux`; elle n'envoie un SMS que si un consentement actif `SMS_RENDEZ_VOUS` est enregistré pour la mère et la structure concernée, et si Telerivet est configuré. Le SMS reste générique et ne mentionne ni grossesse, ni examen, ni symptôme. Aucun rappel n'est envoyé sans consentement actif.
+**Sans `--dry-run`, la commande peut envoyer de vrais SMS.** Ne l'exécuter que dans un environnement contrôlé avec des rendez-vous de test et un fournisseur SMS configuré intentionnellement. La commande n'envoie un SMS que si un consentement actif `SMS_RENDEZ_VOUS` est enregistré pour la mère et la structure concernée, avec un numéro disponible, et si Telerivet est configuré. Le SMS reste générique et ne mentionne ni grossesse, ni examen, ni symptôme. Aucun rappel n'est envoyé sans consentement actif.
 
 ### Référentiel versionné des examens prénataux
 - `GET /api/v1/catalogues/examens-prenataux?version_protocole=...` : consulter les définitions d'une version de protocole.
