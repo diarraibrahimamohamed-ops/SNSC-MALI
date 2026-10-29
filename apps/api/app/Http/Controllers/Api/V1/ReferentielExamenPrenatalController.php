@@ -11,8 +11,6 @@ use App\Modules\SanteMaternelle\Services\AuditCliniqueService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ReferentielExamenPrenatalController extends Controller
@@ -115,6 +113,10 @@ class ReferentielExamenPrenatalController extends Controller
             ]);
         }
 
+        $referenceExiste = ReferentielExamenPrenatal::query()
+            ->where('version_protocole', $version)
+            ->exists();
+
         $start = Carbon::parse($dossier->date_debut_estimee)->startOfDay();
         $today = Carbon::today();
         $ageSemaines = $start->greaterThan($today)
@@ -171,11 +173,14 @@ class ReferentielExamenPrenatalController extends Controller
             'data' => $data,
             'meta' => [
                 'version_protocole' => $version,
-                'reference_configuree' => $definitions->isNotEmpty(),
+                'reference_configuree' => $referenceExiste,
+                'definitions_applicables_trouvees' => $definitions->isNotEmpty(),
                 'age_gestationnel_estime_semaines' => $ageSemaines,
-                'message' => $definitions->isEmpty()
-                    ? 'Aucune définition trouvée pour cette version et cette période. Cela ne signifie pas qu’aucun examen n’est nécessaire.'
-                    : 'Liste informative issue du référentiel configuré. Vérifiez la version et la datation avec le protocole approuvé par les autorités sanitaires.',
+                'message' => ! $referenceExiste
+                    ? 'Aucun référentiel n’est chargé pour cette version. Aucun examen attendu ne peut être déduit automatiquement.'
+                    : ($definitions->isEmpty()
+                        ? 'Le référentiel existe, mais aucune définition ne correspond à cette fenêtre gestationnelle. Vérifiez la couverture du protocole; cela ne signifie pas qu’aucun examen n’est nécessaire.'
+                        : 'Liste informative issue du référentiel configuré. Vérifiez la version et la datation avec le protocole approuvé par les autorités sanitaires.'),
             ],
         ]);
     }
