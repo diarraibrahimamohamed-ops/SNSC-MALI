@@ -62,6 +62,21 @@ export type CatalogueMesure = {
   maximum: number;
 };
 
+export type AntecedentObstetrical = {
+  id: string;
+  code_antecedent: string;
+  date_evenement?: string | null;
+  source_declaration: string;
+  precision?: string | null;
+  observations?: string | null;
+  statut_validation: string;
+};
+
+export type CatalogueAntecedent = {
+  code: string;
+  libelle: string;
+};
+
 export type ChronologieItem = {
   id: string;
   type: string;
@@ -71,6 +86,7 @@ export type ChronologieItem = {
   prochaine_etape?: string | null;
   orientation?: string | null;
   vaccin?: string | null;
+  libelle?: string | null;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
