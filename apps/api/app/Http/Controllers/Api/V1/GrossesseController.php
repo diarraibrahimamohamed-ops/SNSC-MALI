@@ -10,6 +10,7 @@ use App\Models\Grossesse;
 use App\Models\PersonneMere;
 use App\Modules\SanteMaternelle\Services\AccesParStructureService;
 use App\Modules\SanteMaternelle\Services\AuditCliniqueService;
+use Illuminate\Http\Request;
 
 class GrossesseController extends Controller
 {
