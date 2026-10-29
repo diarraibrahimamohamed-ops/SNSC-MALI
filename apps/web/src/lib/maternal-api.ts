@@ -19,6 +19,81 @@ export type Grossesse = {
   version_protocole?: string | null;
 };
 
+export type ExamenPrenatal = {
+  id: string;
+  code_examen: string;
+  nom_examen: string;
+  categorie: string;
+  statut_resultat: 'EN_ATTENTE' | 'DISPONIBLE' | 'NON_REALISE' | 'NON_APPLICABLE' | string;
+  resultat_texte?: string | null;
+  resultat_numerique?: string | number | null;
+  unite?: string | null;
+  date_prelevement?: string | null;
+  date_resultat?: string | null;
+  laboratoire?: string | null;
+  statut_validation: string;
+  source_donnee?: string | null;
+};
+
+export type SymptomePrenatal = {
+  id: string;
+  code_symptome: string;
+  libelle_symptome: string;
+  statut_declaration: 'SIGNALE' | 'NON_SIGNALE' | 'NON_EVALUE' | string;
+  source_declaration: string;
+  declare_le: string;
+  debut_estime_le?: string | null;
+  intensite_declaree?: number | null;
+  precision?: string | null;
+  observations?: string | null;
+  statut_validation: string;
+};
+
+export type CatalogueSymptome = {
+  code: string;
+  libelle: string;
+};
+
+export type CatalogueMesure = {
+  code: string;
+  libelle: string;
+  unite: string;
+  minimum: number;
+  maximum: number;
+};
+
+export type AntecedentObstetrical = {
+  id: string;
+  code_antecedent: string;
+  date_evenement?: string | null;
+  source_declaration: string;
+  precision?: string | null;
+  observations?: string | null;
+  statut_validation: string;
+};
+
+export type RendezVousPrenatal = {
+  id: string;
+  grossesse_id: string;
+  prevu_le: string;
+  type_rendez_vous: string;
+  libelle: string;
+  statut: 'PLANIFIE' | 'REPORTE' | 'REALISE' | 'MANQUE' | 'ANNULE' | string;
+  realise_le?: string | null;
+  motif?: string | null;
+  remplace_rendez_vous_id?: string | null;
+  rappel_programme_le?: string | null;
+  rappel_statut: string;
+  rappel_envoye_le?: string | null;
+  rappel_tentatives: number;
+  rappel_erreur_code?: string | null;
+};
+
+export type CatalogueAntecedent = {
+  code: string;
+  libelle: string;
+};
+
 export type ChronologieItem = {
   id: string;
   type: string;
@@ -26,11 +101,15 @@ export type ChronologieItem = {
   statut?: string | null;
   provenance?: string | null;
   prochaine_etape?: string | null;
+  prochain_rendez_vous_le?: string | null;
   orientation?: string | null;
   vaccin?: string | null;
+  libelle?: string | null;
+  rendez_vous_type?: string | null;
+  rappel_statut?: string | null;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 export async function maternalApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = typeof window === 'undefined' ? null : localStorage.getItem('auth_token');

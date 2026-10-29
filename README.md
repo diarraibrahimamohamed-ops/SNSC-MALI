@@ -49,8 +49,12 @@ Système National de Suivi et de Contrôle de la Calendrierisation de la Vaccina
 git clone https://github.com/diarraibrahimamohamed-ops/SNSC-MALI.git
 cd SNSC-MALI
 
-# Démarrer les services
-docker-compose up -d
+# Préparer les variables d'environnement (remplacer le mot de passe d'exemple)
+cp .env.example .env
+# Éditer .env et remplacer POSTGRES_PASSWORD par un secret aléatoire unique.
+
+# Démarrer les services; l'API initialise son .env et ses clés JWT si absents
+docker compose up -d
 
 # Installer les dépendances
 cd apps/api && composer install
@@ -59,10 +63,52 @@ cd ../ia && pip install -r requirements.txt
 ```
 
 ### Services
-- **Backend API**: http://localhost:8001
+- **Backend API**: http://localhost:8000
 - **Frontend**: http://localhost:3000
-- **Service IA**: http://localhost:8000
-- **Documentation IA**: http://localhost:8000/docs
+- **Service IA**: http://localhost:8080
+- **Documentation IA**: http://localhost:8080/docs
+
+### Santé maternelle — plan de travail
+- [Plan d'évolution du suivi maternel](docs/PLAN_EVOLUTION_MATERNELLE.md)
+- [Cadre d'usage des fonctions IA](docs/IA_CADRE_NON_DECISIONNEL.md)
+
+### Configuration et clés
+- Copier `.env.example` vers `.env` et remplacer le mot de passe d'exemple avant le démarrage.
+- L'API copie `apps/api/.env.example` vers `apps/api/.env` si nécessaire et génère une paire JWT locale si les deux fichiers de clés sont absents.
+- Les clés privées JWT sont propres à chaque environnement et ne doivent jamais être commitées. Voir [la politique de gestion des secrets](docs/SECURITE_SECRETS.md).
+
+### Calendrier et rappels prénataux
+Le dossier de grossesse permet de planifier un rendez-vous, de le marquer réalisé/manqué/annulé ou de le reporter (le report conserve l'ancien rendez-vous et crée un nouvel enregistrement). Les rappels sont exécutés par Laravel Scheduler dans le conteneur `scheduler`.
+
+Après avoir démarré les conteneurs, appliquer les migrations explicitement :
+
+```bash
+docker compose exec api php artisan migrate --force
+```
+
+Pour vérifier les rappels sans aucun envoi ni modification de données, utiliser d'abord le mode simulation :
+
+```bash
+docker compose exec api php artisan maternite:rappels-prenataux --dry-run --limit=10
+```
+
+**Sans `--dry-run`, la commande peut envoyer de vrais SMS.** Ne l'exécuter que dans un environnement contrôlé avec des rendez-vous de test et un fournisseur SMS configuré intentionnellement. La commande n'envoie un SMS que si un consentement actif `SMS_RENDEZ_VOUS` est enregistré pour la mère et la structure concernée, avec un numéro disponible, et si Telerivet est configuré. Le SMS reste générique et ne mentionne ni grossesse, ni examen, ni symptôme. Aucun rappel n'est envoyé sans consentement actif.
+
+### Référentiel versionné des examens prénataux
+- `GET /api/v1/catalogues/examens-prenataux?version_protocole=...` : consulter les définitions d'une version de protocole.
+- `POST /api/v1/catalogues/examens-prenataux` : publier une définition; cette opération est réservée au rôle administrateur.
+- `GET /api/v1/grossesses/{grossesse}/examens-attendus` : afficher les définitions de la version affectée à la grossesse, la fenêtre gestationnelle configurée et indiquer uniquement si un résultat est enregistré.
+
+Le référentiel est volontairement vide par défaut. Avant de l'alimenter, faire valider par les autorités sanitaires compétentes les définitions, la version du protocole, les fenêtres de semaines et les références documentaires. Une version déjà publiée ne se modifie pas silencieusement : publiez une nouvelle version en cas de changement. L'âge gestationnel affiché est une estimation technique à vérifier et la page reste informative; l'absence d'entrée ou de résultat ne signifie pas qu'un examen n'est pas nécessaire.
+
+### Accès au journal d'audit IA
+L'endpoint `/audit/logs` est désactivé si `AUDIT_LOGS_TOKEN` n'est pas configuré. Pour l'activer dans un environnement de développement contrôlé, définir un jeton aléatoire robuste dans le fichier `.env` à la racine du projet :
+
+```dotenv
+AUDIT_LOGS_TOKEN=remplacer_par_un_secret_long_et_aleatoire
+```
+
+Puis redémarrer le service IA. L'accès s'effectue avec un en-tête `Authorization: Bearer <jeton>`. Ne pas versionner de vraie valeur de jeton. En production, utiliser un gestionnaire de secrets et limiter l'accès réseau à cette route.
 
 ## Sécurité
 

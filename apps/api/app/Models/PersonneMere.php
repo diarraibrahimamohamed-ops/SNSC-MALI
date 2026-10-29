@@ -27,6 +27,7 @@ class PersonneMere extends Model
 
     public function centreSante(): BelongsTo { return $this->belongsTo(CentreSante::class, 'centre_sante_id', 'centreId'); }
     public function grossesses(): HasMany { return $this->hasMany(Grossesse::class, 'mere_id'); }
+    public function antecedentsObstetricaux(): HasMany { return $this->hasMany(AntecedentObstetrical::class, 'mere_id'); }
     public function liensEnfants(): HasMany { return $this->hasMany(LienMereEnfant::class, 'mere_id'); }
     public function suivisPostpartum(): HasMany { return $this->hasMany(SuiviPostPartum::class, 'mere_id'); }
 }

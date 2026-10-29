@@ -9,6 +9,9 @@ import time
 from datetime import datetime
 import hashlib
 import json
+import os
+
+from app.security import is_valid_bearer_token
 
 # Rate limiting configuration
 limiter = Limiter(key_func=get_remote_address)
@@ -70,7 +73,25 @@ async def audit_middleware(request: Request, call_next):
 @app.get("/audit/logs")
 @limiter.limit("60/minute")
 async def get_audit_logs(request: Request):
-    """Endpoint to retrieve audit logs (protected by rate limiting)"""
+    """Return recent audit logs only to callers with the configured bearer token."""
+    expected_token = os.getenv("AUDIT_LOGS_TOKEN", "").strip()
+    if not expected_token:
+        # Fail closed: the endpoint is unavailable until an operator configures a secret.
+        raise HTTPException(
+            status_code=503,
+            detail="Audit log access is not configured.",
+        )
+
+    if not is_valid_bearer_token(
+        request.headers.get("authorization"),
+        expected_token,
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid or missing bearer token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     return {
         "total_entries": len(audit_log),
         "logs": audit_log[-100:]  # Return last 100 entries

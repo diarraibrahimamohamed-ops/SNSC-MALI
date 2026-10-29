@@ -14,7 +14,10 @@ class ChronologieMereEnfantService
     {
         $mere->loadMissing([
             'grossesses.contacts',
+            'grossesses.symptomes',
+            'grossesses.rendezVousPrenataux',
             'grossesses.accouchement',
+            'antecedentsObstetricaux',
             'liensEnfants.enfant.actesVaccinaux.vaccin',
             'suivisPostpartum',
         ]);
@@ -39,6 +42,32 @@ class ChronologieMereEnfantService
                     'statut' => $contact->statut_validation,
                     'provenance' => $contact->source_donnee,
                     'prochaine_etape' => $contact->prochaine_etape,
+                    'prochain_rendez_vous_le' => $contact->prochain_rendez_vous_le?->toDateString(),
+                ]);
+            }
+
+            foreach ($grossesse->rendezVousPrenataux as $rendezVous) {
+                $faits->push([
+                    'type' => 'RENDEZ_VOUS_PRENATAL',
+                    'date' => $rendezVous->prevu_le?->toDateString(),
+                    'id' => $rendezVous->id,
+                    'statut' => $rendezVous->statut,
+                    'provenance' => 'CALENDRIER_PRENATAL',
+                    'libelle' => $rendezVous->libelle,
+                    'rendez_vous_type' => $rendezVous->type_rendez_vous,
+                    'rappel_statut' => $rendezVous->rappel_statut,
+                ]);
+            }
+
+            foreach ($grossesse->symptomes as $symptome) {
+                $faits->push([
+                    'type' => 'SYMPTOME_PRENATAL_DECLARE',
+                    'date' => $symptome->declare_le?->toIso8601String(),
+                    'id' => $symptome->id,
+                    'statut' => $symptome->statut_declaration,
+                    'provenance' => $symptome->source_declaration,
+                    'libelle' => $symptome->libelle_symptome,
+                    'validation' => $symptome->statut_validation,
                 ]);
             }
 
@@ -52,6 +81,17 @@ class ChronologieMereEnfantService
                     'issue' => $grossesse->accouchement->issue,
                 ]);
             }
+        }
+
+        foreach ($mere->antecedentsObstetricaux as $antecedent) {
+            $faits->push([
+                'type' => 'ANTECEDENT_OBSTETRICAL',
+                'date' => $antecedent->date_evenement?->toDateString() ?? $antecedent->created_at?->toIso8601String(),
+                'id' => $antecedent->id,
+                'statut' => $antecedent->statut_validation,
+                'provenance' => $antecedent->source_declaration,
+                'libelle' => $antecedent->precision ?: $antecedent->code_antecedent,
+            ]);
         }
 
         foreach ($mere->suivisPostpartum as $suivi) {

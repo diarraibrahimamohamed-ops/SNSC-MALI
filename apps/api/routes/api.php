@@ -11,14 +11,19 @@ use App\Http\Controllers\Api\ActeVaccinalController;
 use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JournalAuditController;
+use App\Http\Controllers\Api\V1\AntecedentObstetricalController;
 use App\Http\Controllers\Api\V1\AccouchementController;
 use App\Http\Controllers\Api\V1\ConsentementController;
+use App\Http\Controllers\Api\V1\ExamenPrenatalController;
 use App\Http\Controllers\Api\V1\GrossesseController;
 use App\Http\Controllers\Api\V1\MereController;
 use App\Http\Controllers\Api\V1\MesureCliniqueController;
 use App\Http\Controllers\Api\V1\PostpartumController;
+use App\Http\Controllers\Api\V1\ReferentielExamenPrenatalController;
 use App\Http\Controllers\Api\V1\ReferenceSoinController;
+use App\Http\Controllers\Api\V1\RendezVousPrenatalController;
 use App\Http\Controllers\Api\V1\SynchronisationController;
+use App\Http\Controllers\Api\V1\SymptomePrenatalController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
@@ -68,12 +73,28 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/meres/{mere}', [MereController::class, 'show']);
     Route::get('/meres/{mere}/chronologie', [MereController::class, 'chronologie']);
     Route::post('/meres/{mere}/grossesses', [GrossesseController::class, 'store']);
+    Route::get('/meres/{mere}/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'index']);
+    Route::post('/meres/{mere}/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'store']);
+    Route::get('/catalogues/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'catalogue']);
     Route::post('/meres/{mere}/suivis-postpartum', [PostpartumController::class, 'store']);
 
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
     Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
+    Route::get('/rendez-vous-prenataux', [RendezVousPrenatalController::class, 'index']);
+    Route::get('/grossesses/{grossesse}/rendez-vous', [RendezVousPrenatalController::class, 'forGrossesse']);
+    Route::post('/grossesses/{grossesse}/rendez-vous', [RendezVousPrenatalController::class, 'store']);
+    Route::patch('/rendez-vous-prenataux/{rendezVous}/statut', [RendezVousPrenatalController::class, 'updateStatut']);
     Route::get('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'index']);
+    Route::get('/catalogues/examens-prenataux', [ReferentielExamenPrenatalController::class, 'index']);
+    Route::post('/catalogues/examens-prenataux', [ReferentielExamenPrenatalController::class, 'store']);
+    Route::get('/grossesses/{grossesse}/examens-attendus', [ReferentielExamenPrenatalController::class, 'attendus']);
+    Route::get('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'index']);
+    Route::post('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'store']);
+    Route::get('/grossesses/{grossesse}/symptomes', [SymptomePrenatalController::class, 'index']);
+    Route::post('/grossesses/{grossesse}/symptomes', [SymptomePrenatalController::class, 'store']);
+    Route::get('/catalogues/symptomes-prenataux', [SymptomePrenatalController::class, 'catalogue']);
     Route::post('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'store']);
+    Route::get('/catalogues/mesures-cliniques', [MesureCliniqueController::class, 'catalogue']);
     Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
 
     Route::get('/references', [ReferenceSoinController::class, 'index']);
