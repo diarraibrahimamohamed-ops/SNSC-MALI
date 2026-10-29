@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Baby, CalendarCheck2, CircleAlert, ClipboardPlus, Loader2, Plus, Stethoscope } from 'lucide-react';
-import { ExamenPrenatal, labelEtat, maternalApi } from '@/lib/maternal-api';
+import { CatalogueMesure, CatalogueSymptome, ExamenPrenatal, labelEtat, maternalApi, SymptomePrenatal } from '@/lib/maternal-api';
 
 type Contact = {
   id: string;
@@ -27,6 +27,20 @@ type Mesure = {
 };
 
 type ExamensResponse = { data: { data: ExamenPrenatal[] } };
+type SymptomesResponse = { data: { data: SymptomePrenatal[] } };
+type CatalogueSymptomesResponse = { data: CatalogueSymptome[] };
+type CatalogueMesuresResponse = { data: CatalogueMesure[] };
+
+type FormSymptome = {
+  code_symptome: string;
+  statut_declaration: string;
+  source_declaration: string;
+  declare_le: string;
+  debut_estime_le: string;
+  intensite_declaree: string;
+  precision: string;
+  observations: string;
+};
 
 type FormExamen = {
   code_examen: string;
@@ -64,11 +78,23 @@ const initialContact = {
 };
 
 const initialMeasurement = {
-  type_mesure: '',
+  type_mesure: 'POIDS_MATERNEL',
+  type_mesure_personnalisee: '',
   valeur: '',
-  unite: '',
+  unite: 'kg',
   mesuree_le: '',
   methode: '',
+};
+
+const initialSymptome: FormSymptome = {
+  code_symptome: 'AUTRE',
+  statut_declaration: 'SIGNALE',
+  source_declaration: 'DECLARE_PAR_MERE',
+  declare_le: '',
+  debut_estime_le: '',
+  intensite_declaree: '',
+  precision: '',
+  observations: '',
 };
 
 const initialDelivery = {
@@ -101,12 +127,25 @@ export default function GrossesseDetailPage() {
   const [measurement, setMeasurement] = useState(initialMeasurement);
   const [examens, setExamens] = useState<ExamenPrenatal[]>([]);
   const [examForm, setExamForm] = useState<FormExamen>(initialExam);
+  const [symptomes, setSymptomes] = useState<SymptomePrenatal[]>([]);
+  const [catalogueSymptomes, setCatalogueSymptomes] = useState<CatalogueSymptome[]>([]);
+  const [catalogueMesures, setCatalogueMesures] = useState<CatalogueMesure[]>([]);
+  const [symptomeForm, setSymptomeForm] = useState<FormSymptome>(initialSymptome);
   const [accouchement, setAccouchement] = useState(initialDelivery);
 
-  const recupererGrossesse = useCallback(async (): Promise<{ grossesse: GrossesseDetail; examens: ExamenPrenatal[] }> => {
-    const [result, examensResult] = await Promise.all([
+  const recupererGrossesse = useCallback(async (): Promise<{
+    grossesse: GrossesseDetail;
+    examens: ExamenPrenatal[];
+    symptomes: SymptomePrenatal[];
+    catalogueSymptomes: CatalogueSymptome[];
+    catalogueMesures: CatalogueMesure[];
+  }> => {
+    const [result, examensResult, symptomesResult, catalogueSymptomesResult, catalogueMesuresResult] = await Promise.all([
       maternalApi<{ data: GrossesseDetail }>(`/grossesses/${id}`),
       maternalApi<ExamensResponse>(`/grossesses/${id}/examens`),
+      maternalApi<SymptomesResponse>(`/grossesses/${id}/symptomes`),
+      maternalApi<CatalogueSymptomesResponse>('/catalogues/symptomes-prenataux'),
+      maternalApi<CatalogueMesuresResponse>('/catalogues/mesures-cliniques'),
     ]);
     return {
       grossesse: {
@@ -115,14 +154,30 @@ export default function GrossesseDetailPage() {
         mesures: result.data.mesures ?? [],
       },
       examens: examensResult.data.data ?? [],
+      symptomes: symptomesResult.data.data ?? [],
+      catalogueSymptomes: catalogueSymptomesResult.data ?? [],
+      catalogueMesures: catalogueMesuresResult.data ?? [],
     };
   }, [id]);
+
+  const appliquerDossier = (result: Awaited<ReturnType<typeof recupererGrossesse>>) => {
+    setGrossesse(result.grossesse);
+    setExamens(result.examens);
+    setSymptomes(result.symptomes);
+    setCatalogueSymptomes(result.catalogueSymptomes);
+    setCatalogueMesures(result.catalogueMesures);
+    setMeasurement((current) => {
+      if (current.type_mesure === 'AUTRE') return current;
+      const selected = result.catalogueMesures.find((item) => item.code === current.type_mesure)
+        ?? result.catalogueMesures[0];
+      return selected ? { ...current, type_mesure: selected.code, unite: selected.unite } : current;
+    });
+  };
 
   const charger = async () => {
     try {
       const result = await recupererGrossesse();
-      setGrossesse(result.grossesse);
-      setExamens(result.examens);
+      appliquerDossier(result);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Impossible de charger la grossesse.');
@@ -136,8 +191,7 @@ export default function GrossesseDetailPage() {
       try {
         const data = await recupererGrossesse();
         if (active) {
-          setGrossesse(data.grossesse);
-          setExamens(data.examens);
+          appliquerDossier(data);
           setError(null);
         }
       } catch (err) {
@@ -185,12 +239,22 @@ export default function GrossesseDetailPage() {
     event.preventDefault();
     setSaving(true);
     setError(null);
+    const typeMesure = measurement.type_mesure === 'AUTRE'
+      ? measurement.type_mesure_personnalisee.trim()
+      : measurement.type_mesure;
+    if (!typeMesure) {
+      setError('Précisez le type de mesure lorsque « Autre » est choisi.');
+      setSaving(false);
+      return;
+    }
     try {
       await maternalApi(`/grossesses/${id}/mesures`, {
         method: 'POST',
         body: JSON.stringify({
-          ...measurement,
+          type_mesure: typeMesure,
           valeur: Number(measurement.valeur),
+          unite: measurement.unite.trim(),
+          mesuree_le: measurement.mesuree_le,
           methode: measurement.methode || undefined,
         }),
       });
@@ -198,6 +262,42 @@ export default function GrossesseDetailPage() {
       await charger();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'La mesure clinique n’a pas été enregistrée.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ajouterSymptome = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    if (symptomeForm.code_symptome === 'AUTRE' && !symptomeForm.precision.trim()) {
+      setError('Précisez le symptôme lorsque « Autre » est choisi.');
+      setSaving(false);
+      return;
+    }
+
+    try {
+      await maternalApi(`/grossesses/${id}/symptomes`, {
+        method: 'POST',
+        body: JSON.stringify({
+          code_symptome: symptomeForm.code_symptome,
+          statut_declaration: symptomeForm.statut_declaration,
+          source_declaration: symptomeForm.source_declaration,
+          declare_le: symptomeForm.declare_le,
+          debut_estime_le: symptomeForm.debut_estime_le || undefined,
+          intensite_declaree: symptomeForm.statut_declaration === 'SIGNALE' && symptomeForm.intensite_declaree !== ''
+            ? Number(symptomeForm.intensite_declaree)
+            : undefined,
+          precision: symptomeForm.precision.trim() || undefined,
+          observations: symptomeForm.observations.trim() || undefined,
+        }),
+      });
+      setSymptomeForm(initialSymptome);
+      await charger();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Le symptôme déclaré n’a pas été enregistré.');
     } finally {
       setSaving(false);
     }
@@ -340,12 +440,84 @@ export default function GrossesseDetailPage() {
 
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
+              <Stethoscope className="h-5 w-5 text-rose-700" />
+              <h2 className="font-bold text-slate-900">Symptômes déclarés</h2>
+            </div>
+            <p className="mb-4 text-sm text-slate-600">
+              Enregistrez ce qui a été déclaré ou observé, avec la source. Cet historique ne confirme pas un diagnostic et aucun score automatique n’est calculé.
+            </p>
+            <div className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              Une déclaration de symptôme ne doit pas être filtrée par un score informatique. En présence d’un signe inquiétant, contactez sans attendre une structure de santé ou un professionnel compétent.
+            </div>
+            <form onSubmit={ajouterSymptome} className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-rose-50/60 p-4 md:grid-cols-2">
+              <label className="grid gap-1 text-sm font-medium text-slate-700">Symptôme
+                <select value={symptomeForm.code_symptome} onChange={(event) => setSymptomeForm({ ...symptomeForm, code_symptome: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-rose-200 focus:ring-2">
+                  {catalogueSymptomes.map((item) => <option key={item.code} value={item.code}>{item.libelle}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-slate-700">État de la déclaration
+                <select value={symptomeForm.statut_declaration} onChange={(event) => setSymptomeForm({ ...symptomeForm, statut_declaration: event.target.value, intensite_declaree: event.target.value === 'SIGNALE' ? symptomeForm.intensite_declaree : '' })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-rose-200 focus:ring-2">
+                  <option value="SIGNALE">Signalé présent</option><option value="NON_SIGNALE">Non signalé</option><option value="NON_EVALUE">Non évalué</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-slate-700">Source
+                <select value={symptomeForm.source_declaration} onChange={(event) => setSymptomeForm({ ...symptomeForm, source_declaration: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-rose-200 focus:ring-2">
+                  <option value="DECLARE_PAR_MERE">Déclaré par la mère</option><option value="DECLARE_PAR_ACCOMPAGNANT">Déclaré par un accompagnant</option><option value="OBSERVE_PAR_AGENT">Observé par un agent</option><option value="TRANSCRIT_DOSSIER">Transcrit depuis le dossier</option>
+                </select>
+              </label>
+              <Champ label="Date et heure de déclaration" type="datetime-local" value={symptomeForm.declare_le} required onChange={(declare_le) => setSymptomeForm({ ...symptomeForm, declare_le })} />
+              <Champ label="Début estimé (facultatif)" type="datetime-local" value={symptomeForm.debut_estime_le} onChange={(debut_estime_le) => setSymptomeForm({ ...symptomeForm, debut_estime_le })} />
+              {symptomeForm.statut_declaration === 'SIGNALE' && <Champ label="Intensité déclarée (0 à 10, facultatif)" type="number" value={symptomeForm.intensite_declaree} onChange={(intensite_declaree) => setSymptomeForm({ ...symptomeForm, intensite_declaree })} />}
+              {symptomeForm.code_symptome === 'AUTRE' && <Champ label="Précision sur le symptôme" value={symptomeForm.precision} required onChange={(precision) => setSymptomeForm({ ...symptomeForm, precision })} />}
+              <label className="grid gap-1 text-sm font-medium text-slate-700 md:col-span-2">Observation facultative
+                <textarea value={symptomeForm.observations} onChange={(event) => setSymptomeForm({ ...symptomeForm, observations: event.target.value })} rows={2} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-rose-200 focus:ring-2" />
+              </label>
+              <div className="flex items-end">
+                <button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+                  <Plus className="h-4 w-4" />Enregistrer la déclaration
+                </button>
+              </div>
+            </form>
+            <div className="space-y-3">
+              {symptomes.length ? symptomes.map((element) => (
+                <article key={element.id} className="rounded-2xl border border-slate-100 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-slate-900">{element.libelle_symptome}</p>
+                      {element.precision && <p className="mt-1 text-sm text-slate-600">{element.precision}</p>}
+                      <p className="mt-1 text-xs text-slate-500">Source : {labelEtat(element.source_declaration)} · À vérifier : {labelEtat(element.statut_validation)}</p>
+                    </div>
+                    <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-800">{labelEtat(element.statut_declaration)}</span>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Déclaré le {new Date(element.declare_le).toLocaleString('fr-ML')}
+                    {element.debut_estime_le ? ` · Début déclaré : ${new Date(element.debut_estime_le).toLocaleString('fr-ML')}` : ''}
+                    {element.intensite_declaree !== null && element.intensite_declaree !== undefined ? ` · Intensité déclarée : ${element.intensite_declaree}/10` : ''}
+                  </p>
+                  {element.observations && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-700">{element.observations}</p>}
+                </article>
+              )) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucune déclaration de symptôme enregistrée.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-2 flex items-center gap-2">
               <ClipboardPlus className="h-5 w-5 text-blue-700" />
               <h2 className="font-bold text-slate-900">Mesures cliniques</h2>
             </div>
             <p className="mb-5 text-sm text-slate-500">Saisir la valeur et son unité telles que relevées. Aucune interprétation clinique automatique n’est effectuée ici.</p>
             <form onSubmit={ajouterMesure} className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-blue-50/60 p-4 md:grid-cols-2">
-              <Champ label="Type de mesure" value={measurement.type_mesure} required onChange={(type_mesure) => setMeasurement({ ...measurement, type_mesure })} />
+              <label className="grid gap-1 text-sm font-medium text-slate-700">Type de mesure
+                <select value={measurement.type_mesure} required onChange={(event) => {
+                  const type_mesure = event.target.value;
+                  const selected = catalogueMesures.find((item) => item.code === type_mesure);
+                  setMeasurement({ ...measurement, type_mesure, unite: selected?.unite ?? (type_mesure === 'AUTRE' ? '' : measurement.unite) });
+                }} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-blue-200 focus:ring-2">
+                  {catalogueMesures.map((item) => <option key={item.code} value={item.code}>{item.libelle}</option>)}
+                  <option value="AUTRE">Autre mesure</option>
+                </select>
+              </label>
+              {measurement.type_mesure === 'AUTRE' && <Champ label="Nom de la mesure" value={measurement.type_mesure_personnalisee} required onChange={(type_mesure_personnalisee) => setMeasurement({ ...measurement, type_mesure_personnalisee })} />}
               <Champ label="Valeur mesurée" type="number" step="any" value={measurement.valeur} required onChange={(valeur) => setMeasurement({ ...measurement, valeur })} />
               <Champ label="Unité" value={measurement.unite} required onChange={(unite) => setMeasurement({ ...measurement, unite })} />
               <Champ label="Date et heure" type="datetime-local" value={measurement.mesuree_le} required onChange={(mesuree_le) => setMeasurement({ ...measurement, mesuree_le })} />
