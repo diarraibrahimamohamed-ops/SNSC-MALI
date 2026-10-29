@@ -28,6 +28,18 @@ jobs:
         run: composer install --prefer-dist --no-interaction --no-progress
       - name: Clear cached configuration
         run: php artisan config:clear
+      - name: Validate per-environment JWT key provisioning
+        run: |
+          php -l scripts/ensure-jwt-keys.php
+          php scripts/ensure-jwt-keys.php
+          test -s storage/jwt/private.pem
+          test -s storage/jwt/public.pem
+          private_hash_before=$(sha256sum storage/jwt/private.pem | cut -d ' ' -f 1)
+          php scripts/ensure-jwt-keys.php
+          private_hash_after=$(sha256sum storage/jwt/private.pem | cut -d ' ' -f 1)
+          test "$private_hash_before" = "$private_hash_after"
+          test "$(stat -c '%a' storage/jwt/private.pem)" = "600"
+          test "$(stat -c '%a' storage/jwt/public.pem)" = "644"
       - name: Run maternal workflow and SMS configuration tests
         run: php artisan test --filter='MaternalCareApiTest|TelerivetServiceConfigTest'
       - name: Legacy full-suite diagnostic (known pre-existing failures)
