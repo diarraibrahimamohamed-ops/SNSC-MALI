@@ -40,6 +40,17 @@ Le registre de symptômes déclarés et un catalogue de mesures maternelles ont 
 
 Les listes proposées constituent un catalogue initial à faire valider par l'équipe métier. L'intensité est une déclaration subjective, pas une évaluation clinique. Une absence de déclaration n'est jamais inférée à partir d'un champ vide. Aucun score, diagnostic, triage ni recommandation de traitement n'est généré par cette tranche.
 
+## 1.3 Troisième tranche implémentée sur la branche de travail
+
+- Registre d'antécédents obstétricaux rattaché au dossier mère, avec type, date éventuelle, source, précision, observations et statut de vérification.
+- Catalogue initial d'antécédents : prématurité, césarienne, mortinaissance, décès néonatal, complications obstétricales déclarées, grossesse multiple, fausse couche, transfert et autre.
+- Routes authentifiées de consultation et d'enregistrement; vérification du périmètre de structure; journalisation minimale.
+- Intégration des antécédents dans la chronologie longitudinale Mère–Enfant.
+- Ajout du champ « prochain rendez-vous prévu » au formulaire de contact prénatal existant et affichage de la date sur le contact enregistré.
+- Tests d'intégration du registre, de l'accès inter-centres, de la validation du code « autre » et du rendez-vous prénatal.
+
+Les antécédents sont conservés comme déclarés ou transcrits; le statut reste `A_VERIFIER`. Les listes sont un catalogue initial à valider avec les professionnels métier. Le système ne calcule ni gravité, ni risque individuel, ni conduite clinique à partir de ces antécédents.
+
 ## 2. Principes de conception
 
 1. **Continuité Mère–Grossesse–Accouchement–Enfant :** une mère peut avoir plusieurs grossesses; chaque grossesse possède son historique, son issue et les liens vers les nouveau-nés concernés.
