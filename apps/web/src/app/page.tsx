@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Activity,
   ArrowRight,
@@ -153,85 +154,140 @@ export default function Home() {
           </div>
 
           <div className="landing-visual-wrap landing-reveal landing-reveal--delayed">
-            <div className="landing-visual-glow" aria-hidden="true" />
-            <div className="landing-visual-orbit landing-visual-orbit--one" aria-hidden="true" />
-            <div className="landing-visual-orbit landing-visual-orbit--two" aria-hidden="true" />
+            <div className="landing-photo-card">
+              <Image
+                src="/images/snsc-mali-home-hero.webp"
+                alt="Illustration d’une professionnelle de santé accueillant une mère et son jeune enfant dans un centre de vaccination."
+                fill
+                priority
+                sizes="(max-width: 820px) 100vw, 50vw"
+                className="landing-photo-image"
+              />
+              <div className="landing-photo-shade" aria-hidden="true" />
+              <div className="landing-photo-topline">
+                <span className="landing-photo-pill">SANTÉ DE PROXIMITÉ</span>
+                <span className="landing-photo-pill landing-photo-pill--light"><HeartPulse size={14} /> PEV · MALI</span>
+              </div>
+              <div className="landing-photo-copy">
+                <span>AU CŒUR DU SUIVI</span>
+                <h2>Chaque rendez-vous compte.</h2>
+                <p>Un accompagnement plus clair pour les enfants, les familles et les équipes de santé.</p>
+              </div>
+              <div className="landing-photo-mali-ribbon" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+            </div>
 
-            <div className="landing-preview">
+              <div className="landing-floating-note landing-floating-note--left">
+                <span className="landing-floating-note-icon"><ClipboardCheck size={18} /></span>
+                <span><strong>Parcours structuré</strong><small>Les informations au même endroit</small></span>
+              </div>
+  
+              <div className="landing-floating-note landing-floating-note--right">
+                <span className="landing-floating-pulse" />
+                <span><strong>Un outil collaboratif</strong><small>Pour les équipes de santé</small></span>
+              </div>
+  
+          </div>
+        </section>
+
+        <section className="landing-overview-section">
+          <div className="landing-container landing-overview-layout">
+            <div className="landing-overview-copy landing-reveal">
+              <p className="landing-overline">VUE D’ENSEMBLE</p>
+              <h2>Le suivi, en un regard.</h2>
+              <p className="landing-overview-description">
+                Une vue claire pour organiser les dossiers, repérer les prochaines étapes
+                et accompagner le suivi vaccinal au sein des structures de santé.
+              </p>
+              <div className="landing-overview-items">
+                <article className="landing-overview-item">
+                  <span className="landing-overview-item-icon"><Users size={18} /></span>
+                  <span><strong>Dossiers enfants</strong><small>Un suivi centralisé</small></span>
+                </article>
+                <article className="landing-overview-item landing-overview-item--blue">
+                  <span className="landing-overview-item-icon"><CalendarCheck2 size={18} /></span>
+                  <span><strong>Calendrier vaccinal</strong><small>Repères du parcours PEV</small></span>
+                </article>
+                <article className="landing-overview-item landing-overview-item--gold">
+                  <span className="landing-overview-item-icon"><BarChart3 size={18} /></span>
+                  <span><strong>Vue de la structure</strong><small>Activité et indicateurs</small></span>
+                </article>
+                <article className="landing-overview-item landing-overview-item--violet">
+                  <span className="landing-overview-item-icon"><Syringe size={18} /></span>
+                  <span><strong>Étapes du parcours</strong><small>Informations de suivi</small></span>
+                </article>
+              </div>
+            </div>
+            <div className="landing-overview-demo landing-reveal landing-reveal--delayed">
+              <div className="landing-preview">
               <div className="landing-preview-topbar">
-                <div className="landing-preview-brand">
-                  <span className="landing-preview-mark"><HeartPulse size={17} /></span>
-                  <span>
-                    <strong>Espace de suivi</strong>
-                    <small>Parcours vaccinal</small>
-                  </span>
-                </div>
-                <span className="landing-preview-status"><span /> Exemple</span>
+              <div className="landing-preview-brand">
+              <span className="landing-preview-mark"><HeartPulse size={17} /></span>
+              <span>
+              <strong>Espace de suivi</strong>
+              <small>Parcours vaccinal</small>
+              </span>
               </div>
-
+              <span className="landing-preview-status"><span /> Exemple</span>
+              </div>
+              
               <div className="landing-preview-heading">
-                <div>
-                  <p className="landing-overline">VUE D’ENSEMBLE</p>
-                  <h2>Le suivi, en un regard.</h2>
-                </div>
-                <span className="landing-preview-calendar"><CalendarCheck2 size={20} /></span>
+              <div>
+              <p className="landing-overline">APERÇU DE LA PLATEFORME</p>
+              <h2>Les étapes du parcours.</h2>
               </div>
-
+              <span className="landing-preview-calendar"><CalendarCheck2 size={20} /></span>
+              </div>
+              
               <div className="landing-preview-summary">
-                <div className="landing-summary-icon"><Users size={19} /></div>
-                <div className="landing-summary-copy">
-                  <span>Dossiers enfants</span>
-                  <strong>Un suivi centralisé</strong>
-                </div>
-                <span className="landing-summary-check"><Check size={16} /></span>
+              <div className="landing-summary-icon"><Users size={19} /></div>
+              <div className="landing-summary-copy">
+              <span>Dossiers enfants</span>
+              <strong>Un suivi centralisé</strong>
               </div>
-
+              <span className="landing-summary-check"><Check size={16} /></span>
+              </div>
+              
               <div className="landing-preview-section-title">
-                <span>Étapes du parcours</span>
-                <span className="landing-preview-muted">Illustration</span>
+              <span>Étapes du parcours</span>
+              <span className="landing-preview-muted">Illustration</span>
               </div>
-
+              
               <div className="landing-timeline">
-                <div className="landing-timeline-item">
-                  <span className="landing-timeline-node landing-timeline-node--complete"><Check size={12} /></span>
-                  <div className="landing-timeline-copy">
-                    <strong>Dossier de l’enfant</strong>
-                    <small>Informations de suivi</small>
-                  </div>
-                  <span className="landing-timeline-label landing-timeline-label--complete">Organisé</span>
-                </div>
-                <div className="landing-timeline-item">
-                  <span className="landing-timeline-node landing-timeline-node--active"><Syringe size={12} /></span>
-                  <div className="landing-timeline-copy">
-                    <strong>Calendrier vaccinal</strong>
-                    <small>Repères du parcours PEV</small>
-                  </div>
-                  <span className="landing-timeline-label">À suivre</span>
-                </div>
-                <div className="landing-timeline-item">
-                  <span className="landing-timeline-node"><BarChart3 size={12} /></span>
-                  <div className="landing-timeline-copy">
-                    <strong>Vue de la structure</strong>
-                    <small>Activité et indicateurs</small>
-                  </div>
-                  <span className="landing-timeline-label">Pilotage</span>
-                </div>
+              <div className="landing-timeline-item">
+              <span className="landing-timeline-node landing-timeline-node--complete"><Check size={12} /></span>
+              <div className="landing-timeline-copy">
+              <strong>Dossier de l’enfant</strong>
+              <small>Informations de suivi</small>
               </div>
-
+              <span className="landing-timeline-label landing-timeline-label--complete">Organisé</span>
+              </div>
+              <div className="landing-timeline-item">
+              <span className="landing-timeline-node landing-timeline-node--active"><Syringe size={12} /></span>
+              <div className="landing-timeline-copy">
+              <strong>Calendrier vaccinal</strong>
+              <small>Repères du parcours PEV</small>
+              </div>
+              <span className="landing-timeline-label">À suivre</span>
+              </div>
+              <div className="landing-timeline-item">
+              <span className="landing-timeline-node"><BarChart3 size={12} /></span>
+              <div className="landing-timeline-copy">
+              <strong>Vue de la structure</strong>
+              <small>Activité et indicateurs</small>
+              </div>
+              <span className="landing-timeline-label">Pilotage</span>
+              </div>
+              </div>
+              
               <div className="landing-preview-foot">
-                <ShieldCheck size={15} />
-                <span>Aperçu illustratif — aucune donnée réelle</span>
+              <ShieldCheck size={15} />
+              <span>Aperçu illustratif — aucune donnée réelle</span>
               </div>
-            </div>
-
-            <div className="landing-floating-note landing-floating-note--left">
-              <span className="landing-floating-note-icon"><ClipboardCheck size={18} /></span>
-              <span><strong>Parcours structuré</strong><small>Les informations au même endroit</small></span>
-            </div>
-
-            <div className="landing-floating-note landing-floating-note--right">
-              <span className="landing-floating-pulse" />
-              <span><strong>Un outil collaboratif</strong><small>Pour les équipes de santé</small></span>
+              </div>
             </div>
           </div>
         </section>
