@@ -2703,12 +2703,12 @@ button {
 
 .vt-auth-story--agent .vt-auth-story-image {
   /* UNICEF Mali media asset: vaccination visit at a health centre. Confirm permission/credit before public deployment. */
-  background-image: url("https://www.unicef.org/mali/sites/unicef.org.mali/files/styles/media_large_image/public/UNI548477.JPG.webp?itok=5TKkzUN6");
+  background-image: url("/images/vaccin-track-agent-bg.webp");
   background-position: 47% 30%;
 }
 
 .vt-auth-story--admin .vt-auth-story-image {
-  background-image: url("https://static.wixstatic.com/media/b0a3e7_31d11f4540b3430ea9ddbfb9853326be~mv2.jpg/v1/fill/w_960%2Ch_692%2Cal_c%2Cq_85/b0a3e7_31d11f4540b3430ea9ddbfb9853326be~mv2.jpg");
+  background-image: url("/images/vaccin-track-admin-bg.webp");
   background-position: 48% center;
 }
 
@@ -2795,16 +2795,19 @@ button {
 }
 
 .vt-auth-brand-copy strong {
-  color: #0c2c58;
+  color: #ffffff;
+  text-shadow: 0 2px 14px rgba(0, 22, 38, 0.5);
 }
 
 .vt-auth-brand-copy em {
-  color: #078654;
+  color: #8df0c1;
+  text-shadow: 0 2px 14px rgba(0, 22, 38, 0.5);
 }
 
 .vt-auth-brand-copy small {
   margin-top: 6px;
-  color: #315b84;
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 10px rgba(0, 22, 38, 0.56);
   font-size: 0.68rem;
   line-height: 1.55;
 }
@@ -3690,4 +3693,16 @@ button {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* Keep the wordmark readable over both generated photo backgrounds. */
+.vt-auth-story-top .vt-auth-brand {
+  padding: 10px 17px 10px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  background: rgba(0, 35, 44, 0.44);
+  box-shadow: 0 14px 35px rgba(0, 21, 34, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
 }
