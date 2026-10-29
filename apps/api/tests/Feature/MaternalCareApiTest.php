@@ -514,6 +514,73 @@ class MaternalCareApiTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_referentiel_examens_est_administre_et_filtre_selon_la_version_du_protocole(): void
+    {
+        $admin = $this->agent($this->centreA, 'ADMIN-REFERENTIEL');
+        $admin->role = 'ADMIN';
+        $admin->save();
+
+        $definition = [
+            'version_protocole' => 'MALI-CPN-TEST-V1',
+            'code_examen' => 'HB_TEST',
+            'nom_examen' => 'Examen de test',
+            'categorie' => 'HEMATOLOGIE',
+            'modalite' => 'ROUTINE',
+            'semaine_min' => 0,
+            'semaine_max' => 13,
+            'source_reference' => 'Protocole fictif utilisé uniquement par le test automatisé.',
+        ];
+
+        $this->actingAs($this->agentA, 'api')->postJson('/api/v1/catalogues/examens-prenataux', $definition)
+            ->assertForbidden();
+
+        $this->actingAs($admin, 'api')->postJson('/api/v1/catalogues/examens-prenataux', $definition)
+            ->assertCreated()
+            ->assertJsonPath('data.version_protocole', 'MALI-CPN-TEST-V1')
+            ->assertJsonPath('data.code_examen', 'HB_TEST');
+
+        $this->actingAs($admin, 'api')->postJson('/api/v1/catalogues/examens-prenataux', $definition)
+            ->assertUnprocessable();
+
+        $this->actingAs($this->agentA, 'api')->getJson('/api/v1/catalogues/examens-prenataux?version_protocole=MALI-CPN-TEST-V1')
+            ->assertOk()
+            ->assertJsonPath('data.data.0.code_examen', 'HB_TEST');
+
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Coulibaly',
+            'prenom' => 'Mariam',
+            'identifiant_sanitaire' => 'MERE-REFERENTIEL-001',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subWeeks(8)->toDateString(),
+            'terme_estime' => now()->addWeeks(32)->toDateString(),
+            'version_protocole' => 'MALI-CPN-TEST-V1',
+        ])->assertCreated()->json('data.id');
+
+        $expected = $this->actingAs($this->agentA, 'api')->getJson("/api/v1/grossesses/{$grossesse}/examens-attendus")
+            ->assertOk()
+            ->assertJsonPath('meta.version_protocole', 'MALI-CPN-TEST-V1')
+            ->assertJsonPath('meta.reference_configuree', true)
+            ->assertJsonPath('data.0.code_examen', 'HB_TEST')
+            ->assertJsonPath('data.0.suivi', 'AUCUN_RESULTAT_ENREGISTRE');
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/examens", [
+            'code_examen' => 'HB_TEST',
+            'nom_examen' => 'Examen de test',
+            'categorie' => 'HEMATOLOGIE',
+            'statut_resultat' => 'DISPONIBLE',
+            'resultat_texte' => 'Résultat synthétique de test',
+            'date_resultat' => now()->subMinute()->toIso8601String(),
+            'version_protocole' => 'MALI-CPN-TEST-V1',
+        ])->assertCreated();
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/grossesses/{$grossesse}/examens-attendus")
+            ->assertOk()
+            ->assertJsonPath('data.0.suivi', 'RESULTAT_ENREGISTRE')
+            ->assertJsonPath('data.0.dernier_resultat.statut_resultat', 'DISPONIBLE');
+    }
+
     public function test_rendez_vous_prenataux_sont_isoles_et_le_report_cree_un_remplacement(): void
     {
         $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
