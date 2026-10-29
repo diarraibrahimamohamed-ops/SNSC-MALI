@@ -12,14 +12,16 @@ use Throwable;
 
 class EnvoyerRappelsPrenataux extends Command
 {
-    protected $signature = 'maternite:rappels-prenataux {--limit=100 : Nombre maximal de rappels à traiter}';
+    protected $signature = 'maternite:rappels-prenataux {--limit=100 : Nombre maximal de rappels à traiter} {--dry-run : Simuler sans envoyer de SMS ni modifier les rendez-vous}';
 
     protected $description = 'Envoie les rappels SMS prénataux autorisés par un consentement actif';
 
     public function handle(TelerivetService $sms): int
     {
         $limit = max(1, min((int) $this->option('limit'), 500));
+        $dryRun = (bool) $this->option('dry-run');
         $staleBefore = now()->subMinutes(15);
+        $wouldSend = 0;
 
         $ids = RendezVousPrenatal::query()
             ->where('statut', 'PLANIFIE')
@@ -43,6 +45,56 @@ class EnvoyerRappelsPrenataux extends Command
         $failed = 0;
 
         foreach ($ids as $id) {
+            if ($dryRun) {
+                $candidate = RendezVousPrenatal::query()
+                    ->with('grossesse.mere')
+                    ->whereKey($id)
+                    ->first();
+
+                if (
+                    ! $candidate
+                    || $candidate->statut !== 'PLANIFIE'
+                    || ! $candidate->rappel_programme_le
+                    || $candidate->rappel_programme_le->isFuture()
+                    || $candidate->prevu_le->lt(today())
+                ) {
+                    continue;
+                }
+
+                $eligible = $candidate->rappel_statut === 'EN_ATTENTE'
+                    || (
+                        $candidate->rappel_statut === 'EN_COURS'
+                        && $candidate->rappel_debut_traitement_le !== null
+                        && $candidate->rappel_debut_traitement_le->lte($staleBefore)
+                    );
+
+                if (! $eligible) {
+                    continue;
+                }
+
+                $mother = $candidate->grossesse?->mere;
+                $hasConsent = $mother && Consentement::query()
+                    ->where('sujet_type', 'MERE')
+                    ->where('sujet_id', $mother->id)
+                    ->where('centre_sante_id', $candidate->centre_sante_id)
+                    ->where('finalite', 'SMS_RENDEZ_VOUS')
+                    ->where('statut', 'ACTIF')
+                    ->whereNull('retire_le')
+                    ->exists();
+
+                if (
+                    $hasConsent
+                    && is_string($mother->telephone)
+                    && preg_match('/^\\+?[0-9]{10,15}$/', $mother->telephone)
+                ) {
+                    $wouldSend++;
+                } else {
+                    $skipped++;
+                }
+
+                continue;
+            }
+
             $appointment = DB::transaction(function () use ($id, $staleBefore) {
                 $record = RendezVousPrenatal::whereKey($id)->lockForUpdate()->first();
 
@@ -148,6 +200,12 @@ class EnvoyerRappelsPrenataux extends Command
         }
 
         // Aggregate-only output: no names, phone numbers or clinical data.
+        if ($dryRun) {
+            $this->info("Simulation : {$wouldSend} rappel(s) éligible(s), {$skipped} ignoré(s). Aucun SMS envoyé; aucune donnée modifiée.");
+
+            return self::SUCCESS;
+        }
+
         $this->info("Rappels traités : {$sent} envoyés, {$skipped} ignorés, {$failed} échecs.");
 
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
