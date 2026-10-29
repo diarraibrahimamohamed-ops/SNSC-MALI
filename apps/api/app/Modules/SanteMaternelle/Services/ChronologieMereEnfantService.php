@@ -15,6 +15,7 @@ class ChronologieMereEnfantService
         $mere->loadMissing([
             'grossesses.contacts',
             'grossesses.symptomes',
+            'grossesses.rendezVousPrenataux',
             'grossesses.accouchement',
             'antecedentsObstetricaux',
             'liensEnfants.enfant.actesVaccinaux.vaccin',
@@ -42,6 +43,19 @@ class ChronologieMereEnfantService
                     'provenance' => $contact->source_donnee,
                     'prochaine_etape' => $contact->prochaine_etape,
                     'prochain_rendez_vous_le' => $contact->prochain_rendez_vous_le?->toDateString(),
+                ]);
+            }
+
+            foreach ($grossesse->rendezVousPrenataux as $rendezVous) {
+                $faits->push([
+                    'type' => 'RENDEZ_VOUS_PRENATAL',
+                    'date' => $rendezVous->prevu_le?->toDateString(),
+                    'id' => $rendezVous->id,
+                    'statut' => $rendezVous->statut,
+                    'provenance' => 'CALENDRIER_PRENATAL',
+                    'libelle' => $rendezVous->libelle,
+                    'rendez_vous_type' => $rendezVous->type_rendez_vous,
+                    'rappel_statut' => $rendezVous->rappel_statut,
                 ]);
             }
 
