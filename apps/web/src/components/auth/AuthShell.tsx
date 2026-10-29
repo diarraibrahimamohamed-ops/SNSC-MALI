@@ -2,10 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Activity,
-  ArrowRight,
   BarChart3,
   Baby,
-  CalendarCheck2,
   HeartPulse,
   LockKeyhole,
   ShieldCheck,

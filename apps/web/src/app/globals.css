@@ -2702,7 +2702,8 @@ button {
 }
 
 .vt-auth-story--agent .vt-auth-story-image {
-  background-image: url("https://www.afro.who.int/sites/default/files/styles/teaser_thumbnail_600x600_/public/2025-09/21689.jpg?itok=8TEGNfSG");
+  /* UNICEF Mali media asset: vaccination visit at a health centre. Confirm permission/credit before public deployment. */
+  background-image: url("https://www.unicef.org/mali/sites/unicef.org.mali/files/styles/media_large_image/public/UNI548477.JPG.webp?itok=5TKkzUN6");
   background-position: 47% 30%;
 }
 

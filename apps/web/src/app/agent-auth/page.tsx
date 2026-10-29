@@ -27,10 +27,15 @@ export default function AgentLoginPage() {
 
   useEffect(() => {
     const rememberedMatricule = window.localStorage.getItem(REMEMBERED_MATRICULE_KEY);
-    if (rememberedMatricule) {
+    if (!rememberedMatricule) return;
+
+    // Defer hydration of the browser-only preference until after the effect has mounted.
+    const frame = window.requestAnimationFrame(() => {
       setMatricule(rememberedMatricule);
       setRememberIdentifier(true);
-    }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
