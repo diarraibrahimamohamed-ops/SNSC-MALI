@@ -72,6 +72,23 @@ export type AntecedentObstetrical = {
   statut_validation: string;
 };
 
+export type RendezVousPrenatal = {
+  id: string;
+  grossesse_id: string;
+  prevu_le: string;
+  type_rendez_vous: string;
+  libelle: string;
+  statut: 'PLANIFIE' | 'REPORTE' | 'REALISE' | 'MANQUE' | 'ANNULE' | string;
+  realise_le?: string | null;
+  motif?: string | null;
+  remplace_rendez_vous_id?: string | null;
+  rappel_programme_le?: string | null;
+  rappel_statut: string;
+  rappel_envoye_le?: string | null;
+  rappel_tentatives: number;
+  rappel_erreur_code?: string | null;
+};
+
 export type CatalogueAntecedent = {
   code: string;
   libelle: string;
