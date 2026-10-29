@@ -41,6 +41,11 @@ return new class extends Migration
             $table->string('statut_validation', 24)->default('A_VERIFIER');
             $table->timestampsTz();
 
+            $table->foreign('centre_sante_id')
+                ->references('centreId')
+                ->on('CentreSante')
+                ->restrictOnDelete();
+
             $table->index(['grossesse_id', 'date_prelevement']);
             $table->index(['centre_sante_id', 'statut_resultat']);
             $table->index('contact_prenatal_id');
