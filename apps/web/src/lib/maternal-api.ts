@@ -19,6 +19,22 @@ export type Grossesse = {
   version_protocole?: string | null;
 };
 
+export type ExamenPrenatal = {
+  id: string;
+  code_examen: string;
+  nom_examen: string;
+  categorie: string;
+  statut_resultat: 'EN_ATTENTE' | 'DISPONIBLE' | 'NON_REALISE' | 'NON_APPLICABLE' | string;
+  resultat_texte?: string | null;
+  resultat_numerique?: string | number | null;
+  unite?: string | null;
+  date_prelevement?: string | null;
+  date_resultat?: string | null;
+  laboratoire?: string | null;
+  statut_validation: string;
+  source_donnee?: string | null;
+};
+
 export type ChronologieItem = {
   id: string;
   type: string;
@@ -30,7 +46,7 @@ export type ChronologieItem = {
   vaccin?: string | null;
 };
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8001/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 export async function maternalApi<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = typeof window === 'undefined' ? null : localStorage.getItem('auth_token');
