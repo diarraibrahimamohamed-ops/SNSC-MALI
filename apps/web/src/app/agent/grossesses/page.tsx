@@ -31,7 +31,7 @@ function formatDate(value?: string | null): string {
     : date.toLocaleDateString('fr-ML', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function ageGestationnel(dateDebut: string): string {
+function tempsDepuisDebutEstime(dateDebut: string): string {
   const start = new Date(dateDebut);
   if (Number.isNaN(start.getTime()) || start.getTime() > Date.now()) return 'Datation à vérifier';
   const days = Math.floor((Date.now() - start.getTime()) / 86_400_000);
@@ -192,7 +192,7 @@ export default function GrossessesPage() {
                   </div>
                 </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                  <span>{item.date_debut_estimee ? ageGestationnel(item.date_debut_estimee) : 'Datation non renseignée'}</span>
+                  <span>{item.date_debut_estimee ? `Depuis début estimé : ${tempsDepuisDebutEstime(item.date_debut_estimee)}` : 'Début estimé non renseigné'}</span>
                   <span>·</span>
                   <span>{item.nombre_foetus} fœtus</span>
                   <span>·</span>
