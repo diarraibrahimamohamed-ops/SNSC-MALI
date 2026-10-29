@@ -22,6 +22,7 @@ services:
       - vaccin-network
 
   api:
+    image: vaccin_api
     build:
       context: ./apps/api
       dockerfile: docker/php/Dockerfile
@@ -47,6 +48,30 @@ services:
       - postgres
       - redis
     command: sh -c "composer install && (test -f .env || cp .env.example .env) && php scripts/ensure-jwt-keys.php && (grep -q '^APP_KEY=base64:' .env || php artisan key:generate) && php artisan serve --host=0.0.0.0 --port=8000"
+    networks:
+      - vaccin-network
+
+  scheduler:
+    image: vaccin_api
+    container_name: vaccin_scheduler
+    working_dir: /var/www/html
+    volumes:
+      - ./apps/api:/var/www/html
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: vaccin_track
+      DB_USERNAME: vaccin_user
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
+      JWT_ALGO: ${JWT_ALGO:-RS256}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-file:///var/www/html/storage/jwt/public.pem}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-file:///var/www/html/storage/jwt/private.pem}
+      JWT_TTL: ${JWT_TTL:-15}
+      JWT_BLACKLIST_ENABLED: "true"
+    depends_on:
+      - api
+    command: sh -c "until [ -f .env ] && [ -f vendor/autoload.php ] && [ -s storage/jwt/private.pem ]; do sleep 2; done; php artisan schedule:work"
     networks:
       - vaccin-network
 
