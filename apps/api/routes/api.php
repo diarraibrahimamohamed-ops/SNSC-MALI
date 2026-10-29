@@ -78,6 +78,7 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/catalogues/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'catalogue']);
     Route::post('/meres/{mere}/suivis-postpartum', [PostpartumController::class, 'store']);
 
+    Route::get('/grossesses', [GrossesseController::class, 'index']);
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
     Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
     Route::get('/rendez-vous-prenataux', [RendezVousPrenatalController::class, 'index']);
