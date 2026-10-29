@@ -49,8 +49,12 @@ Système National de Suivi et de Contrôle de la Calendrierisation de la Vaccina
 git clone https://github.com/diarraibrahimamohamed-ops/SNSC-MALI.git
 cd SNSC-MALI
 
-# Démarrer les services
-docker-compose up -d
+# Préparer les variables d'environnement (remplacer le mot de passe d'exemple)
+cp .env.example .env
+# Éditer .env et remplacer POSTGRES_PASSWORD par un secret aléatoire unique.
+
+# Démarrer les services; l'API initialise son .env et ses clés JWT si absents
+docker compose up -d
 
 # Installer les dépendances
 cd apps/api && composer install
@@ -67,6 +71,11 @@ cd ../ia && pip install -r requirements.txt
 ### Santé maternelle — plan de travail
 - [Plan d'évolution du suivi maternel](docs/PLAN_EVOLUTION_MATERNELLE.md)
 - [Cadre d'usage des fonctions IA](docs/IA_CADRE_NON_DECISIONNEL.md)
+
+### Configuration et clés
+- Copier `.env.example` vers `.env` et remplacer le mot de passe d'exemple avant le démarrage.
+- L'API copie `apps/api/.env.example` vers `apps/api/.env` si nécessaire et génère une paire JWT locale si les deux fichiers de clés sont absents.
+- Les clés privées JWT sont propres à chaque environnement et ne doivent jamais être commitées. Voir [la politique de gestion des secrets](docs/SECURITE_SECRETS.md).
 
 ### Accès au journal d'audit IA
 L'endpoint `/audit/logs` est désactivé si `AUDIT_LOGS_TOKEN` n'est pas configuré. Pour l'activer dans un environnement de développement contrôlé, définir un jeton aléatoire robuste dans le fichier `.env` à la racine du projet :
