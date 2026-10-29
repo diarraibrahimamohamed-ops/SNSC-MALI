@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Baby, CalendarCheck2, CircleAlert, ClipboardPlus, Loader2, Plus, Stethoscope } from 'lucide-react';
-import { CatalogueMesure, CatalogueSymptome, ExamenPrenatal, labelEtat, maternalApi, SymptomePrenatal } from '@/lib/maternal-api';
+import { CatalogueMesure, CatalogueSymptome, ExamenPrenatal, labelEtat, maternalApi, RendezVousPrenatal, SymptomePrenatal } from '@/lib/maternal-api';
 
 type Contact = {
   id: string;
@@ -31,6 +31,10 @@ type ExamensResponse = { data: { data: ExamenPrenatal[] } };
 type SymptomesResponse = { data: { data: SymptomePrenatal[] } };
 type CatalogueSymptomesResponse = { data: CatalogueSymptome[] };
 type CatalogueMesuresResponse = { data: CatalogueMesure[] };
+type RendezVousResponse = { data: { data: RendezVousPrenatal[] } };
+
+type FormRendezVous = { prevu_le: string; type_rendez_vous: string; libelle: string; rappel_programme_le: string };
+type BrouillonStatutRendezVous = { statut: string; nouvelle_date: string; nouveau_rappel_programme_le: string; motif: string };
 
 type FormSymptome = {
   code_symptome: string;
@@ -119,6 +123,14 @@ const initialExam: FormExamen = {
   laboratoire: '',
 };
 
+const initialRendezVous: FormRendezVous = {
+  prevu_le: '',
+  type_rendez_vous: 'CPN',
+  libelle: 'Consultation prénatale',
+  rappel_programme_le: '',
+};
+
+
 export default function GrossesseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [grossesse, setGrossesse] = useState<GrossesseDetail | null>(null);
@@ -133,19 +145,24 @@ export default function GrossesseDetailPage() {
   const [catalogueSymptomes, setCatalogueSymptomes] = useState<CatalogueSymptome[]>([]);
   const [catalogueMesures, setCatalogueMesures] = useState<CatalogueMesure[]>([]);
   const [symptomeForm, setSymptomeForm] = useState<FormSymptome>(initialSymptome);
+  const [rendezVous, setRendezVous] = useState<RendezVousPrenatal[]>([]);
+  const [rendezVousForm, setRendezVousForm] = useState<FormRendezVous>(initialRendezVous);
+  const [statutBrouillons, setStatutBrouillons] = useState<Record<string, BrouillonStatutRendezVous>>({});
   const [accouchement, setAccouchement] = useState(initialDelivery);
 
   const recupererGrossesse = useCallback(async (): Promise<{
     grossesse: GrossesseDetail;
     examens: ExamenPrenatal[];
     symptomes: SymptomePrenatal[];
+    rendezVous: RendezVousPrenatal[];
     catalogueSymptomes: CatalogueSymptome[];
     catalogueMesures: CatalogueMesure[];
   }> => {
-    const [result, examensResult, symptomesResult, catalogueSymptomesResult, catalogueMesuresResult] = await Promise.all([
+    const [result, examensResult, symptomesResult, rendezVousResult, catalogueSymptomesResult, catalogueMesuresResult] = await Promise.all([
       maternalApi<{ data: GrossesseDetail }>(`/grossesses/${id}`),
       maternalApi<ExamensResponse>(`/grossesses/${id}/examens`),
       maternalApi<SymptomesResponse>(`/grossesses/${id}/symptomes`),
+      maternalApi<RendezVousResponse>(`/grossesses/${id}/rendez-vous`),
       maternalApi<CatalogueSymptomesResponse>('/catalogues/symptomes-prenataux'),
       maternalApi<CatalogueMesuresResponse>('/catalogues/mesures-cliniques'),
     ]);
@@ -157,6 +174,7 @@ export default function GrossesseDetailPage() {
       },
       examens: examensResult.data.data ?? [],
       symptomes: symptomesResult.data.data ?? [],
+      rendezVous: rendezVousResult.data.data ?? [],
       catalogueSymptomes: catalogueSymptomesResult.data ?? [],
       catalogueMesures: catalogueMesuresResult.data ?? [],
     };
@@ -166,6 +184,7 @@ export default function GrossesseDetailPage() {
     setGrossesse(result.grossesse);
     setExamens(result.examens);
     setSymptomes(result.symptomes);
+    setRendezVous(result.rendezVous);
     setCatalogueSymptomes(result.catalogueSymptomes);
     setCatalogueMesures(result.catalogueMesures);
     setMeasurement((current) => {
@@ -265,6 +284,70 @@ export default function GrossesseDetailPage() {
       await charger();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'La mesure clinique n’a pas été enregistrée.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ajouterRendezVous = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      await maternalApi(`/grossesses/${id}/rendez-vous`, {
+        method: 'POST',
+        body: JSON.stringify({
+          prevu_le: rendezVousForm.prevu_le,
+          type_rendez_vous: rendezVousForm.type_rendez_vous,
+          libelle: rendezVousForm.libelle.trim(),
+          rappel_programme_le: rendezVousForm.rappel_programme_le || undefined,
+        }),
+      });
+      setRendezVousForm(initialRendezVous);
+      await charger();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Le rendez-vous n’a pas été enregistré.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const modifierStatutRendezVous = async (event: FormEvent, item: RendezVousPrenatal) => {
+    event.preventDefault();
+    const draft = statutBrouillons[item.id] ?? {
+      statut: 'REALISE',
+      nouvelle_date: '',
+      nouveau_rappel_programme_le: '',
+      motif: '',
+    };
+
+    if (draft.statut === 'REPORTE' && !draft.nouvelle_date) {
+      setError('Choisissez la nouvelle date pour reporter le rendez-vous.');
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+    try {
+      await maternalApi(`/rendez-vous-prenataux/${item.id}/statut`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          statut: draft.statut,
+          nouvelle_date: draft.statut === 'REPORTE' ? draft.nouvelle_date : undefined,
+          nouveau_rappel_programme_le: draft.statut === 'REPORTE' && draft.nouveau_rappel_programme_le
+            ? draft.nouveau_rappel_programme_le
+            : undefined,
+          motif: draft.motif.trim() || undefined,
+        }),
+      });
+      setStatutBrouillons((previous) => {
+        const next = { ...previous };
+        delete next[item.id];
+        return next;
+      });
+      await charger();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Le statut du rendez-vous n’a pas été mis à jour.');
     } finally {
       setSaving(false);
     }
@@ -440,6 +523,69 @@ export default function GrossesseDetailPage() {
                   {element.prochain_rendez_vous_le && <p className="mt-2 text-sm font-semibold text-rose-700">Prochain rendez-vous prévu : {new Date(element.prochain_rendez_vous_le).toLocaleDateString('fr-ML')}</p>}
                 </article>
               )) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucun contact prénatal enregistré.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-indigo-100 bg-white p-6 shadow-sm">
+            <div className="mb-2 flex items-center gap-2">
+              <CalendarCheck2 className="h-5 w-5 text-indigo-700" />
+              <h2 className="font-bold text-slate-900">Calendrier des rendez-vous</h2>
+            </div>
+            <p className="mb-5 text-sm text-slate-600">
+              Cette liste suit les rendez-vous planifiés et leurs changements de statut. Un rappel SMS n’est envoyé que si un consentement actif pour cette finalité existe et si le fournisseur SMS est configuré.
+            </p>
+            <form onSubmit={ajouterRendezVous} className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-indigo-50/60 p-4 md:grid-cols-2">
+              <Champ label="Date prévue" type="date" value={rendezVousForm.prevu_le} required onChange={(prevu_le) => setRendezVousForm({ ...rendezVousForm, prevu_le })} />
+              <label className="grid gap-1 text-sm font-medium text-slate-700">Type
+                <select value={rendezVousForm.type_rendez_vous} onChange={(event) => setRendezVousForm({ ...rendezVousForm, type_rendez_vous: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-indigo-200 focus:ring-2">
+                  <option value="CPN">Consultation prénatale</option><option value="EXAMEN">Examen</option><option value="ECHOGRAPHIE">Échographie</option><option value="POSTPARTUM">Post-partum</option><option value="AUTRE">Autre</option>
+                </select>
+              </label>
+              <Champ label="Libellé" value={rendezVousForm.libelle} required onChange={(libelle) => setRendezVousForm({ ...rendezVousForm, libelle })} />
+              <Champ label="Date et heure du rappel (facultatif)" type="datetime-local" value={rendezVousForm.rappel_programme_le} onChange={(rappel_programme_le) => setRendezVousForm({ ...rendezVousForm, rappel_programme_le })} />
+              <div className="md:col-span-2">
+                <button disabled={saving} className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+                  <Plus className="h-4 w-4" />Planifier le rendez-vous
+                </button>
+              </div>
+            </form>
+            <div className="space-y-3">
+              {rendezVous.length ? rendezVous.map((item) => {
+                const draft = statutBrouillons[item.id] ?? {
+                  statut: 'REALISE',
+                  nouvelle_date: '',
+                  nouveau_rappel_programme_le: '',
+                  motif: '',
+                };
+                return (
+                  <article key={item.id} className="rounded-2xl border border-slate-100 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-900">{item.libelle}</p>
+                        <p className="mt-1 text-sm text-slate-600">{labelEtat(item.type_rendez_vous)} · {new Date(item.prevu_le).toLocaleDateString('fr-ML')}</p>
+                      </div>
+                      <span className={`rounded-full px-3 py-1 text-xs font-semibold ${item.statut === 'PLANIFIE' ? 'bg-indigo-50 text-indigo-800' : item.statut === 'REALISE' ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>{labelEtat(item.statut)}</span>
+                    </div>
+                    <p className="mt-2 text-xs text-slate-500">Rappel : {labelEtat(item.rappel_statut)}{item.rappel_envoye_le ? ` · Envoyé le ${new Date(item.rappel_envoye_le).toLocaleString('fr-ML')}` : ''}{item.rappel_tentatives ? ` · Tentatives : ${item.rappel_tentatives}` : ''}</p>
+                    {item.statut === 'PLANIFIE' && (
+                      <form onSubmit={(event) => modifierStatutRendezVous(event, item)} className="mt-4 grid grid-cols-1 gap-3 rounded-xl bg-slate-50 p-3 md:grid-cols-2">
+                        <label className="grid gap-1 text-sm font-medium text-slate-700">Mettre à jour le statut
+                          <select value={draft.statut} onChange={(event) => setStatutBrouillons((previous) => ({ ...previous, [item.id]: { ...draft, statut: event.target.value } }))} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-indigo-200 focus:ring-2">
+                            <option value="REALISE">Réalisé</option><option value="MANQUE">Manqué</option><option value="ANNULE">Annulé</option><option value="REPORTE">Reporter</option>
+                          </select>
+                        </label>
+                        {draft.statut === 'REPORTE' && <Champ label="Nouvelle date" type="date" value={draft.nouvelle_date} required onChange={(nouvelle_date) => setStatutBrouillons((previous) => ({ ...previous, [item.id]: { ...draft, nouvelle_date } }))} />}
+                        {draft.statut === 'REPORTE' && <Champ label="Rappel du nouveau rendez-vous (facultatif)" type="datetime-local" value={draft.nouveau_rappel_programme_le} onChange={(nouveau_rappel_programme_le) => setStatutBrouillons((previous) => ({ ...previous, [item.id]: { ...draft, nouveau_rappel_programme_le } }))} />}
+                        <label className="grid gap-1 text-sm font-medium text-slate-700 md:col-span-2">Motif / note facultative
+                          <textarea value={draft.motif} onChange={(event) => setStatutBrouillons((previous) => ({ ...previous, [item.id]: { ...draft, motif: event.target.value } }))} rows={2} maxLength={1000} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-indigo-200 focus:ring-2" />
+                        </label>
+                        <div className="md:col-span-2"><button disabled={saving} className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-60">Enregistrer le statut</button></div>
+                      </form>
+                    )}
+                    {item.statut !== 'PLANIFIE' && item.motif && <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">Note : {item.motif}</p>}
+                  </article>
+                );
+              }) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucun rendez-vous planifié dans cette grossesse.</p>}
             </div>
           </section>
 
