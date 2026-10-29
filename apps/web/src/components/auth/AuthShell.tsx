@@ -2,14 +2,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import {
   Activity,
-  ArrowLeft,
   ArrowRight,
+  BarChart3,
+  Baby,
   CalendarCheck2,
-  CheckCircle2,
-  ClipboardCheck,
+  HeartPulse,
   LockKeyhole,
   ShieldCheck,
-  Stethoscope,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -24,77 +23,90 @@ interface AuthShellProps {
   footer?: ReactNode;
 }
 
-type AuthFeature = {
+type StoryFeature = {
   icon: LucideIcon;
   title: string;
   description: string;
 };
 
-const variantConfig: Record<
-  AuthVariant,
-  {
-    badge: string;
-    kicker: string;
-    panelTitle: string;
-    description: string;
-    features: AuthFeature[];
-    note: string;
-    icon: LucideIcon;
-  }
-> = {
+type StoryConfig = {
+  badge: string;
+  storyTitle: string[];
+  storyDescription: string;
+  features: StoryFeature[];
+  bottomNote: string;
+  roleIcon: LucideIcon;
+};
+
+const storyConfig: Record<AuthVariant, StoryConfig> = {
   agent: {
-    badge: "Espace Agent",
-    kicker: "SUIVI DE TERRAIN",
-    panelTitle: "Le suivi vaccinal commence au plus près des familles.",
-    description:
-      "Un espace de travail pensé pour aider les équipes de santé à organiser les dossiers et documenter les actes vaccinaux.",
-    icon: Stethoscope,
-    features: [
-      {
-        icon: Users,
-        title: "Dossiers enfants",
-        description: "Des informations centralisées et faciles à retrouver.",
-      },
-      {
-        icon: CalendarCheck2,
-        title: "Parcours vaccinal",
-        description: "Des repères pour suivre les rendez-vous et les actes.",
-      },
-      {
-        icon: ClipboardCheck,
-        title: "Saisie encadrée",
-        description: "Un parcours de saisie clair pour les agents habilités.",
-      },
-    ],
-    note: "Les accès et les données disponibles dépendent de votre profil et de votre structure.",
-  },
-  admin: {
-    badge: "Administration",
-    kicker: "PILOTAGE & GOUVERNANCE",
-    panelTitle: "Une vision claire pour mieux piloter le système.",
-    description:
-      "Un espace réservé aux responsables autorisés pour superviser les structures, les utilisateurs et les activités du système.",
-    icon: ShieldCheck,
+    badge: "Espace agent de santé",
+    storyTitle: ["Protéger aujourd’hui,", "assurer demain."],
+    storyDescription:
+      "Vaccin-Track accompagne les agents de santé dans le suivi vaccinal des enfants et des mères au Mali.",
+    roleIcon: Users,
     features: [
       {
         icon: ShieldCheck,
-        title: "Accès maîtrisés",
-        description: "Une gestion des autorisations selon les rôles.",
+        title: "Suivi vaccinal",
+        description: "sécurisé",
+      },
+      {
+        icon: Users,
+        title: "Meilleure couverture",
+        description: "vaccinale",
+      },
+      {
+        icon: HeartPulse,
+        title: "Des enfants",
+        description: "en bonne santé",
+      },
+    ],
+    bottomNote: "Un suivi plus clair, au plus près des familles.",
+  },
+  admin: {
+    badge: "Espace d’administration",
+    storyTitle: ["Espace d’administration"],
+    storyDescription:
+      "Un accès dédié au pilotage, à la supervision et à la continuité du suivi vaccinal.",
+    roleIcon: ShieldCheck,
+    features: [
+      {
+        icon: ShieldCheck,
+        title: "Gestion des données",
+        description: "et des utilisateurs",
       },
       {
         icon: Activity,
-        title: "Vue d’ensemble",
-        description: "Des repères pour suivre l’activité des structures.",
+        title: "Suivi et supervision",
+        description: "du système",
       },
       {
-        icon: ClipboardCheck,
-        title: "Traçabilité",
-        description: "Des outils d’administration et de contrôle.",
+        icon: BarChart3,
+        title: "Tableaux de bord",
+        description: "et rapports",
       },
     ],
-    note: "L’administration est réservée aux comptes habilités. Toute action reste soumise aux droits du compte.",
+    bottomNote: "Une administration efficace au service de la santé publique.",
   },
 };
+
+function Brand() {
+  return (
+    <Link href="/" className="vt-auth-brand" aria-label="SNSC-MALI Vaccin-Track, accueil">
+      <span className="vt-auth-brand-mark" aria-hidden="true">
+        <HeartPulse size={31} strokeWidth={1.8} />
+        <span className="vt-auth-brand-dot vt-auth-brand-dot--green" />
+        <span className="vt-auth-brand-dot vt-auth-brand-dot--gold" />
+      </span>
+      <span className="vt-auth-brand-copy">
+        <strong>SNSC-MALI</strong>
+        <em>Vaccin-Track</em>
+        <small>Système Centralisé de Suivi Vaccinal<br />avec IA Prédictive</small>
+      </span>
+    </Link>
+  );
+}
 
 export function AuthShell({
   variant,
@@ -103,125 +115,116 @@ export function AuthShell({
   children,
   footer,
 }: AuthShellProps) {
-  const config = variantConfig[variant];
-  const PanelIcon = config.icon;
+  const config = storyConfig[variant];
+  const RoleIcon = config.roleIcon;
 
   return (
-    <div className={"auth-page auth-page--" + variant}>
-      <div className="auth-background-grid" aria-hidden="true" />
-      <div className="auth-background-orb auth-background-orb--one" aria-hidden="true" />
-      <div className="auth-background-orb auth-background-orb--two" aria-hidden="true" />
+    <div className={"vt-auth-page vt-auth-page--" + variant}>
+      <section className={"vt-auth-story vt-auth-story--" + variant} aria-label="Présentation de Vaccin-Track">
+        <div className="vt-auth-story-image" aria-hidden="true" />
+        <div className="vt-auth-story-shade" aria-hidden="true" />
 
-      <header className="auth-header">
-        <div className="auth-container auth-header-inner">
-          <Link href="/" className="auth-brand" aria-label="SNSC-Mali, accueil">
-            <span className="auth-brand-mark">
-              <ShieldCheck size={24} strokeWidth={1.8} />
-            </span>
-            <span className="auth-brand-copy">
-              <strong>SNSC<span>·</span>Mali</strong>
-              <small>Système national de suivi vaccinal</small>
-            </span>
-          </Link>
-
-          <Link href="/" className="auth-back-link">
-            <ArrowLeft size={16} />
-            <span>Retour à l’accueil</span>
-          </Link>
+        <div className="vt-auth-story-top">
+          <Brand />
         </div>
-      </header>
 
-      <main className="auth-container auth-main">
-        <section className="auth-presentation">
-          <div className="auth-presentation-kicker">
-            <span className="auth-kicker-dot" />
-            <span>{config.kicker}</span>
-            <span className="auth-kicker-divider">/</span>
-            <span>MALI</span>
+        <div className="vt-auth-story-content">
+          <div className="vt-auth-story-mobile-label">
+            <span />
+            SANTÉ PUBLIQUE · MALI
           </div>
+          <h1 className="vt-auth-story-title">
+            {config.storyTitle.map((line) => (
+              <span key={line}>{line}</span>
+            ))}
+          </h1>
+          <p className="vt-auth-story-description">{config.storyDescription}</p>
 
-          <div className="auth-presentation-title-wrap">
-            <span className="auth-presentation-icon">
-              <PanelIcon size={23} strokeWidth={1.8} />
-            </span>
-            <span className="auth-presentation-badge">{config.badge}</span>
-          </div>
-
-          <h1>{config.panelTitle}</h1>
-          <p className="auth-presentation-description">{config.description}</p>
-
-          <div className="auth-feature-list">
-            {config.features.map((feature, index) => {
+          <div className="vt-auth-story-features">
+            {config.features.map((feature) => {
               const Icon = feature.icon;
               return (
-                <div
-                  className="auth-feature-item"
-                  key={feature.title}
-                  style={{ animationDelay: index * 90 + "ms" }}
-                >
-                  <span className="auth-feature-icon">
-                    <Icon size={19} strokeWidth={1.8} />
+                <div className="vt-auth-story-feature" key={feature.title}>
+                  <span className="vt-auth-story-feature-icon">
+                    <Icon size={22} strokeWidth={1.8} />
                   </span>
-                  <span className="auth-feature-copy">
+                  <span className="vt-auth-story-feature-copy">
                     <strong>{feature.title}</strong>
                     <small>{feature.description}</small>
                   </span>
-                  <CheckCircle2 className="auth-feature-check" size={17} />
                 </div>
               );
             })}
           </div>
 
-          <div className="auth-information-note">
-            <span className="auth-information-icon">
-              <LockKeyhole size={17} />
-            </span>
-            <p>{config.note}</p>
-          </div>
-        </section>
+          <p className="vt-auth-story-note">{config.bottomNote}</p>
+          {variant === "admin" ? (
+            <div className="vt-auth-mali-colors" aria-label="Couleurs du drapeau du Mali">
+              <span />
+              <span />
+              <span />
+            </div>
+          ) : null}
+        </div>
 
-        <section className="auth-form-side" aria-label={config.badge}>
-          <div className="auth-mobile-badge">
-            <span className="auth-mobile-badge-dot" />
-            {config.badge}
+        <div className="vt-auth-story-watermark" aria-hidden="true">
+          <Baby size={124} strokeWidth={0.8} />
+        </div>
+      </section>
+
+      <section className="vt-auth-panel" aria-label={config.badge}>
+        <div className="vt-auth-panel-inner">
+          <div className="vt-auth-mobile-brand">
+            <Brand />
           </div>
 
-          <div className="auth-card">
-            <div className="auth-card-topline">
-              <span className="auth-card-icon">
-                <LockKeyhole size={21} />
+          <div className="vt-auth-card">
+            <div className="vt-auth-role-badge">
+              <span className="vt-auth-role-icon">
+                <RoleIcon size={21} strokeWidth={2} />
               </span>
-              <span className="auth-card-security">
-                <span />
-                Accès sécurisé
-              </span>
+              <span>{config.badge}</span>
             </div>
 
-            <div className="auth-card-heading">
-              <p className="auth-card-eyebrow">BON RETOUR</p>
+            <div className="vt-auth-card-heading">
               <h2>{title}</h2>
               <p>{subtitle}</p>
             </div>
 
-            <div className="auth-card-form">{children}</div>
+            <div className="vt-auth-card-form">{children}</div>
 
-            {footer ? <div className="auth-card-footer">{footer}</div> : null}
+            <div className="vt-auth-help">
+              <span className="vt-auth-help-icon" aria-hidden="true">
+                <Activity size={18} />
+              </span>
+              <div>
+                <strong>Besoin d’aide ?</strong>
+                <p>Contactez votre superviseur ou le support technique de votre structure.</p>
+              </div>
+            </div>
+
+            {footer ? <div className="vt-auth-card-footer">{footer}</div> : null}
+
+            <div className="vt-auth-secure-caption">
+              <LockKeyhole size={14} />
+              <span>Connexion sécurisée</span>
+            </div>
           </div>
-
-          <div className="auth-bottom-caption">
-            <ShieldCheck size={15} />
-            <span>Accès réservé aux utilisateurs autorisés</span>
-          </div>
-        </section>
-      </main>
-
-      <footer className="auth-footer">
-        <div className="auth-container auth-footer-inner">
-          <span>© 2026 SNSC-Mali</span>
-          <span>Santé · Suivi · Continuité</span>
-          <Link href="/">Accueil <ArrowRight size={13} /></Link>
         </div>
-      </footer>
+
+        <footer className="vt-auth-footer">
+          <div className="vt-auth-footer-brand">
+            <span className="vt-auth-footer-flag" aria-hidden="true">
+              <i /><i /><i />
+            </span>
+            <strong>SNSC-MALI / Vaccin-Track</strong>
+          </div>
+          <span className="vt-auth-footer-message">
+            Ensemble pour une vaccination efficace et un avenir en bonne santé
+          </span>
+          <span className="vt-auth-footer-tags">Mali · Santé · Enfants · Futur</span>
+        </footer>
+      </section>
     </div>
   );
 }
