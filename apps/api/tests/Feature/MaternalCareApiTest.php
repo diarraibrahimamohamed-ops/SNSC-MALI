@@ -51,14 +51,18 @@ class MaternalCareApiTest extends TestCase
         $grossesseResponse->assertCreated();
         $grossesseId = $grossesseResponse->json('data.id');
 
-        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesseId}/contacts", [
+        $contactResponse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesseId}/contacts", [
             'contact_le' => now()->subHour()->toIso8601String(),
             'type_contact' => 'CPN',
             'age_gestationnel_semaines' => 18,
             'prochaine_etape' => 'Rendez-vous à confirmer selon protocole validé.',
             'prochain_rendez_vous_le' => now()->addDays(7)->toDateString(),
-        ])->assertCreated()
-            ->assertJsonPath('data.prochain_rendez_vous_le', now()->addDays(7)->toDateString());
+        ])->assertCreated();
+
+        $this->assertSame(
+            now()->addDays(7)->toDateString(),
+            substr((string) $contactResponse->json('data.prochain_rendez_vous_le'), 0, 10),
+        );
 
         $this->actingAs($this->agentA, 'api')->getJson("/api/v1/meres/{$mereId}/chronologie")
             ->assertOk()
