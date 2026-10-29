@@ -11,7 +11,10 @@ jobs:
         shell: bash
         run: |
           set +e
-          git grep -I -n -E '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}' HEAD -- .
+          private_key_start='-----BEGIN'
+          private_key_end='PRIVATE KEY-----'
+          secret_expression="${private_key_start}.*${private_key_end}|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}"
+          git grep -I -n -E -e "$secret_expression" HEAD -- .
           grep_status=$?
           if [ "$grep_status" -eq 0 ]; then
             echo "::error::Potential private key or token found in the committed tree."
