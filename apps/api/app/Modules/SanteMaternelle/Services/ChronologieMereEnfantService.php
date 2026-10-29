@@ -14,6 +14,7 @@ class ChronologieMereEnfantService
     {
         $mere->loadMissing([
             'grossesses.contacts',
+            'grossesses.symptomes',
             'grossesses.accouchement',
             'liensEnfants.enfant.actesVaccinaux.vaccin',
             'suivisPostpartum',
@@ -39,6 +40,18 @@ class ChronologieMereEnfantService
                     'statut' => $contact->statut_validation,
                     'provenance' => $contact->source_donnee,
                     'prochaine_etape' => $contact->prochaine_etape,
+                ]);
+            }
+
+            foreach ($grossesse->symptomes as $symptome) {
+                $faits->push([
+                    'type' => 'SYMPTOME_PRENATAL_DECLARE',
+                    'date' => $symptome->declare_le?->toIso8601String(),
+                    'id' => $symptome->id,
+                    'statut' => $symptome->statut_declaration,
+                    'provenance' => $symptome->source_declaration,
+                    'libelle' => $symptome->libelle_symptome,
+                    'validation' => $symptome->statut_validation,
                 ]);
             }
 
