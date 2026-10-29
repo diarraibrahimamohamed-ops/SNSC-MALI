@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\MesureCliniqueController;
 use App\Http\Controllers\Api\V1\PostpartumController;
 use App\Http\Controllers\Api\V1\ReferenceSoinController;
 use App\Http\Controllers\Api\V1\SynchronisationController;
+use App\Http\Controllers\Api\V1\SymptomePrenatalController;
 
 Route::get('/health', function () {
     return response()->json(['status' => 'ok']);
@@ -76,6 +77,9 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'index']);
     Route::get('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'index']);
     Route::post('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'store']);
+    Route::get('/grossesses/{grossesse}/symptomes', [SymptomePrenatalController::class, 'index']);
+    Route::post('/grossesses/{grossesse}/symptomes', [SymptomePrenatalController::class, 'store']);
+    Route::get('/catalogues/symptomes-prenataux', [SymptomePrenatalController::class, 'catalogue']);
     Route::post('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'store']);
     Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
 
