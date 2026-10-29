@@ -56,7 +56,9 @@ class MaternalCareApiTest extends TestCase
             'type_contact' => 'CPN',
             'age_gestationnel_semaines' => 18,
             'prochaine_etape' => 'Rendez-vous à confirmer selon protocole validé.',
-        ])->assertCreated();
+            'prochain_rendez_vous_le' => now()->addDays(7)->toDateString(),
+        ])->assertCreated()
+            ->assertJsonPath('data.prochain_rendez_vous_le', now()->addDays(7)->toDateString());
 
         $this->actingAs($this->agentA, 'api')->getJson("/api/v1/meres/{$mereId}/chronologie")
             ->assertOk()
@@ -453,6 +455,53 @@ class MaternalCareApiTest extends TestCase
             'mesuree_le' => now()->subMinutes(5)->toIso8601String(),
         ])->assertCreated()
             ->assertJsonPath('data.unite', 'kg');
+    }
+
+    public function test_antecedents_obstetricaux_sont_traces_dans_la_chronologie_et_isoles(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Konate',
+            'prenom' => 'Awa',
+            'identifiant_sanitaire' => 'MERE-ANTECEDENT-001',
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->getJson('/api/v1/catalogues/antecedents-obstetricaux')
+            ->assertOk()
+            ->assertJsonFragment(['code' => 'CESARIENNE']);
+
+        $created = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/antecedents-obstetricaux", [
+            'code_antecedent' => 'CESARIENNE',
+            'date_evenement' => now()->subYears(3)->toDateString(),
+            'source_declaration' => 'DECLARE_PAR_MERE',
+            'observations' => 'Antécédent déclaré dans un test fonctionnel.',
+        ])->assertCreated()
+            ->assertJsonPath('data.code_antecedent', 'CESARIENNE')
+            ->assertJsonPath('data.statut_validation', 'A_VERIFIER');
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/meres/{$mere}/antecedents-obstetricaux")
+            ->assertOk()
+            ->assertJsonPath('data.data.0.id', $created->json('data.id'));
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/meres/{$mere}/chronologie")
+            ->assertOk()
+            ->assertJsonFragment(['type' => 'ANTECEDENT_OBSTETRICAL']);
+
+        $response = $this->actingAs($this->agentB, 'api')->getJson("/api/v1/meres/{$mere}/antecedents-obstetricaux");
+        $this->assertSame(403, $response->status(), $response->getContent());
+    }
+
+    public function test_antecedent_autre_sans_precision_est_refuse(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Diarra',
+            'prenom' => 'Binta',
+            'identifiant_sanitaire' => 'MERE-ANTECEDENT-002',
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/antecedents-obstetricaux", [
+            'code_antecedent' => 'AUTRE',
+            'source_declaration' => 'INCONNU',
+        ])->assertUnprocessable();
     }
 
     private function centre(string $nom): CentreSante
