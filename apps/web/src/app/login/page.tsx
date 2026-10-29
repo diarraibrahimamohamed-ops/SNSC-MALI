@@ -1,26 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { useAuth } from "@/features/auth/useAuth";
 import { AuthShell } from "@/components/auth/AuthShell";
+
+const REMEMBERED_MATRICULE_KEY = "snsc_mali_remembered_admin_matricule";
 
 export default function LoginPage() {
   const [matricule, setMatricule] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberIdentifier, setRememberIdentifier] = useState(false);
   const [error, setError] = useState("");
   const { login, isLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    const rememberedMatricule = window.localStorage.getItem(REMEMBERED_MATRICULE_KEY);
+    if (!rememberedMatricule) return;
+
+    // Defer hydration of the browser-only preference until after the effect has mounted.
+    const frame = window.requestAnimationFrame(() => {
+      setMatricule(rememberedMatricule);
+      setRememberIdentifier(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
 
+    const normalizedMatricule = matricule.trim();
+
     try {
-      const user = await login({ matricule: matricule.trim(), password });
+      const user = await login({ matricule: normalizedMatricule, password });
+
+      if (rememberIdentifier) {
+        window.localStorage.setItem(REMEMBERED_MATRICULE_KEY, normalizedMatricule);
+      } else {
+        window.localStorage.removeItem(REMEMBERED_MATRICULE_KEY);
+      }
+
       if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
         router.push("/admin/dashboard");
       } else {
@@ -34,39 +67,43 @@ export default function LoginPage() {
   return (
     <AuthShell
       variant="admin"
-      title="Connexion administration"
-      subtitle="Connectez-vous avec votre matricule administratif pour accéder aux outils de pilotage."
+      title="Connexion"
+      subtitle="Accédez à votre espace d’administration."
       footer={
-        <p className="auth-switch-copy">
+        <p className="vt-auth-switch-copy">
           Vous êtes agent de santé ?{" "}
-          <Link href="/agent-auth" className="auth-inline-link">
-            Accéder à l’espace Agent <ArrowRight size={14} />
+          <Link href="/agent-auth" className="vt-auth-inline-link">
+            Accéder à l’espace Agent <ArrowRight size={15} />
           </Link>
         </p>
       }
     >
-      <form onSubmit={handleSubmit} className="auth-form">
-        <div className="auth-field">
-          <label htmlFor="admin-matricule">Matricule administratif</label>
-          <input
-            id="admin-matricule"
-            name="matricule"
-            type="text"
-            value={matricule}
-            onChange={(event) => setMatricule(event.target.value)}
-            placeholder="Ex. ADM-001"
-            autoComplete="username"
-            autoCapitalize="characters"
-            spellCheck={false}
-            required
-            className="auth-input"
-          />
-          <small className="auth-field-hint">Utilisez le matricule fourni pour votre compte administrateur.</small>
+      <form onSubmit={handleSubmit} className="vt-auth-form">
+        <div className="vt-auth-field">
+          <label htmlFor="admin-matricule">Identifiant administratif</label>
+          <div className="vt-auth-input-wrap">
+            <UserRound className="vt-auth-input-icon" size={19} aria-hidden="true" />
+            <input
+              id="admin-matricule"
+              name="matricule"
+              type="text"
+              value={matricule}
+              onChange={(event) => setMatricule(event.target.value)}
+              placeholder="Ex. ADM-001"
+              autoComplete="username"
+              autoCapitalize="characters"
+              spellCheck={false}
+              required
+              className="vt-auth-input vt-auth-input--with-icon"
+            />
+          </div>
+          <small className="vt-auth-field-hint">Utilisez le matricule fourni pour votre compte administrateur.</small>
         </div>
 
-        <div className="auth-field">
+        <div className="vt-auth-field">
           <label htmlFor="admin-password">Mot de passe</label>
-          <div className="auth-password-field">
+          <div className="vt-auth-input-wrap">
+            <LockKeyhole className="vt-auth-input-icon" size={19} aria-hidden="true" />
             <input
               id="admin-password"
               name="password"
@@ -76,11 +113,11 @@ export default function LoginPage() {
               placeholder="Saisissez votre mot de passe"
               autoComplete="current-password"
               required
-              className="auth-input auth-input--password"
+              className="vt-auth-input vt-auth-input--with-icon vt-auth-input--password"
             />
             <button
               type="button"
-              className="auth-password-toggle"
+              className="vt-auth-password-toggle"
               onClick={() => setShowPassword((shown) => !shown)}
               aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
               aria-pressed={showPassword}
@@ -90,23 +127,38 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {error && (
-          <div className="auth-error" role="alert" aria-live="polite">
+        {error ? (
+          <div className="vt-auth-error" role="alert" aria-live="polite">
             <strong>Connexion impossible</strong>
             <span>{error}</span>
           </div>
-        )}
+        ) : null}
 
-        <button type="submit" disabled={isLoading} className="auth-submit auth-submit--admin">
+        <div className="vt-auth-form-options">
+          <label className="vt-auth-remember">
+            <input
+              type="checkbox"
+              checked={rememberIdentifier}
+              onChange={(event) => setRememberIdentifier(event.target.checked)}
+            />
+            <span>Mémoriser mon identifiant</span>
+          </label>
+          <Link href="/aide" className="vt-auth-forgot-link">
+            Mot de passe oublié ?
+          </Link>
+        </div>
+
+        <button type="submit" disabled={isLoading} className="vt-auth-submit">
           {isLoading ? (
             <>
-              <Loader2 size={18} className="auth-spinner" />
+              <Loader2 size={18} className="vt-auth-spinner" />
               Connexion en cours…
             </>
           ) : (
             <>
-              Se connecter
-              <ArrowRight size={18} />
+              <ShieldCheck size={18} />
+              Accéder à l’administration
+              <ArrowRight size={17} />
             </>
           )}
         </button>
