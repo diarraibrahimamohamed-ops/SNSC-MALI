@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\MereController;
 use App\Http\Controllers\Api\V1\MesureCliniqueController;
 use App\Http\Controllers\Api\V1\PostpartumController;
 use App\Http\Controllers\Api\V1\ReferenceSoinController;
+use App\Http\Controllers\Api\V1\RendezVousPrenatalController;
 use App\Http\Controllers\Api\V1\SynchronisationController;
 use App\Http\Controllers\Api\V1\SymptomePrenatalController;
 
@@ -78,6 +79,10 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
 
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
     Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
+    Route::get('/rendez-vous-prenataux', [RendezVousPrenatalController::class, 'index']);
+    Route::get('/grossesses/{grossesse}/rendez-vous', [RendezVousPrenatalController::class, 'forGrossesse']);
+    Route::post('/grossesses/{grossesse}/rendez-vous', [RendezVousPrenatalController::class, 'store']);
+    Route::patch('/rendez-vous-prenataux/{rendezVous}/statut', [RendezVousPrenatalController::class, 'updateStatut']);
     Route::get('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'index']);
     Route::get('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'index']);
     Route::post('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'store']);
