@@ -35,6 +35,33 @@ export type ExamenPrenatal = {
   source_donnee?: string | null;
 };
 
+export type SymptomePrenatal = {
+  id: string;
+  code_symptome: string;
+  libelle_symptome: string;
+  statut_declaration: 'SIGNALE' | 'NON_SIGNALE' | 'NON_EVALUE' | string;
+  source_declaration: string;
+  declare_le: string;
+  debut_estime_le?: string | null;
+  intensite_declaree?: number | null;
+  precision?: string | null;
+  observations?: string | null;
+  statut_validation: string;
+};
+
+export type CatalogueSymptome = {
+  code: string;
+  libelle: string;
+};
+
+export type CatalogueMesure = {
+  code: string;
+  libelle: string;
+  unite: string;
+  minimum: number;
+  maximum: number;
+};
+
 export type ChronologieItem = {
   id: string;
   type: string;
