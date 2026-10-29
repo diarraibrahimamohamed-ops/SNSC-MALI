@@ -7,6 +7,7 @@ import { useAuth } from '@/features/auth/useAuth';
 import {
   Baby,
   CalendarDays,
+  CalendarHeart,
   Bell,
   LayoutDashboard,
   LogOut,
@@ -64,9 +65,21 @@ export default function AgentLayout({
     },
     {
       href: '/agent/meres',
-      label: 'Mères & grossesses',
+      label: 'Dossiers mères',
       icon: HeartPulse,
       color: 'text-rose-400',
+    },
+    {
+      href: '/agent/grossesses',
+      label: 'Grossesses suivies',
+      icon: CalendarDays,
+      color: 'text-pink-400',
+    },
+    {
+      href: '/agent/rendez-vous-prenataux',
+      label: 'Rendez-vous prénataux',
+      icon: CalendarHeart,
+      color: 'text-orange-300',
     },
     {
       href: '/agent/references',
@@ -160,7 +173,7 @@ export default function AgentLayout({
             </p>
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
