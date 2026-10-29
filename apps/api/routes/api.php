@@ -81,6 +81,7 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::post('/grossesses/{grossesse}/symptomes', [SymptomePrenatalController::class, 'store']);
     Route::get('/catalogues/symptomes-prenataux', [SymptomePrenatalController::class, 'catalogue']);
     Route::post('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'store']);
+    Route::get('/catalogues/mesures-cliniques', [MesureCliniqueController::class, 'catalogue']);
     Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
 
     Route::get('/references', [ReferenceSoinController::class, 'index']);
