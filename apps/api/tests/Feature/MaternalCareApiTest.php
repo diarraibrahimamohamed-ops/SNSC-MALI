@@ -383,6 +383,11 @@ class MaternalCareApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.data.0.id', $declaration->json('data.id'));
 
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/meres/{$mere}/chronologie")
+            ->assertOk()
+            ->assertJsonFragment(['type' => 'SYMPTOME_PRENATAL_DECLARE'])
+            ->assertJsonFragment(['libelle' => 'Fièvre déclarée']);
+
         $response = $this->actingAs($this->agentB, 'api')->getJson("/api/v1/grossesses/{$grossesse}/symptomes");
         $this->assertSame(403, $response->status(), $response->getContent());
     }
