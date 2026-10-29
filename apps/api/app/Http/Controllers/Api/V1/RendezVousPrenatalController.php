@@ -18,7 +18,7 @@ class RendezVousPrenatalController extends Controller
     public function index(Request $request, AccesParStructureService $acces)
     {
         $query = RendezVousPrenatal::query()
-            ->with(['grossesse.mere:id,nom,prenom,telephone', 'contactPrenatal:id,contact_le,type_contact'])
+            ->with(['grossesse.mere:id,nom,prenom', 'contactPrenatal:id,contact_le,type_contact'])
             ->whereIn('statut', ['PLANIFIE', 'REPORTE', 'REALISE', 'MANQUE', 'ANNULE']);
 
         $acces->appliquer($query);
@@ -71,7 +71,7 @@ class RendezVousPrenatalController extends Controller
             'type_rendez_vous' => ['required', 'in:CPN,EXAMEN,ECHOGRAPHIE,POSTPARTUM,AUTRE'],
             'libelle' => ['required', 'string', 'max:180'],
             'contact_prenatal_id' => ['nullable', 'uuid'],
-            'rappel_programme_le' => ['nullable', 'date', 'before_or_equal:prevu_le'],
+            'rappel_programme_le' => ['nullable', 'date', 'after_or_equal:now'],
         ]);
 
         if (! empty($data['contact_prenatal_id'])) {
