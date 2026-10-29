@@ -3,13 +3,18 @@
 namespace Tests\Feature;
 
 use App\Models\AgentSante;
+use App\Models\Consentement;
+use App\Models\Grossesse;
 use App\Models\CentreSante;
 use App\Models\EpisodeAccouchement;
 use App\Models\EvenementSynchronisation;
 use App\Models\PersonneMere;
+use App\Models\RendezVousPrenatal;
 use App\Models\SuiviPostPartum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class MaternalCareApiTest extends TestCase
@@ -507,6 +512,163 @@ class MaternalCareApiTest extends TestCase
             'code_antecedent' => 'AUTRE',
             'source_declaration' => 'INCONNU',
         ])->assertUnprocessable();
+    }
+
+    public function test_rendez_vous_prenataux_sont_isoles_et_le_report_cree_un_remplacement(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Diallo',
+            'prenom' => 'Mariam',
+            'identifiant_sanitaire' => 'MERE-RDV-001',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(3)->toDateString(),
+            'terme_estime' => now()->addMonths(6)->toDateString(),
+        ])->assertCreated()->json('data.id');
+
+        $dateInitiale = now()->addDays(5)->toDateString();
+        $dateRappel = now()->addDays(3)->setTime(9, 0)->toIso8601String();
+        $created = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/rendez-vous", [
+            'prevu_le' => $dateInitiale,
+            'type_rendez_vous' => 'CPN',
+            'libelle' => 'Consultation prénatale',
+            'rappel_programme_le' => $dateRappel,
+        ])->assertCreated()
+            ->assertJsonPath('data.statut', 'PLANIFIE')
+            ->assertJsonPath('data.rappel_statut', 'EN_ATTENTE');
+
+        $rendezVousId = $created->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/grossesses/{$grossesse}/rendez-vous")
+            ->assertOk()
+            ->assertJsonPath('data.data.0.id', $rendezVousId);
+
+        $foreignResponse = $this->actingAs($this->agentB, 'api')->getJson("/api/v1/grossesses/{$grossesse}/rendez-vous");
+        $this->assertSame(403, $foreignResponse->status(), $foreignResponse->getContent());
+
+        $dateRemplacement = now()->addDays(8)->toDateString();
+        $replacementResponse = $this->actingAs($this->agentA, 'api')->patchJson("/api/v1/rendez-vous-prenataux/{$rendezVousId}/statut", [
+            'statut' => 'REPORTE',
+            'nouvelle_date' => $dateRemplacement,
+            'motif' => 'Report demandé; motif conservé comme note administrative.',
+        ])->assertOk()
+            ->assertJsonPath('data.statut', 'REPORTE')
+            ->assertJsonPath('remplacement.statut', 'PLANIFIE');
+
+        $replacementId = $replacementResponse->json('remplacement.id');
+        $this->assertNotSame($rendezVousId, $replacementId);
+        $this->assertSame($dateRemplacement, substr((string) $replacementResponse->json('remplacement.prevu_le'), 0, 10));
+
+        $this->actingAs($this->agentA, 'api')->patchJson("/api/v1/rendez-vous-prenataux/{$replacementId}/statut", [
+            'statut' => 'MANQUE',
+        ])->assertUnprocessable();
+    }
+
+    public function test_rappel_prenatal_sans_consentement_sms_actif_n_est_pas_envoye(): void
+    {
+        Http::fake();
+
+        $mere = PersonneMere::create([
+            'id' => (string) Str::uuid(),
+            'nom' => 'Keita',
+            'prenom' => 'Awa',
+            'telephone' => '+22370000001',
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'collecte_le' => now(),
+            'auteur_id' => $this->agentA->agentId,
+        ]);
+        $grossesse = Grossesse::create([
+            'mere_id' => $mere->id,
+            'date_debut_estimee' => today()->subMonths(2)->toDateString(),
+            'terme_estime' => today()->addMonths(7)->toDateString(),
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'statut' => 'SUIVI',
+            'statut_validation' => 'A_VERIFIER',
+        ]);
+        $rendezVous = RendezVousPrenatal::create([
+            'grossesse_id' => $grossesse->id,
+            'centre_sante_id' => $this->centreA->centreId,
+            'prevu_le' => today()->addDays(2)->toDateString(),
+            'type_rendez_vous' => 'CPN',
+            'libelle' => 'Consultation',
+            'statut' => 'PLANIFIE',
+            'rappel_programme_le' => now()->subMinute(),
+            'rappel_statut' => 'EN_ATTENTE',
+        ]);
+
+        Artisan::call('maternite:rappels-prenataux');
+
+        $this->assertSame('IGNORE_SANS_CONSENTEMENT', $rendezVous->fresh()->rappel_statut);
+        Http::assertNothingSent();
+    }
+
+    public function test_rappel_prenatal_envoye_uniquement_avec_consentement_actif_et_message_generique(): void
+    {
+        config([
+            'services.telerivet.project_id' => 'project-test',
+            'services.telerivet.route_id' => 'route-test',
+            'services.telerivet.api_key' => 'test-key',
+        ]);
+        Http::fake([
+            'api.telerivet.com/*' => Http::response(['id' => 'sms-test-123'], 200),
+        ]);
+
+        $mere = PersonneMere::create([
+            'id' => (string) Str::uuid(),
+            'nom' => 'Traore',
+            'prenom' => 'Fatou',
+            'telephone' => '+22370000002',
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'collecte_le' => now(),
+            'auteur_id' => $this->agentA->agentId,
+        ]);
+        $grossesse = Grossesse::create([
+            'mere_id' => $mere->id,
+            'date_debut_estimee' => today()->subMonths(2)->toDateString(),
+            'terme_estime' => today()->addMonths(7)->toDateString(),
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'statut' => 'SUIVI',
+            'statut_validation' => 'A_VERIFIER',
+        ]);
+        Consentement::create([
+            'sujet_type' => 'MERE',
+            'sujet_id' => $mere->id,
+            'finalite' => 'SMS_RENDEZ_VOUS',
+            'version_notice' => 'NOTICE-TEST-V1',
+            'canal' => 'NUMERIQUE',
+            'statut' => 'ACTIF',
+            'consenti_le' => now(),
+            'centre_sante_id' => $this->centreA->centreId,
+            'auteur_id' => $this->agentA->agentId,
+        ]);
+        $rendezVous = RendezVousPrenatal::create([
+            'grossesse_id' => $grossesse->id,
+            'centre_sante_id' => $this->centreA->centreId,
+            'prevu_le' => today()->addDays(3)->toDateString(),
+            'type_rendez_vous' => 'CPN',
+            'libelle' => 'Consultation prénatale confidentielle',
+            'statut' => 'PLANIFIE',
+            'rappel_programme_le' => now()->subMinute(),
+            'rappel_statut' => 'EN_ATTENTE',
+        ]);
+
+        Artisan::call('maternite:rappels-prenataux');
+
+        $this->assertSame('ENVOYE', $rendezVous->fresh()->rappel_statut);
+        $this->assertNotNull($rendezVous->fresh()->rappel_envoye_le);
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request): bool {
+            $message = (string) ($request->data()['content'] ?? '');
+
+            return str_contains($message, 'Un rendez-vous est prévu')
+                && ! str_contains(mb_strtolower($message), 'grossesse')
+                && ! str_contains(mb_strtolower($message), 'examen')
+                && ! str_contains(mb_strtolower($message), 'symptôme');
+        });
     }
 
     private function centre(string $nom): CentreSante
