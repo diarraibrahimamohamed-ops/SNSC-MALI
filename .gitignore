@@ -1,5 +1,7 @@
 .env
 .env.*
+!.env.example
+!apps/api/.env.example
 vendor/
 node_modules/
 .next/
@@ -9,3 +11,7 @@ apps/web/node_modules/
 apps/web/.next/
 apps/ia/__pycache__/
 apps/ia/.pytest_cache/
+
+# Per-environment JWT material must never be tracked.
+/apps/api/storage/jwt/*.pem
+/apps/api/storage/jwt/*.tmp.*
