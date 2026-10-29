@@ -51,6 +51,19 @@ Les listes proposées constituent un catalogue initial à faire valider par l'é
 
 Les antécédents sont conservés comme déclarés ou transcrits; le statut reste `A_VERIFIER`. Les listes sont un catalogue initial à valider avec les professionnels métier. Le système ne calcule ni gravité, ni risque individuel, ni conduite clinique à partir de ces antécédents.
 
+## 1.4 Quatrième tranche implémentée sur la branche de travail
+
+- Nouveau calendrier structuré lié à une grossesse et à une structure : date prévue, type, libellé, statut et note administrative.
+- Transitions contrôlées : `PLANIFIE` vers `REALISE`, `MANQUE`, `ANNULE` ou `REPORTE`. Un report ferme l'enregistrement initial et crée un remplacement lié, dans une transaction.
+- Liste filtrable et paginée des rendez-vous, consultation au niveau d'une grossesse et affichage dans la chronologie mère-enfant.
+- Planification d'un rappel SMS et suivi minimal de son état.
+- Commande `maternite:rappels-prenataux` planifiée toutes les dix minutes par Laravel Scheduler; envoi uniquement avec consentement explicite actif `SMS_RENDEZ_VOUS`, téléphone disponible et fournisseur configuré.
+- Message SMS volontairement générique, qui ne mentionne pas la grossesse ni les informations cliniques.
+- Les rappels sans consentement sont consignés comme ignorés; le système ne déduit jamais un consentement du simple fait qu'un numéro de téléphone existe.
+- Tests de structure, de report, de refus d'un rendez-vous futur déclaré manqué, et d'envoi/non-envoi SMS selon le consentement.
+
+La mise en route requiert l'application explicite des migrations et l'exécution du scheduler. L'envoi est contrôlé par lot et observable; comme tout fournisseur externe, une interruption après acceptation par le fournisseur mais avant persistance de l'état peut créer un risque de doublon au redémarrage. Un déploiement de production devra vérifier les mécanismes d'idempotence disponibles auprès du fournisseur et superviser les états `EN_COURS`/échec.
+
 ## 2. Principes de conception
 
 1. **Continuité Mère–Grossesse–Accouchement–Enfant :** une mère peut avoir plusieurs grossesses; chaque grossesse possède son historique, son issue et les liens vers les nouveau-nés concernés.
