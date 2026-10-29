@@ -11,6 +11,21 @@ Le service FastAPI observé dans `apps/ia/app/models/risque_model.py` contient a
 
 Les noms et chemins ci-dessus sont le point de départ observé dans le code; les fonctions doivent encore être testées en exécution avant d'être considérées comme opérationnelles.
 
+## 1.1 Première tranche implémentée sur la branche de travail
+
+La première tranche de code ajoute un registre structuré de résultats d'examens prénataux :
+
+- Migration : `resultats_examens_prenataux`, avec liens vers la grossesse, le contact prénatal éventuel et la structure sanitaire.
+- Modèle Laravel : `ResultatExamenPrenatal`.
+- API authentifiée : `GET /api/v1/grossesses/{grossesse}/examens` et `POST /api/v1/grossesses/{grossesse}/examens`.
+- Interface agent : formulaire progressif et historique des examens dans le détail d'une grossesse.
+- Validation : statut du résultat, unité facultative, dates cohérentes, source et statut de vérification; l'API vérifie également le périmètre de structure et que le contact lié appartient à la même grossesse.
+- Tests : création/liste des examens, cloisonnement entre structures, absence de résultat pour un examen déclaré disponible et incohérence chronologique.
+
+Cette tranche **n'est pas** un référentiel national complet d'examens, ne calcule pas d'interprétation clinique et ne constitue pas une prédiction. Les codes et catégories saisis restent à harmoniser au moyen d'un référentiel versionné approuvé par les responsables métier.
+
+Les workflows GitHub de la branche doivent être consultés avant chaque fusion; un résultat vert ne remplace pas la validation fonctionnelle par les utilisateurs visés.
+
 ## 2. Principes de conception
 
 1. **Continuité Mère–Grossesse–Accouchement–Enfant :** une mère peut avoir plusieurs grossesses; chaque grossesse possède son historique, son issue et les liens vers les nouveau-nés concernés.
