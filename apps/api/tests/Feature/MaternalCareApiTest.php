@@ -348,6 +348,108 @@ class MaternalCareApiTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_symptomes_prenataux_sont_traces_sans_interpretation_et_isoles_par_structure(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Cisse',
+            'prenom' => 'Aminata',
+            'identifiant_sanitaire' => 'MERE-SYMPTOME-001',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(3)->toDateString(),
+            'terme_estime' => now()->addMonths(6)->toDateString(),
+            'version_protocole' => 'A_VALIDER',
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->getJson('/api/v1/catalogues/symptomes-prenataux')
+            ->assertOk()
+            ->assertJsonFragment(['code' => 'SAIGNEMENTS_VAGINAUX']);
+
+        $declaration = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/symptomes", [
+            'code_symptome' => 'FIEVRE',
+            'statut_declaration' => 'SIGNALE',
+            'source_declaration' => 'DECLARE_PAR_MERE',
+            'declare_le' => now()->subMinutes(10)->toIso8601String(),
+            'debut_estime_le' => now()->subHours(2)->toIso8601String(),
+            'intensite_declaree' => 4,
+            'observations' => 'Déclaration de test uniquement.',
+        ])->assertCreated()
+            ->assertJsonPath('data.code_symptome', 'FIEVRE')
+            ->assertJsonPath('data.statut_declaration', 'SIGNALE')
+            ->assertJsonPath('data.statut_validation', 'A_VERIFIER');
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/grossesses/{$grossesse}/symptomes")
+            ->assertOk()
+            ->assertJsonPath('data.data.0.id', $declaration->json('data.id'));
+
+        $response = $this->actingAs($this->agentB, 'api')->getJson("/api/v1/grossesses/{$grossesse}/symptomes");
+        $this->assertSame(403, $response->status(), $response->getContent());
+    }
+
+    public function test_symptome_refuse_les_dates_incoherentes_et_intensite_non_applicable(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Sissoko',
+            'prenom' => 'Fatou',
+            'identifiant_sanitaire' => 'MERE-SYMPTOME-002',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(2)->toDateString(),
+            'terme_estime' => now()->addMonths(7)->toDateString(),
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/symptomes", [
+            'code_symptome' => 'FIEVRE',
+            'statut_declaration' => 'NON_SIGNALE',
+            'source_declaration' => 'DECLARE_PAR_MERE',
+            'declare_le' => now()->subHour()->toIso8601String(),
+            'intensite_declaree' => 3,
+        ])->assertUnprocessable();
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/symptomes", [
+            'code_symptome' => 'FIEVRE',
+            'statut_declaration' => 'SIGNALE',
+            'source_declaration' => 'DECLARE_PAR_MERE',
+            'declare_le' => now()->subHours(2)->toIso8601String(),
+            'debut_estime_le' => now()->subHour()->toIso8601String(),
+        ])->assertUnprocessable();
+    }
+
+    public function test_catalogue_mesures_normalise_unites_et_refuse_une_unite_incoherente(): void
+    {
+        $this->actingAs($this->agentA, 'api')->getJson('/api/v1/catalogues/mesures-cliniques')
+            ->assertOk()
+            ->assertJsonFragment(['code' => 'POIDS_MATERNEL', 'unite' => 'kg']);
+
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Keita',
+            'prenom' => 'Awa',
+            'identifiant_sanitaire' => 'MERE-MESURE-UNIT-001',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(2)->toDateString(),
+            'terme_estime' => now()->addMonths(7)->toDateString(),
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/mesures", [
+            'type_mesure' => 'POIDS_MATERNEL',
+            'valeur' => 63.2,
+            'unite' => 'lb',
+            'mesuree_le' => now()->subMinutes(5)->toIso8601String(),
+        ])->assertUnprocessable();
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/mesures", [
+            'type_mesure' => 'POIDS_MATERNEL',
+            'valeur' => 63.2,
+            'unite' => 'kg',
+            'mesuree_le' => now()->subMinutes(5)->toIso8601String(),
+        ])->assertCreated()
+            ->assertJsonPath('data.unite', 'kg');
+    }
+
     private function centre(string $nom): CentreSante
     {
         return CentreSante::create([
