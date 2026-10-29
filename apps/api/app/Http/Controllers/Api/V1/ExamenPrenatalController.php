@@ -51,7 +51,7 @@ class ExamenPrenatalController extends Controller
         $acces->verifierCentre($dossier->centre_sante_id);
 
         $data = $request->validate([
-            'contact_prenatal_id' => ['nullable', 'uuid', 'exists:contacts_prenataux,id'],
+            'contact_prenatal_id' => ['nullable', 'uuid'],
             'code_examen' => ['required', 'string', 'max:80'],
             'nom_examen' => ['required', 'string', 'max:180'],
             'categorie' => ['required', 'string', 'max:80'],
@@ -87,12 +87,13 @@ class ExamenPrenatalController extends Controller
 
         if (! empty($data['contact_prenatal_id'])) {
             $contact = ContactPrenatal::findOrFail($data['contact_prenatal_id']);
+            // Vérifier le périmètre de la structure avant de révéler si le contact est lié à cette grossesse.
+            $acces->verifierCentre($contact->centre_sante_id);
             if ($contact->grossesse_id !== $dossier->id) {
                 throw ValidationException::withMessages([
                     'contact_prenatal_id' => ['Le contact prénatal doit appartenir à cette grossesse.'],
                 ]);
             }
-            $acces->verifierCentre($contact->centre_sante_id);
         }
 
         $examen = ResultatExamenPrenatal::create([
