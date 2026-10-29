@@ -13,6 +13,53 @@ use App\Modules\SanteMaternelle\Services\AuditCliniqueService;
 
 class GrossesseController extends Controller
 {
+    /**
+     * Liste les grossesses du périmètre autorisé pour alimenter l'espace agent.
+     * Les informations affichées sont limitées à l'identité minimale de la mère.
+     */
+    public function index(Request $request, AccesParStructureService $acces)
+    {
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:120'],
+            'statut' => ['nullable', 'string', 'max:40'],
+            'du' => ['nullable', 'date'],
+            'au' => ['nullable', 'date', 'after_or_equal:du'],
+            'per_page' => ['nullable', 'integer', 'between:1,100'],
+        ]);
+
+        $query = $acces->appliquer(
+            Grossesse::query()->with('mere:id,nom,prenom,identifiant_sanitaire'),
+        )->whereNull('archive_le');
+
+        if ($request->filled('q')) {
+            $terme = trim((string) $request->query('q'));
+            $query->whereHas('mere', function ($mere) use ($terme) {
+                $mere->where('nom', 'like', "%{$terme}%")
+                    ->orWhere('prenom', 'like', "%{$terme}%")
+                    ->orWhere('identifiant_sanitaire', 'like', "%{$terme}%");
+            });
+        }
+
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->query('statut'));
+        }
+
+        if ($request->filled('du')) {
+            $query->whereDate('date_debut_estimee', '>=', $request->query('du'));
+        }
+
+        if ($request->filled('au')) {
+            $query->whereDate('date_debut_estimee', '<=', $request->query('au'));
+        }
+
+        return response()->json([
+            'data' => $query
+                ->orderByDesc('date_debut_estimee')
+                ->orderByDesc('created_at')
+                ->paginate((int) $request->query('per_page', 25)),
+        ]);
+    }
+
     public function store(StoreGrossesseRequest $request, string $mere, AccesParStructureService $acces, AuditCliniqueService $audit)
     {
         $maman = PersonneMere::findOrFail($mere);
