@@ -114,7 +114,7 @@ class EnvoyerRappelsPrenataux extends Command
             }
 
             // A reminder is intentionally generic: it does not mention pregnancy, tests, symptoms or results.
-            $date = $appointment->prevu_le->locale('fr_ML')->isoFormat('D MMMM YYYY');
+            $date = $appointment->prevu_le->locale('fr')->isoFormat('D MMMM YYYY');
             $message = "Bonjour. Un rendez-vous est prévu le {$date} auprès de votre structure de santé. Pour toute précision, contactez votre centre de santé.";
 
             try {
