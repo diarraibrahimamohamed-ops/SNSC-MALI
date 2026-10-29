@@ -41,6 +41,7 @@ class ChronologieMereEnfantService
                     'statut' => $contact->statut_validation,
                     'provenance' => $contact->source_donnee,
                     'prochaine_etape' => $contact->prochaine_etape,
+                    'prochain_rendez_vous_le' => $contact->prochain_rendez_vous_le?->toDateString(),
                 ]);
             }
 
