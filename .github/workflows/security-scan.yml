@@ -5,3 +5,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Reject private-key material and common token patterns in the committed tree
+        shell: bash
+        run: |
+          set +e
+          git grep -I -n -E '-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|xox[baprs]-[A-Za-z0-9-]{10,}' HEAD -- .
+          grep_status=$?
+          if [ "$grep_status" -eq 0 ]; then
+            echo "::error::Potential private key or token found in the committed tree."
+            exit 1
+          fi
+          if [ "$grep_status" -gt 1 ]; then
+            exit "$grep_status"
+          fi
+
+          if git ls-files 'apps/api/storage/jwt/*.pem' | grep -q .; then
+            echo "::error::JWT PEM files must be generated per environment and never committed."
+            exit 1
+          fi
+
+          tracked_env_files=$(git ls-files | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$')
+          if [ -n "$tracked_env_files" ]; then
+            echo "::error::Real .env files must never be committed."
+            printf '%s\n' "$tracked_env_files"
+            exit 1
+          fi
+
+          echo "Committed-tree secret checks passed. This check does not scan historical Git commits."
