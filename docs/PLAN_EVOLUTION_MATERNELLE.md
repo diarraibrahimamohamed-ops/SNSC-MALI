@@ -26,6 +26,20 @@ Cette tranche **n'est pas** un référentiel national complet d'examens, ne calc
 
 Les workflows GitHub de la branche doivent être consultés avant chaque fusion; un résultat vert ne remplace pas la validation fonctionnelle par les utilisateurs visés.
 
+## 1.2 Deuxième tranche implémentée sur la branche de travail
+
+Le registre de symptômes déclarés et un catalogue de mesures maternelles ont été ajoutés :
+
+- API authentifiée pour consulter le catalogue de symptômes prénataux.
+- Enregistrement d'un symptôme avec statut (`SIGNALE`, `NON_SIGNALE`, `NON_EVALUE`), source de déclaration, date, début estimé éventuel, intensité déclarée facultative et observations.
+- Contrôles de cohérence temporelle et validation de la source; un symptôme `AUTRE` doit être précisé.
+- Historique dans le détail d'une grossesse et intégration à la chronologie longitudinale Mère–Enfant.
+- Catalogue de mesures courantes : poids maternel, tensions systolique/diastolique, température, fréquence cardiaque/respiratoire, saturation et hauteur utérine.
+- Choix de mesure et unité suggérée depuis l'interface. Les contrôles côté API sur les unités et limites très larges servent à repérer les erreurs de saisie; **ce ne sont pas des seuils cliniques**.
+- Tests ajoutés pour l'isolation inter-centres, la cohérence des données et l'intégration des symptômes dans la chronologie.
+
+Les listes proposées constituent un catalogue initial à faire valider par l'équipe métier. L'intensité est une déclaration subjective, pas une évaluation clinique. Une absence de déclaration n'est jamais inférée à partir d'un champ vide. Aucun score, diagnostic, triage ni recommandation de traitement n'est généré par cette tranche.
+
 ## 2. Principes de conception
 
 1. **Continuité Mère–Grossesse–Accouchement–Enfant :** une mère peut avoir plusieurs grossesses; chaque grossesse possède son historique, son issue et les liens vers les nouveau-nés concernés.
