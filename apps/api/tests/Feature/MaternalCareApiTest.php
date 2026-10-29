@@ -792,6 +792,39 @@ class MaternalCareApiTest extends TestCase
         });
     }
 
+    public function test_liste_grossesses_est_fil tree_par_structure_et_recherche_sur_la_mere(): void
+    {
+        $mereA = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Traore',
+            'prenom' => 'Aminata',
+            'identifiant_sanitaire' => 'MERE-LISTE-G-001',
+        ])->assertCreated()->json('data.id');
+
+        $mereB = $this->actingAs($this->agentB, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Diallo',
+            'prenom' => 'Fatou',
+            'identifiant_sanitaire' => 'MERE-LISTE-G-002',
+        ])->assertCreated()->json('data.id');
+
+        $grossesseA = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mereA}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(4)->toDateString(),
+            'terme_estime' => now()->addMonths(5)->toDateString(),
+        ])->assertCreated()->json('data.id');
+
+        $grossesseB = $this->actingAs($this->agentB, 'api')->postJson("/api/v1/meres/{$mereB}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(2)->toDateString(),
+            'terme_estime' => now()->addMonths(7)->toDateString(),
+        ])->assertCreated()->json('data.id');
+
+        $response = $this->actingAs($this->agentA, 'api')->getJson('/api/v1/grossesses?q=Aminata');
+        $response->assertOk()
+            ->assertJsonPath('data.data.0.id', $grossesseA)
+            ->assertJsonPath('data.data.0.mere.nom', 'Traore');
+
+        $this->assertCount(1, $response->json('data.data'));
+        $this->assertNotSame($grossesseA, $grossesseB);
+    }
+
     private function centre(string $nom): CentreSante
     {
         return CentreSante::create([
