@@ -28,6 +28,7 @@ class RendezVousPrenatal extends Model
         'remplace_rendez_vous_id',
         'rappel_programme_le',
         'rappel_statut',
+        'rappel_debut_traitement_le',
         'rappel_envoye_le',
         'rappel_tentatives',
         'rappel_erreur_code',
@@ -39,6 +40,7 @@ class RendezVousPrenatal extends Model
             'prevu_le' => 'date',
             'realise_le' => 'datetime',
             'rappel_programme_le' => 'datetime',
+            'rappel_debut_traitement_le' => 'datetime',
             'rappel_envoye_le' => 'datetime',
             'rappel_tentatives' => 'integer',
         ];
