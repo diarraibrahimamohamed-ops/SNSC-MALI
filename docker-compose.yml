@@ -63,6 +63,10 @@ services:
     working_dir: /app
     volumes:
       - ./apps/ia:/app
+    environment:
+      # Keep blank in local development to leave audit-log access disabled.
+      # Set AUDIT_LOGS_TOKEN in the root .env before using /audit/logs.
+      AUDIT_LOGS_TOKEN: ${AUDIT_LOGS_TOKEN:-}
     ports:
       - "8080:8080"
     command: sh -c "pip install --no-cache-dir -r requirements.txt && uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload"
