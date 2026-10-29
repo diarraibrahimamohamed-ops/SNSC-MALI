@@ -13,6 +13,7 @@ type Contact = {
   age_gestationnel_semaines?: number | null;
   statut_validation: string;
   prochaine_etape?: string | null;
+  prochain_rendez_vous_le?: string | null;
 };
 
 type Mesure = {
@@ -74,6 +75,7 @@ const initialContact = {
   type_contact: 'CPN',
   age_gestationnel_semaines: '',
   prochaine_etape: '',
+  prochain_rendez_vous_le: '',
   version_protocole: '',
 };
 
@@ -223,6 +225,7 @@ export default function GrossesseDetailPage() {
             ? Number(contact.age_gestationnel_semaines)
             : undefined,
           prochaine_etape: contact.prochaine_etape || undefined,
+          prochain_rendez_vous_le: contact.prochain_rendez_vous_le || undefined,
           version_protocole: contact.version_protocole || undefined,
         }),
       });
@@ -417,6 +420,7 @@ export default function GrossesseDetailPage() {
               </label>
               <Champ label="Âge gestationnel (semaines)" type="number" value={contact.age_gestationnel_semaines} onChange={(age_gestationnel_semaines) => setContact({ ...contact, age_gestationnel_semaines })} />
               <Champ label="Prochaine étape" value={contact.prochaine_etape} onChange={(prochaine_etape) => setContact({ ...contact, prochaine_etape })} />
+              <Champ label="Prochain rendez-vous (date prévue)" type="date" value={contact.prochain_rendez_vous_le} onChange={(prochain_rendez_vous_le) => setContact({ ...contact, prochain_rendez_vous_le })} />
               <Champ label="Version du protocole" value={contact.version_protocole} onChange={(version_protocole) => setContact({ ...contact, version_protocole })} />
               <div className="flex items-end">
                 <button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
@@ -433,6 +437,7 @@ export default function GrossesseDetailPage() {
                   </div>
                   <p className="mt-1 text-sm text-slate-600">Âge gestationnel : {element.age_gestationnel_semaines ?? 'non renseigné'} semaines · {labelEtat(element.statut_validation)}</p>
                   {element.prochaine_etape && <p className="mt-2 text-sm text-slate-700">Étape suivante : {element.prochaine_etape}</p>}
+                  {element.prochain_rendez_vous_le && <p className="mt-2 text-sm font-semibold text-rose-700">Prochain rendez-vous prévu : {new Date(element.prochain_rendez_vous_le).toLocaleDateString('fr-ML')}</p>}
                 </article>
               )) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucun contact prénatal enregistré.</p>}
             </div>
