@@ -64,6 +64,17 @@ Les antécédents sont conservés comme déclarés ou transcrits; le statut rest
 
 La mise en route requiert l'application explicite des migrations et l'exécution du scheduler. L'envoi est contrôlé par lot et observable; comme tout fournisseur externe, une interruption après acceptation par le fournisseur mais avant persistance de l'état peut créer un risque de doublon au redémarrage. Un déploiement de production devra vérifier les mécanismes d'idempotence disponibles auprès du fournisseur et superviser les états `EN_COURS`/échec.
 
+## 1.5 Cinquième tranche implémentée sur la branche de travail
+
+- Table et modèle `ReferentielExamenPrenatal`, avec version de protocole, code unique par version, catégorie, modalité, fenêtre gestationnelle indicative et référence documentaire.
+- Publication d'une définition réservée au rôle administrateur; une correction ou évolution de protocole doit être publiée sous une nouvelle version.
+- Vue par grossesse : renvoie les définitions correspondant à la version du dossier et, si disponible, à la fenêtre gestationnelle calculée à partir de la date de début estimée; indique seulement si un résultat est enregistré pour le code correspondant.
+- Si aucune version n'est renseignée ou si aucune définition n'existe, l'API renvoie un état explicite au lieu d'inférer qu'aucun examen n'est nécessaire.
+- Interface agent : affichage de la référence, de la fenêtre configurée, de la version et du statut d'enregistrement.
+- Tests d'autorisation administrateur, d'unicité des codes par version, de lecture du référentiel et de liaison avec les résultats de la grossesse.
+
+Aucune liste nationale n'est préchargée, car les définitions, fenêtres et références doivent être validées avant usage réel. Le calcul gestationnel est présenté comme estimation technique à vérifier, pas comme une donnée clinique confirmée.
+
 ## 2. Principes de conception
 
 1. **Continuité Mère–Grossesse–Accouchement–Enfant :** une mère peut avoir plusieurs grossesses; chaque grossesse possède son historique, son issue et les liens vers les nouveau-nés concernés.
