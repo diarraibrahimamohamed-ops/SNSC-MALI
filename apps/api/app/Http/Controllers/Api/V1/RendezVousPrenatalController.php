@@ -122,7 +122,7 @@ class RendezVousPrenatalController extends Controller
             'realise_le' => ['nullable', 'date', 'before_or_equal:now'],
             'motif' => ['nullable', 'string', 'max:1000'],
             'nouvelle_date' => ['nullable', 'date', 'after_or_equal:today'],
-            'nouveau_rappel_programme_le' => ['nullable', 'date'],
+            'nouveau_rappel_programme_le' => ['nullable', 'date', 'after_or_equal:now'],
         ]);
 
         $createdReplacement = null;
@@ -148,6 +148,28 @@ class RendezVousPrenatalController extends Controller
                 ]);
             }
 
+            if ($data['statut'] === 'MANQUE' && $element->prevu_le->isFuture()) {
+                throw ValidationException::withMessages([
+                    'statut' => ['Un rendez-vous futur ne peut pas être déclaré manqué.'],
+                ]);
+            }
+
+            if ($data['statut'] !== 'REPORTE' && ! empty($data['nouveau_rappel_programme_le'])) {
+                throw ValidationException::withMessages([
+                    'nouveau_rappel_programme_le' => ['Le nouveau rappel ne s’applique qu’à un report.'],
+                ]);
+            }
+
+            if (
+                $data['statut'] === 'REPORTE'
+                && ! empty($data['nouvelle_date'])
+                && Carbon::parse($data['nouvelle_date'])->toDateString() === $element->prevu_le->toDateString()
+            ) {
+                throw ValidationException::withMessages([
+                    'nouvelle_date' => ['La date du remplacement doit être différente de celle du rendez-vous initial.'],
+                ]);
+            }
+
             if (
                 ! empty($data['nouveau_rappel_programme_le'])
                 && Carbon::parse($data['nouveau_rappel_programme_le'])->gt(Carbon::parse($data['nouvelle_date'] ?? $element->prevu_le)->endOfDay())
@@ -161,6 +183,7 @@ class RendezVousPrenatalController extends Controller
                 'statut' => $data['statut'],
                 'realise_le' => $data['statut'] === 'REALISE' ? ($data['realise_le'] ?? now()) : null,
                 'motif' => $data['motif'] ?? null,
+                'rappel_debut_traitement_le' => null,
                 'rappel_statut' => in_array($data['statut'], ['ANNULE', 'REPORTE', 'REALISE', 'MANQUE'], true)
                     ? ($element->rappel_statut === 'ENVOYE' ? 'ENVOYE' : 'ANNULE')
                     : $element->rappel_statut,
