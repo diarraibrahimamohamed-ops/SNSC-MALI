@@ -24,7 +24,7 @@ jobs:
             exit "$grep_status"
           fi
 
-          if git ls-files 'apps/api/storage/jwt/*.pem' | grep -q .; then
+          if git ls-files 'apps/api/storage/**/*.pem' | grep -q .; then
             echo "::error::JWT PEM files must be generated per environment and never committed."
             exit 1
           fi
