@@ -2795,16 +2795,16 @@ button {
 }
 
 .vt-auth-brand-copy strong {
-  color: #fff;
+  color: #0c2c58;
 }
 
 .vt-auth-brand-copy em {
-  color: #72e2ae;
+  color: #078654;
 }
 
 .vt-auth-brand-copy small {
   margin-top: 6px;
-  color: rgba(255, 255, 255, 0.87);
+  color: #315b84;
   font-size: 0.68rem;
   line-height: 1.55;
 }
@@ -3225,6 +3225,27 @@ button {
   flex: 0 0 auto;
   accent-color: var(--vt-accent);
   cursor: pointer;
+}
+
+.vt-auth-forgot-link {
+  color: var(--vt-accent);
+  font-size: 0.73rem;
+  font-weight: 760;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.vt-auth-forgot-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+  .vt-auth-form-options {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 }
 
 .vt-auth-submit {

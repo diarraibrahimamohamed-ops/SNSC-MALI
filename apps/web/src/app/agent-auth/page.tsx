@@ -142,6 +142,9 @@ export default function AgentLoginPage() {
             />
             <span>Mémoriser mon identifiant</span>
           </label>
+          <Link href="/aide" className="vt-auth-forgot-link">
+            Mot de passe oublié ?
+          </Link>
         </div>
 
         <button type="submit" disabled={isLoading} className="vt-auth-submit">
