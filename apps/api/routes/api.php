@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\ActeVaccinalController;
 use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JournalAuditController;
+use App\Http\Controllers\Api\V1\AntecedentObstetricalController;
 use App\Http\Controllers\Api\V1\AccouchementController;
 use App\Http\Controllers\Api\V1\ConsentementController;
 use App\Http\Controllers\Api\V1\ExamenPrenatalController;
@@ -70,6 +71,9 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/meres/{mere}', [MereController::class, 'show']);
     Route::get('/meres/{mere}/chronologie', [MereController::class, 'chronologie']);
     Route::post('/meres/{mere}/grossesses', [GrossesseController::class, 'store']);
+    Route::get('/meres/{mere}/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'index']);
+    Route::post('/meres/{mere}/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'store']);
+    Route::get('/catalogues/antecedents-obstetricaux', [AntecedentObstetricalController::class, 'catalogue']);
     Route::post('/meres/{mere}/suivis-postpartum', [PostpartumController::class, 'store']);
 
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
