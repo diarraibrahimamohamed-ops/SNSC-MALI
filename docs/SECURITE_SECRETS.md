@@ -4,9 +4,9 @@
 
 Les clés privées ne doivent jamais être commitées dans Git, placées dans le frontend, les journaux ou les artefacts partagés. Le fichier `apps/api/scripts/ensure-jwt-keys.php` génère une paire RSA de 3072 bits dans `apps/api/storage/jwt/` si et seulement si les deux fichiers sont absents. Si une seule clé existe, le script s'arrête pour éviter de créer une paire incohérente. La clé privée reçoit les permissions `0600`; la clé publique reçoit `0644`.
 
-Les fichiers `private.pem` et `public.pem` sont ignorés par Git. Chaque environnement doit posséder sa propre paire. La paire générée par le script est une option de développement; en production, privilégier un gestionnaire de secrets et une procédure contrôlée de rotation.
+Les fichiers PEM sous `apps/api/storage/` sont ignorés par Git, quel que soit le sous-répertoire. Chaque environnement doit posséder sa propre paire. La paire générée par le script est une option de développement; en production, privilégier un gestionnaire de secrets et une procédure contrôlée de rotation.
 
-**Important :** retirer une clé du dernier état du dépôt ne l'efface pas des anciens commits. Si une clé privée a déjà été poussée vers un dépôt partagé ou public, considérer cette clé comme compromise : générer une nouvelle paire, déployer la nouvelle configuration, révoquer les sessions/tokens concernés et évaluer avec les responsables du dépôt la suppression de l'historique sensible. Une réécriture d'historique doit être coordonnée, car elle modifie les références Git et les clones existants.
+**Important :** retirer une clé du dernier état du dépôt ne l'efface pas des anciens commits. Le dépôt contenait plusieurs copies de clés dans deux chemins historiques; elles ont été retirées de la branche de travail. Si une clé privée a déjà été poussée vers un dépôt partagé ou public, considérer cette clé comme compromise : générer une nouvelle paire, déployer la nouvelle configuration, révoquer les sessions/tokens concernés et évaluer avec les responsables du dépôt la suppression de l'historique sensible. Une réécriture d'historique doit être coordonnée, car elle modifie les références Git et les clones existants.
 
 ## Démarrage local
 
