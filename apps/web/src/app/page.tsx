@@ -156,11 +156,11 @@ export default function Home() {
           <div className="landing-visual-wrap landing-reveal landing-reveal--delayed">
             <div className="landing-photo-card">
               <Image
-                src="/images/snsc-mali-home-hero.webp"
+                src="/images/home.webp"
                 alt="Illustration d’une professionnelle de santé accueillant une mère et son jeune enfant dans un centre de vaccination."
                 fill
                 priority
-                sizes="(max-width: 820px) 100vw, 50vw"
+                sizes="(max-width: 520px) 100vw, 50vw"
                 className="landing-photo-image"
               />
               <div className="landing-photo-shade" aria-hidden="true" />
