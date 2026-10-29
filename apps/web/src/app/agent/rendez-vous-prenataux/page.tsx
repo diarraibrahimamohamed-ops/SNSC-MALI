@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { CalendarClock, CalendarDays, ChevronRight, Clock3, Filter, Loader2, ShieldAlert } from 'lucide-react';
+import { CalendarClock, CalendarDays, ChevronRight, Clock3, Loader2, ShieldAlert } from 'lucide-react';
 import { labelEtat, maternalApi, RendezVousPrenatal } from '@/lib/maternal-api';
 
 type RendezVousAvecGrossesse = RendezVousPrenatal & {
