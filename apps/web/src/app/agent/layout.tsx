@@ -284,7 +284,7 @@ export default function AgentLayout({
           <nav className="flex-1 space-y-1 overflow-y-auto p-4">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = pathname === item.href;
+              const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
@@ -350,6 +350,7 @@ export default function AgentLayout({
                     {pathname === '/agent/enfants' && 'Gestion des enfants'}
                     {pathname.startsWith('/agent/meres') && 'Dossier mère-enfant'}
                     {pathname.startsWith('/agent/grossesses') && 'Parcours prénatal'}
+                    {pathname === '/agent/rendez-vous-prenataux' && 'Rendez-vous prénataux'}
                     {pathname === '/agent/references' && 'Références de soins'}
                     {pathname === '/agent/ajout' && 'Saisie médicale'}
                     {pathname === '/agent/vaccination' && 'Gestion des vaccinations'}
