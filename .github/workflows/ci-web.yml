@@ -18,7 +18,7 @@ jobs:
         run: npm ci
       - name: Type check
         run: npx tsc --noEmit
-      - name: Lint changed maternal workflow and auth types
-        run: npx eslint 'src/app/agent/grossesses/[id]/page.tsx' 'src/app/agent/meres/[id]/page.tsx' src/app/agent/profil/page.tsx src/features/auth/useAuth.tsx
+      - name: Lint homepage, authentication and maternal workflows
+        run: npx eslint src/app/page.tsx 'src/app/agent-auth/page.tsx' src/app/login/page.tsx src/components/auth/AuthShell.tsx 'src/app/agent/grossesses/[id]/page.tsx' 'src/app/agent/meres/[id]/page.tsx' src/app/agent/profil/page.tsx src/features/auth/useAuth.tsx
       - name: Build
         run: npm run build
