@@ -105,6 +105,8 @@ export type ChronologieItem = {
   orientation?: string | null;
   vaccin?: string | null;
   libelle?: string | null;
+  rendez_vous_type?: string | null;
+  rappel_statut?: string | null;
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
