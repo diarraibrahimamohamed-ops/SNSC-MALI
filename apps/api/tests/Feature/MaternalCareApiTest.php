@@ -278,6 +278,76 @@ class MaternalCareApiTest extends TestCase
         $this->assertSame(1, EvenementSynchronisation::count());
     }
 
+    public function test_examens_prenataux_sont_enregistres_et_isoles_par_structure(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Diarra',
+            'prenom' => 'Aminata',
+            'identifiant_sanitaire' => 'MERE-EXAMEN-001',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(4)->toDateString(),
+            'terme_estime' => now()->addMonths(5)->toDateString(),
+            'version_protocole' => 'A_VALIDER',
+        ])->assertCreated()->json('data.id');
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/examens", [
+            'code_examen' => 'HB',
+            'nom_examen' => 'Hémoglobine',
+            'categorie' => 'HEMATOLOGIE',
+            'statut_resultat' => 'DISPONIBLE',
+            'resultat_numerique' => 10.5,
+            'unite' => 'g/dL',
+            'date_prelevement' => now()->subDay()->toIso8601String(),
+            'date_resultat' => now()->subHour()->toIso8601String(),
+            'laboratoire' => 'Laboratoire de test',
+        ])->assertCreated()
+            ->assertJsonPath('data.code_examen', 'HB')
+            ->assertJsonPath('data.statut_validation', 'A_VERIFIER');
+
+        $this->actingAs($this->agentA, 'api')->getJson("/api/v1/grossesses/{$grossesse}/examens")
+            ->assertOk()
+            ->assertJsonPath('data.data.0.code_examen', 'HB')
+            ->assertJsonPath('data.data.0.statut_resultat', 'DISPONIBLE');
+
+        $response = $this->actingAs($this->agentB, 'api')->getJson("/api/v1/grossesses/{$grossesse}/examens");
+        $this->assertSame(403, $response->status(), $response->getContent());
+    }
+
+    public function test_examen_disponible_sans_resultat_ou_avec_dates_incoherentes_est_refuse(): void
+    {
+        $mere = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
+            'nom' => 'Traore',
+            'prenom' => 'Fatoumata',
+            'identifiant_sanitaire' => 'MERE-EXAMEN-002',
+        ])->assertCreated()->json('data.id');
+
+        $grossesse = $this->actingAs($this->agentA, 'api')->postJson("/api/v1/meres/{$mere}/grossesses", [
+            'date_debut_estimee' => now()->subMonths(2)->toDateString(),
+            'terme_estime' => now()->addMonths(7)->toDateString(),
+            'version_protocole' => 'A_VALIDER',
+        ])->assertCreated()->json('data.id');
+
+        $base = [
+            'code_examen' => 'HB',
+            'nom_examen' => 'Hémoglobine',
+            'categorie' => 'HEMATOLOGIE',
+            'statut_resultat' => 'DISPONIBLE',
+        ];
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/examens", $base)
+            ->assertUnprocessable();
+
+        $this->actingAs($this->agentA, 'api')->postJson("/api/v1/grossesses/{$grossesse}/examens", [
+            ...$base,
+            'resultat_numerique' => 10.5,
+            'unite' => 'g/dL',
+            'date_prelevement' => now()->subDays(2)->toIso8601String(),
+            'date_resultat' => now()->subDays(3)->toIso8601String(),
+        ])->assertUnprocessable();
+    }
+
     private function centre(string $nom): CentreSante
     {
         return CentreSante::create([
