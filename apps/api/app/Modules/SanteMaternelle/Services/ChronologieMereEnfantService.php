@@ -16,6 +16,7 @@ class ChronologieMereEnfantService
             'grossesses.contacts',
             'grossesses.symptomes',
             'grossesses.accouchement',
+            'antecedentsObstetricaux',
             'liensEnfants.enfant.actesVaccinaux.vaccin',
             'suivisPostpartum',
         ]);
@@ -65,6 +66,17 @@ class ChronologieMereEnfantService
                     'issue' => $grossesse->accouchement->issue,
                 ]);
             }
+        }
+
+        foreach ($mere->antecedentsObstetricaux as $antecedent) {
+            $faits->push([
+                'type' => 'ANTECEDENT_OBSTETRICAL',
+                'date' => $antecedent->date_evenement?->toDateString() ?? $antecedent->created_at?->toIso8601String(),
+                'id' => $antecedent->id,
+                'statut' => $antecedent->statut_validation,
+                'provenance' => $antecedent->source_declaration,
+                'libelle' => $antecedent->precision ?: $antecedent->code_antecedent,
+            ]);
         }
 
         foreach ($mere->suivisPostpartum as $suivi) {
