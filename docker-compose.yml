@@ -5,9 +5,9 @@ services:
     environment:
       POSTGRES_DB: vaccin_track
       POSTGRES_USER: vaccin_user
-      POSTGRES_PASSWORD: vaccin_pass
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -17,7 +17,7 @@ services:
     image: redis:7
     container_name: vaccin_redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     networks:
       - vaccin-network
 
@@ -29,12 +29,24 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./apps/api:/var/www/html
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: vaccin_track
+      DB_USERNAME: vaccin_user
+      DB_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in the root .env file}
+      JWT_ALGO: ${JWT_ALGO:-RS256}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY:-file:///var/www/html/storage/jwt/public.pem}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:-file:///var/www/html/storage/jwt/private.pem}
+      JWT_TTL: ${JWT_TTL:-15}
+      JWT_BLACKLIST_ENABLED: "true"
     ports:
       - "8000:8000"
     depends_on:
       - postgres
       - redis
-    command: sh -c "composer install && (grep -q '^APP_KEY=base64:' .env || php artisan key:generate) && php artisan serve --host=0.0.0.0 --port=8000"
+    command: sh -c "composer install && (test -f .env || cp .env.example .env) && php scripts/ensure-jwt-keys.php && (grep -q '^APP_KEY=base64:' .env || php artisan key:generate) && php artisan serve --host=0.0.0.0 --port=8000"
     networks:
       - vaccin-network
 
