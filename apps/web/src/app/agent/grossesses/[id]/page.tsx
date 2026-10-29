@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { ArrowLeft, Baby, CalendarCheck2, CircleAlert, ClipboardPlus, Loader2, Plus, Stethoscope } from 'lucide-react';
-import { labelEtat, maternalApi } from '@/lib/maternal-api';
+import { ExamenPrenatal, labelEtat, maternalApi } from '@/lib/maternal-api';
 
 type Contact = {
   id: string;
@@ -25,6 +25,22 @@ type Mesure = {
   source_donnee?: string | null;
   statut_validation: string;
 };
+
+type ExamensResponse = { data: { data: ExamenPrenatal[] } };
+
+type FormExamen = {
+  code_examen: string;
+  nom_examen: string;
+  categorie: string;
+  statut_resultat: string;
+  resultat_texte: string;
+  resultat_numerique: string;
+  unite: string;
+  date_prelevement: string;
+  date_resultat: string;
+  laboratoire: string;
+};
+
 
 type GrossesseDetail = {
   id: string;
@@ -62,6 +78,19 @@ const initialDelivery = {
   nouveau_ne_enfant_ids: '',
 };
 
+const initialExam: FormExamen = {
+  code_examen: '',
+  nom_examen: '',
+  categorie: 'HEMATOLOGIE',
+  statut_resultat: 'EN_ATTENTE',
+  resultat_texte: '',
+  resultat_numerique: '',
+  unite: '',
+  date_prelevement: '',
+  date_resultat: '',
+  laboratoire: '',
+};
+
 export default function GrossesseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [grossesse, setGrossesse] = useState<GrossesseDetail | null>(null);
@@ -70,20 +99,30 @@ export default function GrossesseDetailPage() {
   const [saving, setSaving] = useState(false);
   const [contact, setContact] = useState(initialContact);
   const [measurement, setMeasurement] = useState(initialMeasurement);
+  const [examens, setExamens] = useState<ExamenPrenatal[]>([]);
+  const [examForm, setExamForm] = useState<FormExamen>(initialExam);
   const [accouchement, setAccouchement] = useState(initialDelivery);
 
-  const recupererGrossesse = useCallback(async (): Promise<GrossesseDetail> => {
-    const result = await maternalApi<{ data: GrossesseDetail }>(`/grossesses/${id}`);
+  const recupererGrossesse = useCallback(async (): Promise<{ grossesse: GrossesseDetail; examens: ExamenPrenatal[] }> => {
+    const [result, examensResult] = await Promise.all([
+      maternalApi<{ data: GrossesseDetail }>(`/grossesses/${id}`),
+      maternalApi<ExamensResponse>(`/grossesses/${id}/examens`),
+    ]);
     return {
-      ...result.data,
-      contacts: result.data.contacts ?? [],
-      mesures: result.data.mesures ?? [],
+      grossesse: {
+        ...result.data,
+        contacts: result.data.contacts ?? [],
+        mesures: result.data.mesures ?? [],
+      },
+      examens: examensResult.data.data ?? [],
     };
   }, [id]);
 
   const charger = async () => {
     try {
-      setGrossesse(await recupererGrossesse());
+      const result = await recupererGrossesse();
+      setGrossesse(result.grossesse);
+      setExamens(result.examens);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Impossible de charger la grossesse.');
@@ -97,7 +136,8 @@ export default function GrossesseDetailPage() {
       try {
         const data = await recupererGrossesse();
         if (active) {
-          setGrossesse(data);
+          setGrossesse(data.grossesse);
+          setExamens(data.examens);
           setError(null);
         }
       } catch (err) {
@@ -158,6 +198,48 @@ export default function GrossesseDetailPage() {
       await charger();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'La mesure clinique n’a pas été enregistrée.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const ajouterExamen = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+
+    if (
+      examForm.statut_resultat === 'DISPONIBLE'
+      && !examForm.resultat_texte.trim()
+      && !examForm.resultat_numerique.trim()
+    ) {
+      setError('Pour un examen disponible, renseignez le résultat textuel ou numérique.');
+      setSaving(false);
+      return;
+    }
+
+    try {
+      await maternalApi(`/grossesses/${id}/examens`, {
+        method: 'POST',
+        body: JSON.stringify({
+          code_examen: examForm.code_examen.trim(),
+          nom_examen: examForm.nom_examen.trim(),
+          categorie: examForm.categorie,
+          statut_resultat: examForm.statut_resultat,
+          resultat_texte: examForm.resultat_texte.trim() || undefined,
+          resultat_numerique: examForm.resultat_numerique.trim()
+            ? Number(examForm.resultat_numerique)
+            : undefined,
+          unite: examForm.unite.trim() || undefined,
+          date_prelevement: examForm.date_prelevement || undefined,
+          date_resultat: examForm.date_resultat || undefined,
+          laboratoire: examForm.laboratoire.trim() || undefined,
+        }),
+      });
+      setExamForm(initialExam);
+      await charger();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Le résultat d’examen n’a pas été enregistré.');
     } finally {
       setSaving(false);
     }
@@ -287,6 +369,75 @@ export default function GrossesseDetailPage() {
                   <p className="mt-2 text-xs text-slate-500">{new Date(element.mesuree_le).toLocaleString('fr-ML')}{element.methode ? ` · Méthode : ${element.methode}` : ''}</p>
                 </article>
               )) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucune mesure enregistrée pour cette grossesse.</p>}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-2 flex items-center gap-2">
+              <ClipboardPlus className="h-5 w-5 text-teal-700" />
+              <h2 className="font-bold text-slate-900">Examens prénataux</h2>
+            </div>
+            <p className="mb-5 text-sm text-slate-500">
+              Enregistrez les résultats reçus ou l’état d’un examen. Les champs saisis sont conservés comme données à vérifier; cette page n’interprète pas les résultats.
+            </p>
+            <form onSubmit={ajouterExamen} className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-teal-50/60 p-4 md:grid-cols-2">
+              <Champ label="Code de l’examen" value={examForm.code_examen} required onChange={(code_examen) => setExamForm({ ...examForm, code_examen })} />
+              <Champ label="Nom de l’examen" value={examForm.nom_examen} required onChange={(nom_examen) => setExamForm({ ...examForm, nom_examen })} />
+              <label className="grid gap-1 text-sm font-medium text-slate-700">Catégorie
+                <select value={examForm.categorie} onChange={(event) => setExamForm({ ...examForm, categorie: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-teal-200 focus:ring-2">
+                  <option value="HEMATOLOGIE">Hématologie</option>
+                  <option value="INFECTIOLOGIE">Infectiologie</option>
+                  <option value="URINES">Urines</option>
+                  <option value="GLYCEMIE">Glycémie</option>
+                  <option value="ECHOGRAPHIE">Échographie</option>
+                  <option value="IMMUNOLOGIE">Immunologie</option>
+                  <option value="AUTRE">Autre</option>
+                </select>
+              </label>
+              <label className="grid gap-1 text-sm font-medium text-slate-700">État du résultat
+                <select value={examForm.statut_resultat} onChange={(event) => setExamForm({ ...examForm, statut_resultat: event.target.value })} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-teal-200 focus:ring-2">
+                  <option value="EN_ATTENTE">En attente</option>
+                  <option value="DISPONIBLE">Disponible</option>
+                  <option value="NON_REALISE">Non réalisé</option>
+                  <option value="NON_APPLICABLE">Non applicable</option>
+                </select>
+              </label>
+              <Champ label="Résultat numérique (facultatif)" type="number" step="any" value={examForm.resultat_numerique} onChange={(resultat_numerique) => setExamForm({ ...examForm, resultat_numerique })} />
+              <Champ label="Unité (facultatif)" value={examForm.unite} onChange={(unite) => setExamForm({ ...examForm, unite })} />
+              <label className="grid gap-1 text-sm font-medium text-slate-700 md:col-span-2">Résultat textuel (facultatif)
+                <textarea value={examForm.resultat_texte} onChange={(event) => setExamForm({ ...examForm, resultat_texte: event.target.value })} rows={2} className="rounded-xl border border-slate-200 bg-white px-3 py-2 outline-none ring-teal-200 focus:ring-2" />
+              </label>
+              <Champ label="Date et heure du prélèvement/examen" type="datetime-local" value={examForm.date_prelevement} onChange={(date_prelevement) => setExamForm({ ...examForm, date_prelevement })} />
+              <Champ label="Date et heure du résultat" type="datetime-local" value={examForm.date_resultat} onChange={(date_resultat) => setExamForm({ ...examForm, date_resultat })} />
+              <Champ label="Laboratoire ou source (facultatif)" value={examForm.laboratoire} onChange={(laboratoire) => setExamForm({ ...examForm, laboratoire })} />
+              <div className="flex items-end">
+                <button disabled={saving} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-teal-700 px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60">
+                  <Plus className="h-4 w-4" />Enregistrer l’examen
+                </button>
+              </div>
+            </form>
+            <div className="space-y-3">
+              {examens.length ? examens.map((element) => (
+                <article key={element.id} className="rounded-2xl border border-slate-100 p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-slate-900">{element.nom_examen} <span className="text-xs text-slate-500">({element.code_examen})</span></p>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {element.resultat_texte || (element.resultat_numerique !== null && element.resultat_numerique !== undefined ? `${element.resultat_numerique} ${element.unite || ''}`.trim() : 'Résultat non renseigné')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">{labelEtat(element.statut_resultat)}</span>
+                      <p className="mt-2 text-xs text-slate-500">Validation : {labelEtat(element.statut_validation)}</p>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    {element.date_prelevement ? new Date(element.date_prelevement).toLocaleString('fr-ML') : 'Date non renseignée'}
+                    {element.date_resultat ? ` · Résultat reçu le ${new Date(element.date_resultat).toLocaleString('fr-ML')}` : ''}
+                    {element.laboratoire ? ` · Source : ${element.laboratoire}` : ''}
+                  </p>
+                </article>
+              )) : <p className="rounded-2xl bg-slate-50 p-5 text-sm text-slate-500">Aucun examen prénatal enregistré.</p>}
             </div>
           </section>
         </div>
