@@ -59,10 +59,23 @@ cd ../ia && pip install -r requirements.txt
 ```
 
 ### Services
-- **Backend API**: http://localhost:8001
+- **Backend API**: http://localhost:8000
 - **Frontend**: http://localhost:3000
-- **Service IA**: http://localhost:8000
-- **Documentation IA**: http://localhost:8000/docs
+- **Service IA**: http://localhost:8080
+- **Documentation IA**: http://localhost:8080/docs
+
+### Santé maternelle — plan de travail
+- [Plan d'évolution du suivi maternel](docs/PLAN_EVOLUTION_MATERNELLE.md)
+- [Cadre d'usage des fonctions IA](docs/IA_CADRE_NON_DECISIONNEL.md)
+
+### Accès au journal d'audit IA
+L'endpoint `/audit/logs` est désactivé si `AUDIT_LOGS_TOKEN` n'est pas configuré. Pour l'activer dans un environnement de développement contrôlé, définir un jeton aléatoire robuste dans le fichier `.env` à la racine du projet :
+
+```dotenv
+AUDIT_LOGS_TOKEN=remplacer_par_un_secret_long_et_aleatoire
+```
+
+Puis redémarrer le service IA. L'accès s'effectue avec un en-tête `Authorization: Bearer <jeton>`. Ne pas versionner de vraie valeur de jeton. En production, utiliser un gestionnaire de secrets et limiter l'accès réseau à cette route.
 
 ## Sécurité
 
