@@ -94,6 +94,13 @@ docker compose exec api php artisan maternite:rappels-prenataux --limit=10
 
 La commande de rappel doit être orthographiée exactement `maternite:rappels-prenataux`; elle n'envoie un SMS que si un consentement actif `SMS_RENDEZ_VOUS` est enregistré pour la mère et la structure concernée, et si Telerivet est configuré. Le SMS reste générique et ne mentionne ni grossesse, ni examen, ni symptôme. Aucun rappel n'est envoyé sans consentement actif.
 
+### Référentiel versionné des examens prénataux
+- `GET /api/v1/catalogues/examens-prenataux?version_protocole=...` : consulter les définitions d'une version de protocole.
+- `POST /api/v1/catalogues/examens-prenataux` : publier une définition; cette opération est réservée au rôle administrateur.
+- `GET /api/v1/grossesses/{grossesse}/examens-attendus` : afficher les définitions de la version affectée à la grossesse, la fenêtre gestationnelle configurée et indiquer uniquement si un résultat est enregistré.
+
+Le référentiel est volontairement vide par défaut. Avant de l'alimenter, faire valider par les autorités sanitaires compétentes les définitions, la version du protocole, les fenêtres de semaines et les références documentaires. Une version déjà publiée ne se modifie pas silencieusement : publiez une nouvelle version en cas de changement. L'âge gestationnel affiché est une estimation technique à vérifier et la page reste informative; l'absence d'entrée ou de résultat ne signifie pas qu'un examen n'est pas nécessaire.
+
 ### Accès au journal d'audit IA
 L'endpoint `/audit/logs` est désactivé si `AUDIT_LOGS_TOKEN` n'est pas configuré. Pour l'activer dans un environnement de développement contrôlé, définir un jeton aléatoire robuste dans le fichier `.env` à la racine du projet :
 
