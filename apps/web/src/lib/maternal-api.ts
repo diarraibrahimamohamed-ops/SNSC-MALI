@@ -84,6 +84,7 @@ export type ChronologieItem = {
   statut?: string | null;
   provenance?: string | null;
   prochaine_etape?: string | null;
+  prochain_rendez_vous_le?: string | null;
   orientation?: string | null;
   vaccin?: string | null;
   libelle?: string | null;
