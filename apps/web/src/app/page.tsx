@@ -300,7 +300,7 @@ export default function Home() {
           </Link>
           <p>© 2026 SNSC-Mali <span>·</span> Santé, suivi et continuité</p>
           <div className="landing-footer-links">
-            <a href="mailto:support@snsc-mali.ml">Support</a>
+            <Link href="/agent-auth">Espace Agent</Link>
             <Link href="/login">Administration</Link>
           </div>
         </div>
