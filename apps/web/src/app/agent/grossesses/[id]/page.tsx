@@ -27,6 +27,28 @@ type Mesure = {
   statut_validation: string;
 };
 
+type ExamenAttendu = {
+  id: string;
+  version_protocole: string;
+  code_examen: string;
+  nom_examen: string;
+  categorie: string;
+  modalite: string;
+  semaine_min?: number | null;
+  semaine_max?: number | null;
+  source_reference: string;
+  suivi: 'RESULTAT_ENREGISTRE' | 'AUCUN_RESULTAT_ENREGISTRE' | string;
+  dernier_resultat?: { statut_resultat: string; statut_validation: string; date_resultat?: string | null } | null;
+};
+type ExamensAttendusResponse = {
+  data: ExamenAttendu[];
+  meta: {
+    version_protocole?: string | null;
+    reference_configuree: boolean;
+    age_gestationnel_estime_semaines?: number | null;
+    message: string;
+  };
+};
 type ExamensResponse = { data: { data: ExamenPrenatal[] } };
 type SymptomesResponse = { data: { data: SymptomePrenatal[] } };
 type CatalogueSymptomesResponse = { data: CatalogueSymptome[] };
@@ -140,6 +162,8 @@ export default function GrossesseDetailPage() {
   const [contact, setContact] = useState(initialContact);
   const [measurement, setMeasurement] = useState(initialMeasurement);
   const [examens, setExamens] = useState<ExamenPrenatal[]>([]);
+  const [examensAttendus, setExamensAttendus] = useState<ExamenAttendu[]>([]);
+  const [metaExamenAttendus, setMetaExamenAttendus] = useState<ExamensAttendusResponse['meta'] | null>(null);
   const [examForm, setExamForm] = useState<FormExamen>(initialExam);
   const [symptomes, setSymptomes] = useState<SymptomePrenatal[]>([]);
   const [catalogueSymptomes, setCatalogueSymptomes] = useState<CatalogueSymptome[]>([]);
@@ -153,14 +177,17 @@ export default function GrossesseDetailPage() {
   const recupererGrossesse = useCallback(async (): Promise<{
     grossesse: GrossesseDetail;
     examens: ExamenPrenatal[];
+    examensAttendus: ExamenAttendu[];
+    metaExamenAttendus: ExamensAttendusResponse['meta'];
     symptomes: SymptomePrenatal[];
     rendezVous: RendezVousPrenatal[];
     catalogueSymptomes: CatalogueSymptome[];
     catalogueMesures: CatalogueMesure[];
   }> => {
-    const [result, examensResult, symptomesResult, rendezVousResult, catalogueSymptomesResult, catalogueMesuresResult] = await Promise.all([
+    const [result, examensResult, examensAttendusResult, symptomesResult, rendezVousResult, catalogueSymptomesResult, catalogueMesuresResult] = await Promise.all([
       maternalApi<{ data: GrossesseDetail }>(`/grossesses/${id}`),
       maternalApi<ExamensResponse>(`/grossesses/${id}/examens`),
+      maternalApi<ExamensAttendusResponse>(`/grossesses/${id}/examens-attendus`),
       maternalApi<SymptomesResponse>(`/grossesses/${id}/symptomes`),
       maternalApi<RendezVousResponse>(`/grossesses/${id}/rendez-vous`),
       maternalApi<CatalogueSymptomesResponse>('/catalogues/symptomes-prenataux'),
@@ -173,6 +200,8 @@ export default function GrossesseDetailPage() {
         mesures: result.data.mesures ?? [],
       },
       examens: examensResult.data.data ?? [],
+      examensAttendus: examensAttendusResult.data ?? [],
+      metaExamenAttendus: examensAttendusResult.meta,
       symptomes: symptomesResult.data.data ?? [],
       rendezVous: rendezVousResult.data.data ?? [],
       catalogueSymptomes: catalogueSymptomesResult.data ?? [],
@@ -183,6 +212,8 @@ export default function GrossesseDetailPage() {
   const appliquerDossier = useCallback((result: Awaited<ReturnType<typeof recupererGrossesse>>) => {
     setGrossesse(result.grossesse);
     setExamens(result.examens);
+    setExamensAttendus(result.examensAttendus);
+    setMetaExamenAttendus(result.metaExamenAttendus);
     setSymptomes(result.symptomes);
     setRendezVous(result.rendezVous);
     setCatalogueSymptomes(result.catalogueSymptomes);
@@ -703,6 +734,43 @@ export default function GrossesseDetailPage() {
             <p className="mb-5 text-sm text-slate-500">
               Enregistrez les résultats reçus ou l’état d’un examen. Les champs saisis sont conservés comme données à vérifier; cette page n’interprète pas les résultats.
             </p>
+            <div className="mb-6 rounded-2xl border border-teal-100 bg-teal-50/60 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                  <h3 className="font-semibold text-slate-900">Référentiel du protocole configuré</h3>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Version : {metaExamenAttendus?.version_protocole || 'non renseignée'}
+                    {metaExamenAttendus?.age_gestationnel_estime_semaines !== null && metaExamenAttendus?.age_gestationnel_estime_semaines !== undefined
+                      ? ` · Âge gestationnel estimé à partir de la date de début : ${metaExamenAttendus.age_gestationnel_estime_semaines} semaines`
+                      : ''}
+                  </p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${metaExamenAttendus?.reference_configuree ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'}`}>
+                  {metaExamenAttendus?.reference_configuree ? 'Référentiel trouvé' : 'Référentiel non configuré'}
+                </span>
+              </div>
+              <p className="mt-3 text-sm text-slate-700">{metaExamenAttendus?.message || 'Chargement du référentiel…'}</p>
+              {examensAttendus.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  {examensAttendus.map((item) => (
+                    <article key={item.id} className="rounded-xl border border-teal-100 bg-white p-3">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="font-semibold text-slate-900">{item.nom_examen} <span className="text-xs text-slate-500">({item.code_examen})</span></p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {labelEtat(item.modalite)} · Semaines : {item.semaine_min ?? 'non définie'}–{item.semaine_max ?? 'non définie'} · Source : {item.source_reference}
+                          </p>
+                        </div>
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${item.suivi === 'RESULTAT_ENREGISTRE' ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-700'}`}>
+                          {item.suivi === 'RESULTAT_ENREGISTRE' ? 'Résultat enregistré' : 'Aucun résultat enregistré'}
+                        </span>
+                      </div>
+                      {item.dernier_resultat && <p className="mt-2 text-xs text-slate-500">Statut : {labelEtat(item.dernier_resultat.statut_resultat)} · Vérification : {labelEtat(item.dernier_resultat.statut_validation)}</p>}
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
             <form onSubmit={ajouterExamen} className="mb-6 grid grid-cols-1 gap-3 rounded-2xl bg-teal-50/60 p-4 md:grid-cols-2">
               <Champ label="Code de l’examen" value={examForm.code_examen} required onChange={(code_examen) => setExamForm({ ...examForm, code_examen })} />
               <Champ label="Nom de l’examen" value={examForm.nom_examen} required onChange={(nom_examen) => setExamForm({ ...examForm, nom_examen })} />
