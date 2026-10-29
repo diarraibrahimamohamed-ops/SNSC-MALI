@@ -792,7 +792,7 @@ class MaternalCareApiTest extends TestCase
         });
     }
 
-    public function test_liste_grossesses_est_fil tree_par_structure_et_recherche_sur_la_mere(): void
+    public function test_liste_grossesses_est_filtree_par_structure_et_recherche_sur_la_mere(): void
     {
         $mereA = $this->actingAs($this->agentA, 'api')->postJson('/api/v1/meres', [
             'nom' => 'Traore',
