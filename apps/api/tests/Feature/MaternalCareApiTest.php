@@ -632,6 +632,60 @@ class MaternalCareApiTest extends TestCase
         ])->assertUnprocessable();
     }
 
+    public function test_rappel_prenatal_dry_run_ne_modifie_rien_et_n_envoie_aucun_sms(): void
+    {
+        Http::fake();
+
+        $mere = PersonneMere::create([
+            'id' => (string) Str::uuid(),
+            'nom' => 'Coulibaly',
+            'prenom' => 'Awa',
+            'telephone' => '+22370000003',
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'collecte_le' => now(),
+            'auteur_id' => $this->agentA->agentId,
+        ]);
+        $grossesse = Grossesse::create([
+            'mere_id' => $mere->id,
+            'date_debut_estimee' => today()->subMonths(2)->toDateString(),
+            'terme_estime' => today()->addMonths(7)->toDateString(),
+            'centre_sante_id' => $this->centreA->centreId,
+            'source_donnee' => 'TEST',
+            'statut' => 'SUIVI',
+            'statut_validation' => 'A_VERIFIER',
+        ]);
+        Consentement::create([
+            'sujet_type' => 'MERE',
+            'sujet_id' => $mere->id,
+            'finalite' => 'SMS_RENDEZ_VOUS',
+            'version_notice' => 'NOTICE-TEST-V1',
+            'canal' => 'NUMERIQUE',
+            'statut' => 'ACTIF',
+            'consenti_le' => now(),
+            'centre_sante_id' => $this->centreA->centreId,
+            'auteur_id' => $this->agentA->agentId,
+        ]);
+        $rendezVous = RendezVousPrenatal::create([
+            'grossesse_id' => $grossesse->id,
+            'centre_sante_id' => $this->centreA->centreId,
+            'prevu_le' => today()->addDays(3)->toDateString(),
+            'type_rendez_vous' => 'CPN',
+            'libelle' => 'Consultation',
+            'statut' => 'PLANIFIE',
+            'rappel_programme_le' => now()->subMinute(),
+            'rappel_statut' => 'EN_ATTENTE',
+        ]);
+
+        Artisan::call('maternite:rappels-prenataux', ['--dry-run' => true]);
+
+        $fresh = $rendezVous->fresh();
+        $this->assertSame('EN_ATTENTE', $fresh->rappel_statut);
+        $this->assertSame(0, $fresh->rappel_tentatives);
+        $this->assertNull($fresh->rappel_debut_traitement_le);
+        Http::assertNothingSent();
+    }
+
     public function test_rappel_prenatal_sans_consentement_sms_actif_n_est_pas_envoye(): void
     {
         Http::fake();
