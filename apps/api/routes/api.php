@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\JournalAuditController;
 use App\Http\Controllers\Api\V1\AccouchementController;
 use App\Http\Controllers\Api\V1\ConsentementController;
+use App\Http\Controllers\Api\V1\ExamenPrenatalController;
 use App\Http\Controllers\Api\V1\GrossesseController;
 use App\Http\Controllers\Api\V1\MereController;
 use App\Http\Controllers\Api\V1\MesureCliniqueController;
@@ -73,6 +74,8 @@ Route::prefix('v1')->middleware('auth:api')->group(function () {
     Route::get('/grossesses/{grossesse}', [GrossesseController::class, 'show']);
     Route::post('/grossesses/{grossesse}/contacts', [GrossesseController::class, 'storeContact']);
     Route::get('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'index']);
+    Route::get('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'index']);
+    Route::post('/grossesses/{grossesse}/examens', [ExamenPrenatalController::class, 'store']);
     Route::post('/grossesses/{grossesse}/mesures', [MesureCliniqueController::class, 'store']);
     Route::post('/grossesses/{grossesse}/accouchement', [AccouchementController::class, 'store']);
 
