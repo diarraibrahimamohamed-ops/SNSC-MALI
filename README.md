@@ -77,6 +77,23 @@ cd ../ia && pip install -r requirements.txt
 - L'API copie `apps/api/.env.example` vers `apps/api/.env` si nécessaire et génère une paire JWT locale si les deux fichiers de clés sont absents.
 - Les clés privées JWT sont propres à chaque environnement et ne doivent jamais être commitées. Voir [la politique de gestion des secrets](docs/SECURITE_SECRETS.md).
 
+### Calendrier et rappels prénataux
+Le dossier de grossesse permet de planifier un rendez-vous, de le marquer réalisé/manqué/annulé ou de le reporter (le report conserve l'ancien rendez-vous et crée un nouvel enregistrement). Les rappels sont exécutés par Laravel Scheduler dans le conteneur `scheduler`.
+
+Après avoir démarré les conteneurs, appliquer les migrations explicitement :
+
+```bash
+docker compose exec api php artisan migrate --force
+```
+
+Pour vérifier les rappels en environnement contrôlé :
+
+```bash
+docker compose exec api php artisan maternite:rappels-prenataux --limit=10
+``
+
+La commande de rappel doit être orthographiée exactement `maternite:rappels-prenataux`; elle n'envoie un SMS que si un consentement actif `SMS_RENDEZ_VOUS` est enregistré pour la mère et la structure concernée, et si Telerivet est configuré. Le SMS reste générique et ne mentionne ni grossesse, ni examen, ni symptôme. Aucun rappel n'est envoyé sans consentement actif.
+
 ### Accès au journal d'audit IA
 L'endpoint `/audit/logs` est désactivé si `AUDIT_LOGS_TOKEN` n'est pas configuré. Pour l'activer dans un environnement de développement contrôlé, définir un jeton aléatoire robuste dans le fichier `.env` à la racine du projet :
 
