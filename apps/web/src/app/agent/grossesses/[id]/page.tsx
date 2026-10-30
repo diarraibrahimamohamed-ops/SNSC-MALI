@@ -518,9 +518,26 @@ export default function GrossesseDetailPage() {
         <p className="mt-3 text-xs text-rose-50">Les observations et mesures restent à vérifier par un professionnel habilité. Cette page ne pose aucun diagnostic.</p>
       </header>
 
+      <nav aria-label="Navigation du suivi de grossesse" className="sticky top-[72px] z-20 -mx-1 overflow-x-auto rounded-2xl border border-slate-200 bg-white/95 p-2 shadow-sm backdrop-blur">
+        <div className="flex min-w-max items-center gap-1">
+          {[
+            ['contacts', 'Contacts'],
+            ['rendez-vous', 'Rendez-vous'],
+            ['symptomes', 'Symptômes'],
+            ['mesures', 'Mesures'],
+            ['examens', 'Examens'],
+            ['accouchement', 'Accouchement'],
+          ].map(([id, label]) => (
+            <a key={id} href={`#${id}`} className="rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400">
+              {label}
+            </a>
+          ))}
+        </div>
+      </nav>
+
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.2fr_.8fr]">
         <div className="space-y-6">
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section id="contacts" className="scroll-mt-36 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center gap-2">
               <Stethoscope className="h-5 w-5 text-rose-600" />
               <h2 className="font-bold text-slate-900">Contacts prénataux</h2>
@@ -557,7 +574,7 @@ export default function GrossesseDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-indigo-100 bg-white p-6 shadow-sm">
+          <section id="rendez-vous" className="scroll-mt-36 rounded-3xl border border-indigo-100 bg-white p-6 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
               <CalendarCheck2 className="h-5 w-5 text-indigo-700" />
               <h2 className="font-bold text-slate-900">Calendrier des rendez-vous</h2>
@@ -620,7 +637,7 @@ export default function GrossesseDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section id="symptomes" className="scroll-mt-36 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
               <Stethoscope className="h-5 w-5 text-rose-700" />
               <h2 className="font-bold text-slate-900">Symptômes déclarés</h2>
@@ -682,7 +699,7 @@ export default function GrossesseDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section id="mesures" className="scroll-mt-36 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
               <ClipboardPlus className="h-5 w-5 text-blue-700" />
               <h2 className="font-bold text-slate-900">Mesures cliniques</h2>
@@ -726,7 +743,7 @@ export default function GrossesseDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <section id="examens" className="scroll-mt-36 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-2 flex items-center gap-2">
               <ClipboardPlus className="h-5 w-5 text-teal-700" />
               <h2 className="font-bold text-slate-900">Examens prénataux</h2>
@@ -834,7 +851,7 @@ export default function GrossesseDetailPage() {
         </div>
 
         <aside>
-          <section className="rounded-3xl border border-orange-100 bg-orange-50/60 p-6">
+          <section id="accouchement" className="scroll-mt-36 rounded-3xl border border-orange-100 bg-orange-50/60 p-6">
             <div className="mb-4 flex items-center gap-2">
               <Baby className="h-5 w-5 text-orange-700" /><h2 className="font-bold text-slate-900">Accouchement</h2>
             </div>

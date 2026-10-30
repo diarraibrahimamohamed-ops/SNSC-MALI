@@ -68,6 +68,15 @@ cd ../ia && pip install -r requirements.txt
 - **Service IA**: http://localhost:8080
 - **Documentation IA**: http://localhost:8080/docs
 
+### Navigation du suivi maternel dans l'espace agent
+- `/agent/meres` : liste et création des dossiers mères.
+- `/agent/meres/{id}` : dossier longitudinal de la mère, antécédents obstétricaux, grossesses liées, chronologie et suivi post-partum.
+- `/agent/grossesses` : liste paginée et filtrable des grossesses du périmètre de la structure.
+- `/agent/grossesses/{id}` : dossier de grossesse avec navigation par ancres/onglets entre contacts, rendez-vous, symptômes, mesures, examens et accouchement.
+- `/agent/rendez-vous-prenataux` : agenda transversal des rendez-vous prénataux; distinct du calendrier vaccinal de l'enfant.
+
+L'accès aux fiches est contrôlé par l'API selon le centre de santé de l'utilisateur connecté. Les pages de suivi prénatal restent des outils d'enregistrement et de consultation des données, pas des outils de diagnostic.
+
 ### Santé maternelle — plan de travail
 - [Plan d'évolution du suivi maternel](docs/PLAN_EVOLUTION_MATERNELLE.md)
 - [Cadre d'usage des fonctions IA](docs/IA_CADRE_NON_DECISIONNEL.md)

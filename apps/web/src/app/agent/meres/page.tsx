@@ -68,9 +68,14 @@ export default function MeresPage() {
             <h1 className="text-3xl font-extrabold">Dossiers mères</h1>
             <p className="mt-2 max-w-2xl text-sm text-rose-50">Identités minimisées, rattachées à votre structure et distinctes des dossiers tuteurs.</p>
           </div>
-          <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-rose-700 shadow-sm hover:bg-rose-50">
-            <Plus className="h-4 w-4" /> Nouvelle mère
-          </button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link href="/agent/grossesses" className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-sm font-bold text-white transition hover:bg-white/20">
+              Voir les grossesses suivies
+            </Link>
+            <button onClick={() => setShowForm(!showForm)} className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-bold text-rose-700 shadow-sm hover:bg-rose-50">
+              <Plus className="h-4 w-4" /> Nouvelle mère
+            </button>
+          </div>
         </div>
       </header>
 
