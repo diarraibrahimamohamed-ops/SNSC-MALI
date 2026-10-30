@@ -167,7 +167,7 @@ export default function AgentLayout({
           </div>
 
           {/* Navigation principale */}
-          <nav className="flex-1 space-y-1 p-4">
+          <nav aria-label="Navigation principale agent" className="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
             <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Menu principal
             </p>
@@ -218,7 +218,7 @@ export default function AgentLayout({
           </div>
 
           {/* Profil utilisateur */}
-          <div className="border-t border-white/5 p-4">
+          <div className="shrink-0 border-t border-white/5 p-4">
             <div className="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
               <div className="flex items-center gap-3">
                 <div className="relative">
@@ -257,7 +257,7 @@ export default function AgentLayout({
             SIDEBAR MOBILE
             ============================================ */}
         <div
-          className={`fixed inset-y-0 left-0 z-50 w-[280px] transform bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+          className={`fixed inset-y-0 left-0 z-50 flex h-dvh w-[280px] flex-col transform bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 text-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
             mobileOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -281,7 +281,7 @@ export default function AgentLayout({
           </div>
 
           {/* Navigation mobile */}
-          <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+          <nav aria-label="Navigation mobile agent" className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain p-4">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
